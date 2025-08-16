@@ -10,7 +10,8 @@
     "bun:dev": "bun run dev",
     "bun:build": "bun run build",
     "bun:start": "bun run start",
-    "db:setup": "node scripts/setup-database.js"
+    "db:setup": "node scripts/setup-database.js",
+    "verify:auth": "node scripts/verify-auth.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.55.0",

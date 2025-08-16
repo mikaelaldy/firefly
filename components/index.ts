@@ -1,1 +1,3 @@
-// Component exports will be added here as components are created
+// Auth components
+export { AuthButton } from './auth/AuthButton'
+export { AuthTest } from './auth/AuthTest'

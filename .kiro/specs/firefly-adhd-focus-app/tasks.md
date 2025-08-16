@@ -42,7 +42,9 @@
   - Seed script (optional) for demo data
   - _Requirements: 6.1, 8.1, 8.3_
 
-- [-] 5. Auth (Supabase)
+- [x] 5. Auth (Supabase)
+
+
 
 
 
