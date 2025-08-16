@@ -49,10 +49,16 @@
 
 
   - Enable Google provider in Supabase; implement simple login/logout UI
-  - Gate writes by auth; app still works read-less w/o login (timer + local state)
+![1755331319898](image/tasks/1755331319898.png)  - Gate writes by auth; app still works read-less w/o login (timer + local state)
   - _Requirements: 6.1, 6.3_
 
-- [ ] 6. Landing page
+- [x] 6. Landing page
+
+
+
+
+
+
   - TaskInput: centered input, validation, no reload submit
   - On submit: create tasks row (optimistic UI)
   - _Requirements: 1.1, 1.2, 7.2, 7.3_
