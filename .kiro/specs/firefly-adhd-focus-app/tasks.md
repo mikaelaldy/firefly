@@ -32,7 +32,9 @@
   - Initialize Supabase client (browser + server)
   - _Requirements: 6.1, 8.1_
 
-- [-] 4. DB schema & RLS
+- [x] 4. DB schema & RLS
+
+
 
 
 
@@ -40,7 +42,10 @@
   - Seed script (optional) for demo data
   - _Requirements: 6.1, 8.1, 8.3_
 
-- [ ] 5. Auth (Supabase)
+- [-] 5. Auth (Supabase)
+
+
+
   - Enable Google provider in Supabase; implement simple login/logout UI
   - Gate writes by auth; app still works read-less w/o login (timer + local state)
   - _Requirements: 6.1, 6.3_
