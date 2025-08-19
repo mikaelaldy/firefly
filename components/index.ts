@@ -6,6 +6,7 @@ export { AuthTest } from './auth/AuthTest'
 export { TaskInput } from './TaskInput'
 export { AIResponse } from './AIResponse'
 export { SessionResults } from './SessionResults'
+export { BufferDeadlineManager } from './BufferDeadlineManager'
 
 // Timer components
 export { Timer } from './timer/Timer'

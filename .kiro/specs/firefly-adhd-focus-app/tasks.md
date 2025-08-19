@@ -101,7 +101,13 @@
   - Results page: friendly variance summary + positive reinforcement copy
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 11. Buffer & micro-deadline (visual-only)
+- [x] 11. Buffer & micro-deadline (visual-only)
+
+
+
+
+
+  - ✅ Type definitions: DeadlineInfo, IfThenPlan, TimelineCheckpoint
   - If due soon: suggest +25% buffer
   - Simple If-Then plan input (non-blocking)
   - Visual ladder timeline (non-interactive)

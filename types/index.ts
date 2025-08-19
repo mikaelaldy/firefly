@@ -46,6 +46,26 @@ export interface SuggestResponse {
   fallbackUsed?: boolean;
 }
 
+// Buffer and deadline types
+export interface DeadlineInfo {
+  dueDate: Date;
+  timeUntilDue: number; // minutes
+  isSoon: boolean; // within 2 hours
+  suggestedBuffer: number; // percentage (25% default)
+}
+
+export interface IfThenPlan {
+  condition: string; // e.g., "If it's 9 AM and not started"
+  action: string; // e.g., "warm-up for 10m"
+}
+
+export interface TimelineCheckpoint {
+  time: Date;
+  label: string;
+  type: 'start' | 'checkpoint' | 'buffer' | 'deadline';
+  isAutoSuggested?: boolean;
+}
+
 // Database types
 export interface Profile {
   id: string;

@@ -4,14 +4,17 @@ import { useState } from 'react'
 import { AuthButton } from '@/components/auth/AuthButton'
 import { TaskInput } from '@/components/TaskInput'
 import { AIResponse } from '@/components/AIResponse'
+import { BufferDeadlineManager } from '@/components/BufferDeadlineManager'
 import { useAuth } from '@/lib/auth/context'
-import type { Task, SuggestResponse } from '@/types'
+import type { Task, SuggestResponse, DeadlineInfo, IfThenPlan } from '@/types'
 
 export default function Home() {
   const { user, loading } = useAuth()
   const [currentTask, setCurrentTask] = useState<Task | null>(null)
   const [showAIResponse, setShowAIResponse] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<SuggestResponse | null>(null)
+  const [deadlineInfo, setDeadlineInfo] = useState<DeadlineInfo | null>(null)
+  const [ifThenPlan, setIfThenPlan] = useState<IfThenPlan | null>(null)
 
   const handleTaskCreated = (task: Task) => {
     setCurrentTask(task)
@@ -33,8 +36,30 @@ export default function Home() {
   const handleStartTimer = () => {
     // Progressive enhancement: Timer can start regardless of AI status
     console.log('Starting timer for goal:', currentTask?.goal)
+    
+    // Build URL with goal and optional deadline info
+    const params = new URLSearchParams()
+    if (currentTask?.goal) {
+      params.set('goal', currentTask.goal)
+    }
+    if (currentTask?.id) {
+      params.set('taskId', currentTask.id)
+    }
+    if (deadlineInfo) {
+      params.set('deadline', deadlineInfo.dueDate.toISOString())
+      params.set('buffer', deadlineInfo.suggestedBuffer.toString())
+    }
+    
     // Navigate to timer page
-    window.location.href = '/timer'
+    window.location.href = `/timer?${params.toString()}`
+  }
+
+  const handleDeadlineSet = (deadline: DeadlineInfo) => {
+    setDeadlineInfo(deadline)
+  }
+
+  const handleIfThenPlanSet = (plan: IfThenPlan) => {
+    setIfThenPlan(plan)
   }
 
   return (
@@ -98,6 +123,15 @@ export default function Home() {
                   />
                 </div>
               )}
+
+              {/* Buffer & Deadline Manager - Requirements 5.1, 5.2, 5.3, 5.5 */}
+              <div className="mb-6">
+                <BufferDeadlineManager
+                  goal={currentTask.goal}
+                  onDeadlineSet={handleDeadlineSet}
+                  onIfThenPlanSet={handleIfThenPlanSet}
+                />
+              </div>
               
               {/* Timer Start Button - Progressive Enhancement */}
               <div className="flex flex-col items-center space-y-3">
