@@ -71,12 +71,22 @@
   - Never block Start button; show placeholder while loading
   - _Requirements: 2.1, 2.2, 2.3, 2.6_
 
-- [ ] 8. AIResponse UI
+- [x] 8. AIResponse UI
+
+
+
+
+
   - Render first step + next actions inline; loading & error states
   - Progressive enhancement: timer usable even if AI fails
   - _Requirements: 1.3, 2.6_
 
-- [ ] 9. Timer core
+- [x] 9. Timer core
+
+
+
+
+
   - VisualTimer (shrinking disc + mm:ss) + TimerControls (pause/resume/stop)
   - Presets 25/45/50; start within <1s
   - Simple drift correction on resume (no sub-second engine)

@@ -6,6 +6,56 @@ import { createServerClient } from '@/lib/supabase/server';
 // Initialize Google AI with API key
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
 
+// Simple in-memory rate limiting and caching (for development)
+const requestTracker = new Map<string, { count: number; resetTime: number }>();
+const responseCache = new Map<string, { response: SuggestResponse; timestamp: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // Max 10 requests per minute per IP
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const tracker = requestTracker.get(ip);
+  
+  if (!tracker || now > tracker.resetTime) {
+    // Reset or create new tracker
+    requestTracker.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (tracker.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false; // Rate limit exceeded
+  }
+  
+  tracker.count++;
+  return true;
+}
+
+function getCachedResponse(goal: string): SuggestResponse | null {
+  const cached = responseCache.get(goal.toLowerCase().trim());
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.response;
+  }
+  return null;
+}
+
+function setCachedResponse(goal: string, response: SuggestResponse): void {
+  responseCache.set(goal.toLowerCase().trim(), {
+    response,
+    timestamp: Date.now()
+  });
+  
+  // Clean up old cache entries (simple cleanup)
+  if (responseCache.size > 100) {
+    const now = Date.now();
+    for (const [key, value] of responseCache.entries()) {
+      if (now - value.timestamp > CACHE_DURATION) {
+        responseCache.delete(key);
+      }
+    }
+  }
+}
+
 // Static fallback suggestions for when AI fails
 const STATIC_FALLBACKS: SuggestResponse[] = [
   {
@@ -78,7 +128,7 @@ function parseAIResponse(text: string): SuggestResponse {
         description: parsed.firstStep?.description || "Start working on your goal",
         estimatedSeconds: parsed.firstStep?.estimatedSeconds || 60
       },
-      nextActions: Array.isArray(parsed.nextActions) ? parsed.nextActions.filter(action => 
+      nextActions: Array.isArray(parsed.nextActions) ? parsed.nextActions.filter((action: any) => 
         typeof action === 'string' && action.trim().length > 0
       ) : ["Continue with the next logical step"],
       bufferRecommendation: parsed.bufferRecommendation,
@@ -197,6 +247,16 @@ async function storeSuggestion(
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(ip)) {
+      console.warn(`Rate limit exceeded for IP: ${ip}`);
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait a moment before trying again.' },
+        { status: 429 }
+      );
+    }
+
     const body: SuggestRequest = await request.json();
     
     // Validate request
@@ -205,6 +265,13 @@ export async function POST(request: NextRequest) {
         { error: 'Goal is required and must be a non-empty string' },
         { status: 400 }
       );
+    }
+
+    // Check cache first
+    const cachedResponse = getCachedResponse(body.goal);
+    if (cachedResponse) {
+      console.log('Returning cached response for goal:', body.goal);
+      return NextResponse.json(cachedResponse);
     }
     
     const supabase = createServerClient();
@@ -266,6 +333,9 @@ export async function POST(request: NextRequest) {
     if (taskId && userId) {
       await storeSuggestion(taskId, userId, response);
     }
+
+    // Cache the response
+    setCachedResponse(body.goal, response);
     
     return NextResponse.json(response);
     
