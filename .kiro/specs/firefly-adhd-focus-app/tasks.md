@@ -92,7 +92,11 @@
   - Simple drift correction on resume (no sub-second engine)
   - _Requirements: 3.1, 3.2, 3.3, 3.8_
 
-- [ ] 10. Sessions & variance
+- [x] 10. Sessions & variance
+
+
+
+
   - On stop: compute variance; insert sessions row (planned/actual)
   - Results page: friendly variance summary + positive reinforcement copy
   - _Requirements: 4.1, 4.2, 4.3_

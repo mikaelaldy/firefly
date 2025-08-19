@@ -5,6 +5,7 @@ export { AuthTest } from './auth/AuthTest'
 // Task components
 export { TaskInput } from './TaskInput'
 export { AIResponse } from './AIResponse'
+export { SessionResults } from './SessionResults'
 
 // Timer components
 export { Timer } from './timer/Timer'

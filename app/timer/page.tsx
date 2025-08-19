@@ -1,21 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Timer } from '@/components'
 import type { TimerSession } from '@/types'
 
 export default function TimerPage() {
+  const searchParams = useSearchParams()
   const [completedSessions, setCompletedSessions] = useState<TimerSession[]>([])
-  const [currentGoal] = useState('Focus on current task') // This would come from the main app
+  const [currentGoal, setCurrentGoal] = useState('Focus on current task')
+  const [taskId, setTaskId] = useState<string | undefined>()
+
+  // Get goal and taskId from URL params
+  useEffect(() => {
+    const goalParam = searchParams.get('goal')
+    const taskIdParam = searchParams.get('taskId')
+    
+    if (goalParam) {
+      setCurrentGoal(goalParam)
+    }
+    
+    if (taskIdParam) {
+      setTaskId(taskIdParam)
+    }
+  }, [searchParams])
 
   const handleSessionComplete = (session: TimerSession) => {
     setCompletedSessions(prev => [...prev, session])
     console.log('Session completed:', session)
-    
-    // Here you would typically:
-    // 1. Save to database
-    // 2. Show completion summary
-    // 3. Navigate to results page
   }
 
   return (
@@ -47,6 +59,7 @@ export default function TimerPage() {
       <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-12">
         <Timer 
           goal={currentGoal}
+          taskId={taskId}
           onSessionComplete={handleSessionComplete}
         />
 

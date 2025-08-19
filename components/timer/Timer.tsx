@@ -1,18 +1,22 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { VisualTimer } from './VisualTimer'
 import { TimerControls } from './TimerControls'
 import { TimerPresets } from './TimerPresets'
 import { calculateVariance, minutesToSeconds, calculateAdjustedElapsed } from '@/lib/timer-utils'
+import { saveSession } from '@/lib/supabase/sessions'
 import type { TimerState, TimerSession } from '@/types'
 
 interface TimerProps {
   goal?: string;
+  taskId?: string;
   onSessionComplete?: (session: TimerSession) => void;
 }
 
-export function Timer({ goal = 'Focus Session', onSessionComplete }: TimerProps) {
+export function Timer({ goal = 'Focus Session', taskId, onSessionComplete }: TimerProps) {
+  const router = useRouter()
   const [timerState, setTimerState] = useState<TimerState>({
     isActive: false,
     isPaused: false,
@@ -48,9 +52,18 @@ export function Timer({ goal = 'Focus Session', onSessionComplete }: TimerProps)
   const pauseTimer = useCallback(() => {
     if (timerState.isActive && !timerState.isPaused) {
       pauseStartRef.current = Date.now()
-      setTimerState(prev => ({ ...prev, isPaused: true }))
+      
+      // Calculate current remaining time and store it
+      const adjustedElapsed = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
+      const remaining = Math.max(0, timerState.duration - adjustedElapsed)
+      
+      setTimerState(prev => ({ 
+        ...prev, 
+        isPaused: true,
+        remaining: remaining
+      }))
     }
-  }, [timerState.isActive, timerState.isPaused])
+  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration])
 
   // Resume timer with drift correction
   const resumeTimer = useCallback(() => {
@@ -64,7 +77,7 @@ export function Timer({ goal = 'Focus Session', onSessionComplete }: TimerProps)
   }, [timerState.isActive, timerState.isPaused])
 
   // Stop timer and create session
-  const stopTimer = useCallback(() => {
+  const stopTimer = useCallback(async () => {
     if (timerState.isActive) {
       const now = new Date()
       const actualDuration = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
@@ -96,10 +109,24 @@ export function Timer({ goal = 'Focus Session', onSessionComplete }: TimerProps)
       setShowPresets(true)
       pausedTimeRef.current = 0
 
+      // Save session to database (non-blocking)
+      try {
+        await saveSession(session, taskId)
+      } catch (error) {
+        console.error('Failed to save session to database:', error)
+        // Continue anyway - don't block user flow
+      }
+
+      // Store session in localStorage for results page
+      localStorage.setItem(`session_${session.id}`, JSON.stringify(session))
+
+      // Navigate to results page
+      router.push(`/results?session=${session.id}`)
+
       // Notify parent component
       onSessionComplete?.(session)
     }
-  }, [timerState, goal, onSessionComplete])
+  }, [timerState, goal, taskId, router, onSessionComplete])
 
   // Handle timer completion
   useEffect(() => {
@@ -125,6 +152,18 @@ export function Timer({ goal = 'Focus Session', onSessionComplete }: TimerProps)
         setTimerState(prev => ({ ...prev, isActive: false }))
         setShowPresets(true)
         pausedTimeRef.current = 0
+
+        // Save session to database (non-blocking)
+        saveSession(session, taskId).catch(error => {
+          console.error('Failed to save session to database:', error)
+          // Continue anyway - don't block user flow
+        })
+
+        // Store session in localStorage for results page
+        localStorage.setItem(`session_${session.id}`, JSON.stringify(session))
+
+        // Navigate to results page
+        router.push(`/results?session=${session.id}`)
 
         onSessionComplete?.(session)
       }
@@ -171,7 +210,7 @@ export function Timer({ goal = 'Focus Session', onSessionComplete }: TimerProps)
           </div>
 
           {/* Visual Timer */}
-          <VisualTimer timerState={timerState} />
+          <VisualTimer timerState={timerState} totalPausedTime={pausedTimeRef.current} />
 
           {/* Timer Controls */}
           <div className="mt-8">

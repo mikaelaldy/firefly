@@ -1,14 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { formatTime } from '@/lib/timer-utils'
+import { formatTime, calculateAdjustedElapsed } from '@/lib/timer-utils'
 import type { TimerState } from '@/types'
 
 interface VisualTimerProps {
   timerState: TimerState;
+  totalPausedTime?: number;
 }
 
-export function VisualTimer({ timerState }: VisualTimerProps) {
+export function VisualTimer({ timerState, totalPausedTime = 0 }: VisualTimerProps) {
   const [displayTime, setDisplayTime] = useState(timerState.remaining)
 
   // Update display time every second when timer is active
@@ -19,14 +20,13 @@ export function VisualTimer({ timerState }: VisualTimerProps) {
     }
 
     const interval = setInterval(() => {
-      const now = Date.now()
-      const elapsed = Math.floor((now - timerState.startTime.getTime()) / 1000)
-      const remaining = Math.max(0, timerState.duration - elapsed)
+      const adjustedElapsed = calculateAdjustedElapsed(timerState.startTime, totalPausedTime)
+      const remaining = Math.max(0, timerState.duration - adjustedElapsed)
       setDisplayTime(remaining)
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration, timerState.remaining])
+  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration, timerState.remaining, totalPausedTime])
 
   // Calculate progress percentage for shrinking disc
   const progressPercentage = timerState.duration > 0 
