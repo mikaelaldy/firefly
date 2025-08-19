@@ -63,7 +63,9 @@
   - On submit: create tasks row (optimistic UI)
   - _Requirements: 1.1, 1.2, 7.2, 7.3_
 
-- [ ] 7. AI suggest API
+- [x] 7. AI suggest API
+
+
   - /api/ai/suggest: call Google AI Studio via @google/genai (Gemini Flash → Flash-Lite → static)
   - Parse { firstStep, nextActions }; write suggestions row
   - Never block Start button; show placeholder while loading

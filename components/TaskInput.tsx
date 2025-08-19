@@ -49,6 +49,37 @@ export function TaskInput({ onTaskCreated }: TaskInputProps) {
       // Clear input immediately for better UX
       setGoal('')
 
+      // Call AI suggest API to get breakdown (requirement 2.1, 2.2, 2.3, 2.6)
+      try {
+        console.log('Calling AI suggest API for goal:', goal.trim())
+        const aiResponse = await fetch('/api/ai/suggest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            goal: goal.trim(),
+            urgency: 'medium'
+          }),
+        })
+
+        if (aiResponse.ok) {
+          const suggestions = await aiResponse.json()
+          console.log('AI suggestions received:', suggestions)
+          // Store suggestions in the task object for display
+          const taskWithSuggestions = {
+            ...optimisticTask,
+            suggestions
+          }
+          onTaskCreated?.(taskWithSuggestions)
+        } else {
+          console.error('AI API response not ok:', aiResponse.status, aiResponse.statusText)
+        }
+      } catch (aiError) {
+        console.error('AI suggest API error:', aiError)
+        // Continue without AI suggestions - app should never block (requirement 2.7)
+      }
+
       // Create task in database (this happens in background)
       if (user) {
         const createdTask = await clientDb.createTask(taskData)

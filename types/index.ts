@@ -65,6 +65,7 @@ export interface Task {
   urgency: 'low' | 'medium' | 'high';
   created_at: string;
   updated_at: string;
+  suggestions?: SuggestResponse; // AI suggestions for the task
 }
 
 export interface Suggestion {

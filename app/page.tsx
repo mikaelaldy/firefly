@@ -65,9 +65,48 @@ export default function Home() {
                   {currentTask.goal}
                 </p>
               </div>
+
+              {/* AI Suggestions Display - Requirements 2.2, 2.3, 2.6 */}
+              {currentTask.suggestions && (
+                <div className="space-y-4 mt-4">
+                  {/* First Step - 60 second mini-task (Requirement 2.2) */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="text-blue-800 font-semibold text-sm mb-2">
+                      🚀 First Small Step (60 seconds)
+                    </h3>
+                    <p className="text-blue-700">
+                      {currentTask.suggestions.firstStep.description}
+                    </p>
+                  </div>
+
+                  {/* Next Actions - 3-5 actionable steps (Requirement 2.3) */}
+                  {currentTask.suggestions.nextActions && currentTask.suggestions.nextActions.length > 0 && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <h3 className="text-purple-800 font-semibold text-sm mb-2">
+                        📋 Next Actions
+                      </h3>
+                      <ul className="space-y-2">
+                        {currentTask.suggestions.nextActions.map((action, index) => (
+                          <li key={index} className="flex items-start space-x-2 text-purple-700">
+                            <span className="text-purple-500 font-medium">{index + 1}.</span>
+                            <span>{action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Fallback indicator */}
+                  {currentTask.suggestions.fallbackUsed && (
+                    <p className="text-xs text-gray-500 text-center">
+                      💡 Using smart fallback suggestions
+                    </p>
+                  )}
+                </div>
+              )}
               
-              <p className="text-green-700 text-sm">
-                🎯 Ready to start a focused timer and get AI-powered next steps
+              <p className="text-green-700 text-sm mt-4">
+                🎯 Ready to start a focused timer
               </p>
             </div>
           )}

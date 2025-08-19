@@ -14,7 +14,9 @@
     "verify:auth": "node scripts/verify-auth.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.55.0",
+    "dotenv": "^17.2.1",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
