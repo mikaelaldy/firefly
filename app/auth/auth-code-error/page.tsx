@@ -54,7 +54,7 @@ function AuthCodeErrorContent() {
           </div>
           <h1 className="text-2xl font-bold mb-4 text-green-800">Authentication Successful!</h1>
           <p className="text-gray-600 mb-6">
-            You're now signed in as {user.email}. Redirecting you to Firefly in {countdown} seconds...
+            You&apos;re now signed in as {user.email}. Redirecting you to Firefly in {countdown} seconds...
           </p>
           <a 
             href="/"
@@ -93,7 +93,7 @@ function AuthCodeErrorContent() {
           </a>
           <p className="text-sm text-gray-500">
             Note: Your authentication might have worked despite this error. 
-            Check if you're signed in on the home page.
+            Check if you&apos;re signed in on the home page.
           </p>
         </div>
       </div>
