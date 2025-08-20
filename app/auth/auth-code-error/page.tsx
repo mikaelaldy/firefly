@@ -100,8 +100,8 @@ function AuthCodeErrorContent() {
     </div>
   )
 }
-funct
-ion LoadingFallback() {
+
+function LoadingFallback() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="max-w-md text-center">
