@@ -49,11 +49,15 @@ function setCachedResponse(goal: string, response: SuggestResponse): void {
   // Clean up old cache entries (simple cleanup)
   if (responseCache.size > 100) {
     const now = Date.now();
-    for (const [key, value] of responseCache.entries()) {
+    const entriesToDelete: string[] = [];
+    
+    responseCache.forEach((value, key) => {
       if (now - value.timestamp > CACHE_DURATION) {
-        responseCache.delete(key);
+        entriesToDelete.push(key);
       }
-    }
+    });
+    
+    entriesToDelete.forEach(key => responseCache.delete(key));
   }
 }
 

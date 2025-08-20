@@ -1,11 +1,10 @@
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { TimerSession, Session } from '@/types'
 
 /**
  * Save a completed timer session to the database
  */
 export async function saveSession(session: TimerSession, taskId?: string): Promise<Session | null> {
-  const supabase = createClient()
   
   try {
     // Get current user
@@ -51,7 +50,6 @@ export async function saveSession(session: TimerSession, taskId?: string): Promi
  * Get recent sessions for the current user
  */
 export async function getRecentSessions(limit: number = 10): Promise<Session[]> {
-  const supabase = createClient()
   
   try {
     const { data: { user } } = await supabase.auth.getUser()
@@ -88,7 +86,6 @@ export async function getSessionStats(): Promise<{
   averageVariance: number;
   totalFocusTime: number; // in minutes
 }> {
-  const supabase = createClient()
   
   try {
     const { data: { user } } = await supabase.auth.getUser()
