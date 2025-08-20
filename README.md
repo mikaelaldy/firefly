@@ -18,6 +18,8 @@ A Next.js application designed to help users with ADHD manage focus sessions usi
 
 ### AI-Powered Task Management
 - **Smart Suggestions**: AI generates first steps and next actions for any goal
+- **Intelligent Caching**: 5-minute response cache for improved performance and reduced API costs
+- **Rate Limiting**: Built-in protection against API abuse (10 requests/minute per IP)
 - **Fallback Support**: Static suggestions when AI is unavailable
 - **Buffer Recommendations**: Intelligent time buffer suggestions for deadlines
 
@@ -220,6 +222,7 @@ This is a lean MVP focused on core ADHD focus management needs. The architecture
 ## Documentation
 
 - **Authentication Setup**: `docs/auth-setup.md` - Detailed authentication configuration
+- **API Performance**: `docs/api-performance.md` - Caching, rate limiting, and performance optimization
 - **Buffer & Deadline System**: `docs/buffer-deadline-system.md` - Deadline management features  
 - **User Preferences**: `docs/preferences-system.md` - Accessibility and user customization system
 - **Security & Privacy**: `docs/security-privacy.md` - PII protection and security implementation
