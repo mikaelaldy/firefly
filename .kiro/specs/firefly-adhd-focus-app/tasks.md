@@ -127,7 +127,12 @@
   - ✅ UserPreferences persisted locally (optionally a profiles column later)
   - _Requirements: 7.2, 7.3, 7.4_
 
-- [ ] 13. Minimal testing (hackathon scope)
+- [x] 13. Minimal testing (hackathon scope)
+
+
+
+
+
 
 
 
@@ -137,12 +142,37 @@
   - 1 unit test: variance calculation utility
   - _Requirements: 9.1–9.4 (journey), 3.8 (perf), 4.2 (variance)_
 
-- [ ] 14. Security & privacy
+- [x] 14. Security & privacy
+
+
+
+
+
   - Strip PII from AI prompts (send goal text only)
   - Verify RLS policies with one positive/negative query each
   - _Requirements: 8.1, 8.3_
 
-- [ ] 15. Polish & demo
+- [ ] 15. Enhanced landing page for hackathon demo
+  - Create HeroSection with compelling tagline and value proposition
+  - Build FeatureShowcase highlighting ADHD-specific benefits with icons
+  - Add DemoPreview component with timer interface screenshots
+  - Implement smooth CTA transition to task input
+  - Ensure responsive design for mobile demo viewing
+  - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8_
+
+- [ ] 16. User dashboard and analytics system
+  - Create /api/dashboard/stats endpoint for user analytics
+  - Build DashboardStats component showing weekly focus time and completion rate
+  - Implement SessionHistory component with last 10 sessions and variance data
+  - Create PersonalRecords component highlighting achievements and streaks
+  - Add ProgressInsights with encouraging, ADHD-friendly analytics messages
+  - Build dashboard route (/dashboard) with authentication guard
+  - Add QuickStart component with prominent "Start New Session" button
+  - Implement OnboardingMessage for users with no historical data
+  - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11_
+
+- [ ] 17. Polish & demo
   - Ensure Start is never blocked; handle offline timer gracefully
   - Write quick README: run scripts (Bun for dev, npm for build/deploy), env setup, demo steps
+  - Test complete user journey from landing page to dashboard
   - _Requirements: All integration_

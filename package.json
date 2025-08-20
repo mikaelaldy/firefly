@@ -15,7 +15,8 @@
     "bun:test": "bun run test",
     "verify:testing": "node scripts/verify-testing.js",
     "db:setup": "node scripts/setup-database.js",
-    "verify:auth": "node scripts/verify-auth.js"
+    "verify:auth": "node scripts/verify-auth.js",
+    "verify:security": "node scripts/verify-rls-policies.js && bun run test lib/security/__tests__/pii-sanitizer.test.ts --run"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

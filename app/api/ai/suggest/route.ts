@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { SuggestRequest, SuggestResponse } from '@/types';
 import { createServerClient } from '@/lib/supabase/server';
+import { prepareGoalForAI } from '@/lib/security/pii-sanitizer';
 
 // Initialize Google AI with API key
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
@@ -183,7 +184,10 @@ function createPrompt(request: SuggestRequest): string {
   const urgencyContext = request.urgency === 'high' ? 'This is urgent. ' : '';
   const dueDateContext = request.dueDate ? `Due: ${request.dueDate}. ` : '';
   
-  return `${urgencyContext}${dueDateContext}Help an ADHD user start this goal: "${request.goal}"
+  // Sanitize the goal text to remove PII before sending to AI
+  const sanitizedGoal = prepareGoalForAI(request.goal);
+  
+  return `${urgencyContext}${dueDateContext}Help an ADHD user start this goal: "${sanitizedGoal}"
 
 Please respond with a JSON object containing:
 1. "firstStep": An object with "description" (a specific 60-second micro-task to start immediately) and "estimatedSeconds" (should be 60)
@@ -288,13 +292,15 @@ export async function POST(request: NextRequest) {
     }
     
     // Create task record if user is authenticated
+    // Note: We store the original goal (not sanitized) in the database for the user's reference
+    // Only the AI prompt gets the sanitized version
     if (userId) {
       try {
         const { data: taskData, error: taskError } = await supabase
           .from('tasks')
           .insert({
             user_id: userId,
-            goal: body.goal.trim(),
+            goal: body.goal.trim(), // Store original goal for user
             due_date: body.dueDate || null,
             urgency: body.urgency || 'medium'
           })

@@ -122,3 +122,36 @@ The application addresses the common ADHD challenge of getting stuck at the star
 4. WHEN variance summary is displayed THEN the system SHALL offer optional buffer/deadline suggestions
 5. WHEN the user finishes reviewing results THEN the system SHALL provide clear path back to task input
 6. WHEN returning to input THEN the system SHALL allow seamless transition to next task
+
+### Requirement 10: Enhanced Landing Page for Demo
+
+**User Story:** As a hackathon demo viewer, I want to see an engaging landing page that clearly explains Firefly's value proposition and showcases its features, so that I can quickly understand what the app does and be motivated to try it.
+
+#### Acceptance Criteria
+
+1. WHEN a visitor lands on the homepage THEN the system SHALL display a compelling hero section with the app's tagline and value proposition
+2. WHEN the landing page loads THEN the system SHALL showcase key features with visual icons and brief descriptions
+3. WHEN displaying features THEN the system SHALL highlight ADHD-specific benefits (task paralysis, time blindness, focus support)
+4. WHEN a visitor scrolls THEN the system SHALL show a quick demo or screenshot of the timer interface
+5. WHEN the landing page is viewed THEN the system SHALL include a clear call-to-action to "Try Firefly Now"
+6. WHEN the CTA is clicked THEN the system SHALL smoothly transition to the task input interface
+7. WHEN displaying the landing page THEN the system SHALL maintain the same accessibility standards as the main app
+8. WHEN viewed on mobile THEN the system SHALL provide a responsive, touch-friendly experience
+
+### Requirement 11: User Dashboard and Analytics
+
+**User Story:** As a logged-in ADHD user, I want to see my focus session history, productivity stats, and personal records, so that I can track my progress and celebrate my achievements over time.
+
+#### Acceptance Criteria
+
+1. WHEN a user logs in with Google THEN the system SHALL redirect to a personalized dashboard
+2. WHEN the dashboard loads THEN the system SHALL display total focus time for the current week
+3. WHEN showing stats THEN the system SHALL display average session length and completion rate
+4. WHEN displaying history THEN the system SHALL show the last 10 focus sessions with goals and durations
+5. WHEN showing session history THEN the system SHALL include variance data (planned vs actual time)
+6. WHEN displaying records THEN the system SHALL highlight personal bests (longest session, best week, streak days)
+7. WHEN the user views their dashboard THEN the system SHALL provide encouraging insights about their focus patterns
+8. WHEN displaying analytics THEN the system SHALL use positive, ADHD-friendly language that celebrates progress
+9. WHEN the dashboard is accessed THEN the system SHALL include a prominent "Start New Session" button
+10. WHEN viewing historical data THEN the system SHALL respect user privacy and only show data for the authenticated user
+11. WHEN no historical data exists THEN the system SHALL show an encouraging onboarding message with tips for getting started

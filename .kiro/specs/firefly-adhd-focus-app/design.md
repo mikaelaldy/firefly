@@ -50,8 +50,12 @@ graph TB
 
 ### Core Components
 
-#### 1. Landing Page (`/`)
-- **TaskInput Component**: Centered input field with submit handling
+#### 1. Enhanced Landing Page (`/`)
+- **HeroSection Component**: Compelling tagline and value proposition display
+- **FeatureShowcase Component**: Visual feature highlights with ADHD-specific benefits
+- **DemoPreview Component**: Screenshots or quick demo of timer interface
+- **CallToAction Component**: Prominent "Try Firefly Now" button with smooth transition
+- **TaskInput Component**: Centered input field with submit handling (embedded in CTA flow)
 - **AIResponse Component**: Displays first step and next actions
 - **TimerLauncher Component**: Preset selection and immediate start capability
 
@@ -64,6 +68,14 @@ graph TB
 - **VarianceSummary Component**: Friendly comparison of planned vs actual
 - **BufferSuggestion Component**: Optional deadline management tips
 - **NextTaskPrompt Component**: Seamless return to task input
+
+#### 4. User Dashboard (`/dashboard`)
+- **DashboardStats Component**: Weekly focus time, average session length, completion rate
+- **SessionHistory Component**: Last 10 sessions with goals, durations, and variance
+- **PersonalRecords Component**: Longest session, best week, streak days highlights
+- **ProgressInsights Component**: Encouraging analytics with ADHD-friendly language
+- **QuickStart Component**: Prominent "Start New Session" button
+- **OnboardingMessage Component**: Encouraging tips for new users with no data
 
 ### API Interfaces
 
@@ -95,6 +107,32 @@ interface SessionData {
     defaultDuration: number;
     highContrast: boolean;
   };
+}
+```
+
+#### `/api/dashboard/stats`
+```typescript
+interface DashboardStatsRequest {
+  userId: string;
+  timeframe?: 'week' | 'month' | 'all';
+}
+
+interface DashboardStatsResponse {
+  totalFocusTime: number; // in minutes
+  averageSessionLength: number; // in minutes
+  completionRate: number; // percentage
+  sessionsThisWeek: number;
+  personalRecords: {
+    longestSession: number; // in minutes
+    bestWeek: number; // total minutes
+    currentStreak: number; // days
+    longestStreak: number; // days
+  };
+  recentSessions: TimerSession[];
+  insights: {
+    message: string;
+    type: 'celebration' | 'encouragement' | 'tip';
+  }[];
 }
 ```
 
@@ -157,6 +195,26 @@ interface SuggestionCache {
   response: SuggestResponse;
   timestamp: Date;
   expiresAt: Date; // 1 hour cache
+}
+```
+
+### Dashboard Analytics
+```typescript
+interface UserAnalytics {
+  userId: string;
+  totalSessions: number;
+  totalFocusTime: number; // in minutes
+  averageSessionLength: number;
+  completionRate: number;
+  longestSession: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: Date;
+  weeklyStats: {
+    week: string; // ISO week format
+    totalTime: number;
+    sessionCount: number;
+  }[];
 }
 ```
 
