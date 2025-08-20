@@ -8,6 +8,10 @@ export { AIResponse } from './AIResponse'
 export { SessionResults } from './SessionResults'
 export { BufferDeadlineManager } from './BufferDeadlineManager'
 
+// Preferences components
+export { PreferencesButton } from './PreferencesButton'
+export { PreferencesPanel } from './PreferencesPanel'
+
 // Timer components
 export { Timer } from './timer/Timer'
 export { VisualTimer } from './timer/VisualTimer'

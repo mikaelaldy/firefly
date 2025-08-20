@@ -113,7 +113,11 @@
   - Visual ladder timeline (non-interactive)
   - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
-- [ ] 12. Accessibility & prefs
+- [x] 12. Accessibility & prefs
+
+
+
+
   - Keyboard nav; high-contrast toggle; respect reduced motion
   - UserPreferences persisted locally (optionally a profiles column later)
   - _Requirements: 7.2, 7.3, 7.4_

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AuthButton } from '@/components/auth/AuthButton'
+import { PreferencesButton } from '@/components/PreferencesButton'
 import { TaskInput } from '@/components/TaskInput'
 import { AIResponse } from '@/components/AIResponse'
 import { BufferDeadlineManager } from '@/components/BufferDeadlineManager'
@@ -64,13 +65,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Auth button - fixed position */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* Top navigation - fixed position */}
+      <div className="absolute top-6 right-6 z-10 flex items-center space-x-2">
+        <PreferencesButton />
         <AuthButton />
       </div>
 
       {/* Main content */}
-      <main className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
+      <main id="main-content" className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
         <div className="w-full max-w-2xl mx-auto text-center space-y-12">
           
           {/* Hero section */}

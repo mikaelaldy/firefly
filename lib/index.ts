@@ -10,5 +10,8 @@ export { saveSession, getRecentSessions, getSessionStats } from './supabase/sess
 export { AuthProvider, useAuth } from './auth/context'
 export { useAuthenticatedOperations } from './auth/hooks'
 
+// Preferences
+export { PreferencesProvider, usePreferences } from './preferences'
+
 // Timer utilities
 export * from './timer-utils'

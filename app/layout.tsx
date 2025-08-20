@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
+import { PreferencesProvider } from '@/lib/preferences/context'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,9 +19,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        {/* Skip link for keyboard navigation */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        
+        <PreferencesProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </PreferencesProvider>
       </body>
     </html>
   )

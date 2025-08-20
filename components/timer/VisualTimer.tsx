@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { formatTime, calculateAdjustedElapsed } from '@/lib/timer-utils'
+import { usePreferences } from '@/lib/preferences/context'
 import type { TimerState } from '@/types'
 
 interface VisualTimerProps {
@@ -10,6 +11,7 @@ interface VisualTimerProps {
 }
 
 export function VisualTimer({ timerState, totalPausedTime = 0 }: VisualTimerProps) {
+  const { preferences } = usePreferences()
   const [displayTime, setDisplayTime] = useState(timerState.remaining)
 
   // Update display time every second when timer is active
@@ -70,7 +72,7 @@ export function VisualTimer({ timerState, totalPausedTime = 0 }: VisualTimerProp
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            className="transition-all duration-1000 ease-linear"
+            className={preferences.reducedMotion ? "" : "transition-all duration-1000 ease-linear"}
           />
         </svg>
 
@@ -96,7 +98,7 @@ export function VisualTimer({ timerState, totalPausedTime = 0 }: VisualTimerProp
       <div className="flex items-center space-x-2">
         <div className={`w-3 h-3 rounded-full ${
           timerState.isActive && !timerState.isPaused 
-            ? 'bg-green-500 animate-pulse' 
+            ? `bg-green-500 ${preferences.reducedMotion ? '' : 'animate-pulse'}` 
             : timerState.isPaused 
             ? 'bg-yellow-500' 
             : 'bg-gray-400'

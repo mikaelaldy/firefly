@@ -20,6 +20,127 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* High Contrast Mode */
+.high-contrast {
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+.high-contrast body {
+  background: white;
+  color: black;
+}
+
+.high-contrast .bg-gradient-to-br {
+  background: white !important;
+}
+
+.high-contrast .bg-gradient-to-r {
+  background: black !important;
+  color: white !important;
+}
+
+.high-contrast .text-gray-600 {
+  color: #333333 !important;
+}
+
+.high-contrast .text-gray-500 {
+  color: #444444 !important;
+}
+
+.high-contrast .border-gray-100,
+.high-contrast .border-gray-200 {
+  border-color: #000000 !important;
+}
+
+.high-contrast .bg-white {
+  background: white !important;
+  border: 2px solid black !important;
+}
+
+.high-contrast .bg-blue-100 {
+  background: white !important;
+  color: black !important;
+  border: 2px solid black !important;
+}
+
+.high-contrast .bg-green-50,
+.high-contrast .bg-gradient-to-r.from-green-50 {
+  background: white !important;
+  border: 2px solid black !important;
+}
+
+.high-contrast .shadow-xl,
+.high-contrast .shadow-lg {
+  box-shadow: 0 0 0 2px black !important;
+}
+
+/* Reduced Motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.reduce-motion .transform {
+  transform: none !important;
+}
+
+/* Respect system preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+*:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.high-contrast *:focus {
+  outline: 3px solid black;
+  outline-offset: 2px;
+}
+
+/* Skip link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #3b82f6;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
