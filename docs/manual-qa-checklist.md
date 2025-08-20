@@ -9,8 +9,16 @@ This checklist covers the complete user journey from task input to session compl
 
 ## Core User Journey Test
 
-### 1. Task Input Phase
-- [ ] **Landing page loads** - Main page displays with centered input field
+### 1. Landing Page Experience
+- [ ] **Hero section displays** - Large "Firefly" title with compelling tagline and CTA button
+- [ ] **Feature showcase loads** - Six ADHD-specific features with icons and descriptions
+- [ ] **Demo preview works** - Three-step visual walkthrough of the app flow
+- [ ] **CTA buttons function** - "Try Firefly Now" and "Start Your First Session" buttons work
+- [ ] **Smooth scrolling** - Navigation between sections is smooth and responsive
+
+### 2. Task Input Phase
+- [ ] **Task input appears** - Clicking CTA shows focused task input interface
+- [ ] **Back navigation works** - "Back to overview" button returns to landing page
 - [ ] **Input field is focused** - Cursor automatically appears in the "What do you want to finish?" field
 - [ ] **Input validation works** - Empty submission shows appropriate feedback
 - [ ] **Goal submission succeeds** - Entering a goal (e.g., "Write a blog post") and pressing Enter/Submit works without page reload
@@ -36,10 +44,12 @@ This checklist covers the complete user journey from task input to session compl
 - [ ] **Session persistence** - Session data is stored (check browser dev tools or database)
 
 ### 5. Navigation & Flow
+- [ ] **Landing to task flow** - Smooth transition from landing page to task input
 - [ ] **Return to input** - Clear path back to task input for next session
+- [ ] **Return to landing** - Option to go back to full landing page experience
 - [ ] **State management** - App maintains appropriate state between phases
-- [ ] **Responsive design** - Interface works on different screen sizes
-- [ ] **Keyboard navigation** - Tab navigation works throughout the app
+- [ ] **Responsive design** - Interface works on different screen sizes, especially landing page
+- [ ] **Keyboard navigation** - Tab navigation works throughout the app and landing page
 
 ## Performance Requirements
 - [ ] **Timer start latency** - Timer begins within 1 second of clicking "Start Focus"

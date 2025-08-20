@@ -4,6 +4,12 @@ A Next.js application designed to help users with ADHD manage focus sessions usi
 
 ## Features
 
+### Enhanced Landing Experience
+- **Compelling Hero Section**: Clear value proposition with ADHD-focused messaging
+- **Feature Showcase**: Six key benefits designed specifically for ADHD brains
+- **Interactive Demo Preview**: Step-by-step walkthrough of the complete user journey
+- **Smooth Onboarding**: Progressive disclosure from landing page to task input
+
 ### Core Timer Functionality
 - **Focus Sessions**: 25, 45, or 50-minute timer presets
 - **Visual Timer**: Shrinking disc with mm:ss display
@@ -26,6 +32,12 @@ A Next.js application designed to help users with ADHD manage focus sessions usi
 - **Graceful Degradation**: Full functionality without authentication
 - **Local State**: Timer works completely offline
 - **Cloud Sync**: Authenticated users get cross-device session history
+
+### Security & Privacy
+- **PII Protection**: Automatic sanitization of personal information before AI processing
+- **Row Level Security**: Database policies ensure users only access their own data
+- **No Data Leakage**: Original goal text stays local, only sanitized versions sent to AI
+- **Transparent Processing**: Clear logging of PII detection without storing sensitive data
 
 ### User Preferences & Accessibility
 - **ADHD-Optimized Defaults**: Reduced motion, quiet timers, 25-minute sessions
@@ -93,12 +105,14 @@ app/                 # Next.js app router pages
 └── results/        # Session results
 
 components/         # React components
+├── landing/        # Landing page components (Hero, Features, Demo)
 ├── timer/          # Timer-specific components
 └── auth/           # Authentication components
 
 lib/                # Utilities and configurations
 ├── auth/           # Authentication logic
 ├── preferences/    # User preferences context and utilities
+├── security/       # PII sanitization and security utilities
 ├── supabase/       # Database client
 └── timer-utils.ts  # Timer calculations
 
@@ -208,3 +222,4 @@ This is a lean MVP focused on core ADHD focus management needs. The architecture
 - **Authentication Setup**: `docs/auth-setup.md` - Detailed authentication configuration
 - **Buffer & Deadline System**: `docs/buffer-deadline-system.md` - Deadline management features  
 - **User Preferences**: `docs/preferences-system.md` - Accessibility and user customization system
+- **Security & Privacy**: `docs/security-privacy.md` - PII protection and security implementation

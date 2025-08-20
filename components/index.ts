@@ -18,3 +18,8 @@ export { VisualTimer } from './timer/VisualTimer'
 export { TimerControls } from './timer/TimerControls'
 export { TimerPresets } from './timer/TimerPresets'
 export { TimerTest } from './timer/TimerTest'
+
+// Landing page components
+export { HeroSection } from './landing/HeroSection'
+export { FeatureShowcase } from './landing/FeatureShowcase'
+export { DemoPreview } from './landing/DemoPreview'

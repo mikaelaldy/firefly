@@ -21,8 +21,9 @@ npm run test
 
 #### Test Coverage
 - **Timer utilities**: Variance calculation, time formatting, duration conversion
+- **Security utilities**: PII sanitization patterns and masking strategies
 - **Core business logic**: Session data processing and user feedback generation
-- **Edge cases**: Zero values, negative inputs, precision handling
+- **Edge cases**: Zero values, negative inputs, precision handling, malformed PII
 
 ### 2. Manual QA Testing
 For hackathon scope, we rely on comprehensive manual testing of the complete user journey.
@@ -43,6 +44,9 @@ See `docs/manual-qa-checklist.md` for the complete testing checklist.
 lib/
   __tests__/
     timer-utils.test.ts     # Unit tests for timer utilities
+  security/
+    __tests__/
+      pii-sanitizer.test.ts # Unit tests for PII sanitization
 docs/
   manual-qa-checklist.md    # Manual testing checklist
   testing-guide.md          # This file
@@ -84,11 +88,21 @@ bun run test
 
 ### Sample Goals for Testing
 Use these consistent test inputs for manual QA:
+
+#### Clean Goals (No PII)
 - "Write a blog post about productivity"
 - "Clean my desk and organize papers"
 - "Review and respond to emails"
 - "Study for upcoming presentation"
 - "Plan weekend activities"
+
+#### Goals with PII (for security testing)
+- "Email john.doe@company.com about the project"
+- "Call Sarah at (555) 123-4567 to discuss timeline"
+- "Meet client at 123 Main Street for presentation"
+- "Send invoice to billing@client.com by Friday"
+
+**Expected Behavior**: PII goals should be sanitized before AI processing while maintaining task context.
 
 ### Expected Variance Scenarios
 - **Perfect timing**: 25min planned, 25min actual (0% variance)
