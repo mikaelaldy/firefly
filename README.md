@@ -27,6 +27,12 @@ A Next.js application designed to help users with ADHD manage focus sessions usi
 - **Local State**: Timer works completely offline
 - **Cloud Sync**: Authenticated users get cross-device session history
 
+### User Preferences & Accessibility
+- **ADHD-Optimized Defaults**: Reduced motion, quiet timers, 25-minute sessions
+- **Accessibility Features**: High contrast mode, motion reduction controls
+- **Local Persistence**: Settings saved automatically without requiring login
+- **Instant Application**: Preference changes take effect immediately
+
 ## Quick Start
 
 ### Prerequisites
@@ -92,6 +98,7 @@ components/         # React components
 
 lib/                # Utilities and configurations
 ├── auth/           # Authentication logic
+├── preferences/    # User preferences context and utilities
 ├── supabase/       # Database client
 └── timer-utils.ts  # Timer calculations
 
@@ -196,4 +203,8 @@ This is a lean MVP focused on core ADHD focus management needs. The architecture
 - **Graceful Degradation**: AI and auth failures don't break the timer
 - **Minimal Complexity**: Essential features only
 
-See `docs/auth-setup.md` for detailed authentication configuration.
+## Documentation
+
+- **Authentication Setup**: `docs/auth-setup.md` - Detailed authentication configuration
+- **Buffer & Deadline System**: `docs/buffer-deadline-system.md` - Deadline management features  
+- **User Preferences**: `docs/preferences-system.md` - Accessibility and user customization system
