@@ -157,6 +157,8 @@
 
 
 
+
+
   - ✅ Create HeroSection with compelling tagline and value proposition
   - ✅ Build FeatureShowcase highlighting ADHD-specific benefits with icons
   - ✅ Add DemoPreview component with timer interface screenshots
