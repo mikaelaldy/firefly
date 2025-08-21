@@ -91,6 +91,19 @@ function AuthCodeErrorContent() {
           >
             Return Home
           </a>
+          {error === 'no-code' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+              <p className="text-blue-800 font-medium mb-2">Common causes:</p>
+              <ul className="text-blue-700 space-y-1 text-left">
+                <li>• Browser blocked the authentication popup</li>
+                <li>• You may have closed the auth window too quickly</li>
+                <li>• Network connectivity issues during sign-in</li>
+              </ul>
+              <p className="text-blue-600 mt-3">
+                Try signing in again from the home page.
+              </p>
+            </div>
+          )}
           <p className="text-sm text-gray-500">
             Note: Your authentication might have worked despite this error. 
             Check if you&apos;re signed in on the home page.

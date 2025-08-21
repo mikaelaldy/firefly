@@ -30,10 +30,12 @@ A Next.js application designed to help users with ADHD manage focus sessions usi
 - **Visual Timeline**: Non-interactive timeline showing checkpoints and deadlines
 
 ### Authentication & Data Persistence
-- **Google OAuth**: Optional sign-in via Supabase
+- **Google OAuth**: Optional sign-in via Supabase with enhanced session management
+- **Secure Session Handling**: HTTP-only cookies with appropriate security settings
 - **Graceful Degradation**: Full functionality without authentication
 - **Local State**: Timer works completely offline
 - **Cloud Sync**: Authenticated users get cross-device session history
+- **Robust Error Handling**: Comprehensive OAuth error handling and recovery
 
 ### Security & Privacy
 - **PII Protection**: Automatic sanitization of personal information before AI processing

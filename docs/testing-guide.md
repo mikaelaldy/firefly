@@ -123,6 +123,26 @@ Use these consistent test inputs for manual QA:
 - Verify environment variables are properly set
 - Test in incognito mode to avoid cached state
 
+### Authentication Debugging
+The auth callback route provides comprehensive logging for OAuth troubleshooting:
+
+**Console Logs to Monitor:**
+- `Auth callback received:` - Shows all OAuth parameters from provider
+- `Auth exchange result:` - Displays session creation success/failure
+- `OAuth provider error:` - Captures provider-side authentication errors
+
+**Common Auth Test Scenarios:**
+- **Valid OAuth Flow**: Check for successful code exchange and session creation
+- **Provider Errors**: Test handling of OAuth consent denials or provider issues
+- **Missing Parameters**: Verify graceful handling of malformed callback URLs
+- **Session Persistence**: Confirm authentication state survives page reloads
+
+**Debug Steps:**
+1. Open browser dev tools before starting auth flow
+2. Monitor console during OAuth redirect process
+3. Look for detailed parameter logging in callback phase
+4. Verify error handling displays user-friendly messages
+
 ## Future Testing Enhancements
 
 For post-hackathon development:

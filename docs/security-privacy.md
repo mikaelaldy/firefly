@@ -132,9 +132,13 @@ This script tests:
 - Data persistence only available for authenticated users
 
 ### Session Security
-- Secure HTTP-only cookies for session tokens
-- CSRF protection built into Next.js
-- Automatic token refresh handling
+- **HTTP-Only Cookies**: Session tokens stored as HTTP-only cookies, preventing XSS attacks
+- **Secure Cookie Configuration**: Cookies marked secure in production environments
+- **SameSite Protection**: CSRF protection with 'lax' SameSite policy for cross-site compatibility
+- **Token Expiration**: Differentiated expiration times (access: 7 days, refresh: 30 days)
+- **Explicit Cookie Management**: Enhanced callback route explicitly sets session cookies for reliable authentication
+- **CSRF Protection**: Built into Next.js framework
+- **Automatic Token Refresh**: Seamless session renewal handling
 
 ## Environment Security
 

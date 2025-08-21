@@ -2,31 +2,34 @@ import { createServerClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
-  const error = searchParams.get('error')
-  const errorDescription = searchParams.get('error_description')
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const next = requestUrl.searchParams.get('next') ?? '/'
+  const error = requestUrl.searchParams.get('error')
+  const errorDescription = requestUrl.searchParams.get('error_description')
 
   console.log('Auth callback received:', { 
     code: !!code, 
     next, 
-    origin, 
+    origin: requestUrl.origin, 
     error, 
-    errorDescription 
+    errorDescription,
+    fullUrl: request.url
   })
 
   // Handle OAuth errors from the provider
   if (error) {
     console.error('OAuth provider error:', error, errorDescription)
     return NextResponse.redirect(
-      `${origin}/auth/auth-code-error?error=${encodeURIComponent(error)}&description=${encodeURIComponent(errorDescription || '')}`
+      `${requestUrl.origin}/auth/auth-code-error?error=${encodeURIComponent(error)}&description=${encodeURIComponent(errorDescription || '')}`
     )
   }
 
   if (code) {
     try {
       const supabase = createServerClient()
+      
+      // Exchange the code for a session
       const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
       
       console.log('Auth exchange result:', { 
@@ -35,55 +38,69 @@ export async function GET(request: NextRequest) {
         error: exchangeError?.message 
       })
       
-      if (!exchangeError && data.session) {
-        console.log('Auth successful, redirecting to:', `${origin}${next}`)
+      if (exchangeError) {
+        console.error('Auth exchange error:', exchangeError)
+        return NextResponse.redirect(
+          `${requestUrl.origin}/auth/auth-code-error?error=${encodeURIComponent(exchangeError.message)}`
+        )
+      }
+      
+      if (data.session) {
+        console.log('Auth successful, redirecting to:', `${requestUrl.origin}${next}`)
         
-        // Create a response with the redirect
-        const response = NextResponse.redirect(`${origin}${next}`)
+        // Create response with redirect
+        const redirectUrl = `${requestUrl.origin}${next}`
+        const response = NextResponse.redirect(redirectUrl)
         
-        // Set the session cookies manually to ensure they're available immediately
-        if (data.session) {
-          const maxAge = 100 * 365 * 24 * 60 * 60 // 100 years, never expires
-          response.cookies.set('sb-access-token', data.session.access_token, {
-            path: '/',
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge,
-          })
-          response.cookies.set('sb-refresh-token', data.session.refresh_token, {
-            path: '/',
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge,
-          })
-        }
+        // Set session cookies explicitly to ensure they're available
+        const { access_token, refresh_token } = data.session
+        
+        response.cookies.set('sb-access-token', access_token, {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7 // 7 days
+        })
+        
+        response.cookies.set('sb-refresh-token', refresh_token, {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 30 // 30 days
+        })
         
         return response
       }
       
-      if (exchangeError) {
-        console.error('Auth exchange error:', exchangeError)
-        return NextResponse.redirect(
-          `${origin}/auth/auth-code-error?error=${encodeURIComponent(exchangeError.message)}`
-        )
-      }
-      
-      // No error but no session - this shouldn't happen
-      console.warn('No error but no session received')
+      // No session received
+      console.warn('No session received after code exchange')
       return NextResponse.redirect(
-        `${origin}/auth/auth-code-error?error=no-session`
+        `${requestUrl.origin}/auth/auth-code-error?error=no-session`
       )
       
     } catch (err) {
       console.error('Auth callback exception:', err)
       return NextResponse.redirect(
-        `${origin}/auth/auth-code-error?error=unexpected&description=${encodeURIComponent(String(err))}`
+        `${requestUrl.origin}/auth/auth-code-error?error=unexpected&description=${encodeURIComponent(String(err))}`
       )
     }
   }
 
-  console.log('No auth code provided, redirecting to error page')
-  return NextResponse.redirect(`${origin}/auth/auth-code-error?error=no-code`)
+  // No code provided - check if user is already authenticated
+  try {
+    const supabase = createServerClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session) {
+      console.log('User already has valid session, redirecting to home')
+      return NextResponse.redirect(`${requestUrl.origin}${next}`)
+    }
+  } catch (err) {
+    console.warn('Could not check existing session:', err)
+  }
+
+  console.log('No auth code provided and no existing session')
+  return NextResponse.redirect(`${requestUrl.origin}/auth/auth-code-error?error=no-code`)
 }

@@ -43,14 +43,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          // Redirect to a client callback page that can handle both
+          // implicit (hash tokens) and PKCE (code) flows
+          redirectTo: `${window.location.origin}/auth/callback-client`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      })
+      
+      if (error) {
+        console.error('Error signing in with Google:', error.message)
+        throw error
       }
-    })
-    if (error) {
-      console.error('Error signing in with Google:', error.message)
+      
+      console.log('OAuth initiated successfully:', data)
+    } catch (error) {
+      console.error('OAuth initiation failed:', error)
+      // You could show a toast or error message here
     }
   }
 
