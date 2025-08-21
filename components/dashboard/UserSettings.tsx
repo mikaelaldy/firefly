@@ -121,7 +121,7 @@ export function UserSettings({ loading = false }: UserSettingsProps) {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-red-800 mb-1">
-                      Type "DELETE" to confirm:
+                      Type &quot;DELETE&quot; to confirm:
                     </label>
                     <input
                       type="text"
