@@ -8,8 +8,10 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  error: string | null
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  clearError: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -18,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // Get initial session
@@ -44,6 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      setError(null) // Clear any previous errors
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -56,16 +61,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       })
-      
+
       if (error) {
         console.error('Error signing in with Google:', error.message)
+        setError('Failed to start Google sign-in. Please try again.')
         throw error
       }
-      
+
       console.log('OAuth initiated successfully:', data)
     } catch (error) {
       console.error('OAuth initiation failed:', error)
-      // You could show a toast or error message here
+      setError('Failed to start Google sign-in. Please check your connection and try again.')
     }
   }
 
@@ -73,15 +79,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signOut()
     if (error) {
       console.error('Error signing out:', error.message)
+      setError('Failed to sign out. Please try again.')
     }
+  }
+
+  const clearError = () => {
+    setError(null)
   }
 
   const value = {
     user,
     session,
     loading,
+    error,
     signInWithGoogle,
     signOut,
+    clearError,
   }
 
   return (
