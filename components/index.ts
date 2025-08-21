@@ -29,9 +29,9 @@ export { DashboardStats } from './dashboard/DashboardStats'
 export { SessionHistory } from './dashboard/SessionHistory'
 export { PersonalRecords } from './dashboard/PersonalRecords'
 export { ProgressInsights } from './dashboard/ProgressInsights'
-export { QuickStart } from './dashboard/QuickStart'
 export { ReadyToFocus } from './dashboard/ReadyToFocus'
 export { OnboardingMessage } from './dashboard/OnboardingMessage'
+export { UserSettings } from './dashboard/UserSettings'
 
 // Layout components
 export { Navbar } from './layout/Navbar'
