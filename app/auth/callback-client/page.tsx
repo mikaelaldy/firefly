@@ -14,12 +14,24 @@ function CallbackClientContent() {
       try {
         const next = searchParams.get('next') ?? '/'
 
+        console.log('Callback client - Current URL:', window.location.href)
+        console.log('Callback client - Hash:', window.location.hash)
+        console.log('Callback client - Search params:', window.location.search)
+
+        // Wait a moment for the hash to be properly set
+        await new Promise(resolve => setTimeout(resolve, 200))
+
         // Prefer PKCE flow if a `code` param exists
         const code = searchParams.get('code')
         if (code) {
+          console.log('Callback client - Found code, exchanging for session...')
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) throw error
+          if (error) {
+            console.error('Callback client - Code exchange error:', error)
+            throw error
+          }
           if (data.session) {
+            console.log('Callback client - Session established, redirecting to:', next)
             router.replace(next)
             return
           }
@@ -27,20 +39,36 @@ function CallbackClientContent() {
 
         // Handle implicit flow tokens present in the URL hash
         const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : ''
+        console.log('Callback client - Processing hash:', hash)
+
         const params = new URLSearchParams(hash)
-        const access_token = params.get('access_token') ?? undefined
-        const refresh_token = params.get('refresh_token') ?? undefined
+        const access_token = params.get('access_token')
+        const refresh_token = params.get('refresh_token')
+        const expires_at = params.get('expires_at')
+
+        console.log('Callback client - Extracted tokens:', {
+          hasAccessToken: !!access_token,
+          hasRefreshToken: !!refresh_token,
+          expires_at
+        })
 
         if (access_token && refresh_token) {
+          console.log('Callback client - Setting session with tokens...')
           const { error } = await supabase.auth.setSession({ access_token, refresh_token })
-          if (error) throw error
+          if (error) {
+            console.error('Callback client - Set session error:', error)
+            throw error
+          }
+          console.log('Callback client - Session set successfully, redirecting to:', next)
           router.replace(next)
           return
         }
 
         // If we get here, no tokens/codes were present
-        router.replace(`/auth/auth-code-error?error=no-code`)
+        console.error('Callback client - No tokens or codes found')
+        router.replace(`/auth/auth-code-error?error=no-tokens-found&hash=${encodeURIComponent(hash)}`)
       } catch (err) {
+        console.error('Callback client - Exception:', err)
         setMessage('Authentication failed. Redirecting...')
         router.replace(`/auth/auth-code-error?error=callback-client&description=${encodeURIComponent(String(err))}`)
       }
