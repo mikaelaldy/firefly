@@ -23,3 +23,11 @@ export { TimerTest } from './timer/TimerTest'
 export { HeroSection } from './landing/HeroSection'
 export { FeatureShowcase } from './landing/FeatureShowcase'
 export { DemoPreview } from './landing/DemoPreview'
+
+// Dashboard components
+export { DashboardStats } from './dashboard/DashboardStats'
+export { SessionHistory } from './dashboard/SessionHistory'
+export { PersonalRecords } from './dashboard/PersonalRecords'
+export { ProgressInsights } from './dashboard/ProgressInsights'
+export { QuickStart } from './dashboard/QuickStart'
+export { OnboardingMessage } from './dashboard/OnboardingMessage'

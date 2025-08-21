@@ -22,6 +22,12 @@ export function AuthButton() {
         <span className="text-sm text-gray-600">
           {user.email}
         </span>
+        <a
+          href="/dashboard"
+          className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+        >
+          Dashboard
+        </a>
         <button
           onClick={signOut}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"

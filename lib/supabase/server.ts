@@ -16,24 +16,39 @@ export const createServerClient = () => {
     auth: {
       storage: {
         getItem: (key: string) => {
-          return cookieStore.get(key)?.value ?? null
+          const cookie = cookieStore.get(key)
+          return cookie?.value ?? null
         },
         setItem: (key: string, value: string) => {
           try {
-            cookieStore.set({ name: key, value, httpOnly: true })
+            cookieStore.set({ 
+              name: key, 
+              value, 
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              path: '/'
+            })
           } catch (error) {
             // The `set` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
+            console.warn('Could not set cookie in server component:', error)
           }
         },
         removeItem: (key: string) => {
           try {
-            cookieStore.set({ name: key, value: '', expires: new Date(0) })
+            cookieStore.set({ 
+              name: key, 
+              value: '', 
+              expires: new Date(0),
+              path: '/'
+            })
           } catch (error) {
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
+            console.warn('Could not remove cookie in server component:', error)
           }
         },
       },

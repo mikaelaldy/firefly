@@ -43,6 +43,14 @@ A Next.js application designed to help users with ADHD manage focus sessions usi
 - **No Data Leakage**: Original goal text stays local, only sanitized versions sent to AI
 - **Transparent Processing**: Clear logging of PII detection without storing sensitive data
 
+### User Dashboard & Analytics
+- **Personal Analytics**: Weekly focus time, completion rates, and session history
+- **Achievement Tracking**: Personal records including longest session and best week
+- **Streak Monitoring**: Current and longest focus streaks with visual indicators
+- **Progress Insights**: ADHD-friendly analytics with encouraging messages
+- **Quick Actions**: Prominent "Start New Session" button for immediate focus
+- **Historical Data**: Last 10 sessions with variance analysis and completion status
+
 ### User Preferences & Accessibility
 - **ADHD-Optimized Defaults**: Reduced motion, quiet timers, 25-minute sessions
 - **Accessibility Features**: High contrast mode, motion reduction controls
@@ -103,12 +111,14 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 ### Project Structure
 ```
 app/                 # Next.js app router pages
-├── api/            # API routes (AI suggestions)
+├── api/            # API routes (AI suggestions, dashboard stats)
 ├── auth/           # Authentication pages
+├── dashboard/      # User analytics and progress tracking
 ├── timer/          # Timer interface
 └── results/        # Session results
 
 components/         # React components
+├── dashboard/      # Dashboard analytics and progress components
 ├── landing/        # Landing page components (Hero, Features, Demo)
 ├── timer/          # Timer-specific components
 └── auth/           # Authentication components
@@ -225,6 +235,7 @@ This is a lean MVP focused on core ADHD focus management needs. The architecture
 
 - **Authentication Setup**: `docs/auth-setup.md` - Detailed authentication configuration
 - **API Performance**: `docs/api-performance.md` - Caching, rate limiting, and performance optimization
-- **Buffer & Deadline System**: `docs/buffer-deadline-system.md` - Deadline management features  
+- **Buffer & Deadline System**: `docs/buffer-deadline-system.md` - Deadline management features
+- **Dashboard & Analytics**: `docs/dashboard-analytics-system.md` - User progress tracking and insights system
 - **User Preferences**: `docs/preferences-system.md` - Accessibility and user customization system
 - **Security & Privacy**: `docs/security-privacy.md` - PII protection and security implementation

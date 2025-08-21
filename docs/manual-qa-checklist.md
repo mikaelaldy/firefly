@@ -70,6 +70,18 @@ This checklist covers the complete user journey from task input to session compl
 - [ ] **Invalid inputs** - Appropriate handling of edge cases and invalid data
 - [ ] **Browser compatibility** - Works in modern browsers (Chrome, Firefox, Safari, Edge)
 
+## Dashboard & Analytics (if authenticated)
+- [ ] **Dashboard access** - `/dashboard` route requires authentication and loads properly
+- [ ] **Stats accuracy** - Total focus time, completion rate, and session count are correct
+- [ ] **Personal records** - Longest session, best week, and streak data display accurately
+- [ ] **Streak calculation** - Current streak counts consecutive days with completed sessions
+- [ ] **Longest streak** - Historical maximum streak is calculated correctly
+- [ ] **Session history** - Last 10 sessions display with correct goal, duration, and variance
+- [ ] **Progress insights** - Contextual messages appear based on user activity patterns
+- [ ] **Quick start** - "Start New Session" button navigates to timer interface
+- [ ] **Loading states** - Dashboard shows appropriate loading indicators while fetching data
+- [ ] **Error handling** - Dashboard gracefully handles API failures with fallback content
+
 ## Data Persistence (if authenticated)
 - [ ] **Session storage** - Completed sessions are saved to database
 - [ ] **User isolation** - User can only see their own data (if multiple users)
