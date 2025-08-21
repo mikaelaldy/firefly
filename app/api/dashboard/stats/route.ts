@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Force dynamic rendering since we need to access request headers
+export const dynamic = 'force-dynamic';
+
 // Dashboard stats interface
 interface DashboardStatsResponse {
   totalFocusTime: number; // in minutes
