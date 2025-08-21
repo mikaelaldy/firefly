@@ -183,7 +183,11 @@
   - Implement OnboardingMessage for users with no historical data
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11_
 
-- [ ] 17. Polish & demo
+- [x] 17. Polish & demo
+
+
+
+
   - Ensure Start is never blocked; handle offline timer gracefully
   - Write quick README: run scripts (Bun for dev, npm for build/deploy), env setup, demo steps
   - Test complete user journey from landing page to dashboard

@@ -143,6 +143,47 @@ The auth callback route provides comprehensive logging for OAuth troubleshooting
 3. Look for detailed parameter logging in callback phase
 4. Verify error handling displays user-friendly messages
 
+### Session Saving Debugging
+The session saving functionality includes comprehensive logging for troubleshooting data persistence:
+
+**Console Logs to Monitor:**
+- `saveSession called with:` - Shows input parameters (session data and taskId)
+- `saveSession - user check:` - Displays authenticated user ID verification
+- `saveSession - attempting to insert:` - Shows formatted data being sent to database
+- `saveSession - success:` - Confirms successful database insertion with returned data
+
+**Common Session Saving Test Scenarios:**
+- **Authentication State**: Verify user is authenticated before attempting to save
+- **Data Formatting**: Confirm TimerSession is properly converted to database format
+- **Database Insertion**: Test successful session persistence and error handling
+- **Offline Behavior**: Verify graceful handling when database is unavailable
+
+**Debug Steps:**
+1. Open browser dev tools before starting a timer session
+2. Complete a focus session (start → stop timer)
+3. Monitor console logs during session save process
+4. Verify session data appears correctly in database/dashboard
+
+### Dashboard Analytics Debugging
+The dashboard page includes comprehensive logging for troubleshooting data fetching and analytics:
+
+**Console Logs to Monitor:**
+- `Dashboard data received:` - Shows complete API response structure
+- `Recent sessions:` - Displays session history data for verification
+- `Total focus time:` - Shows calculated focus time metrics
+
+**Common Dashboard Test Scenarios:**
+- **Data Loading**: Verify analytics API returns expected data structure
+- **Session History**: Confirm recent sessions display correctly with proper variance calculations
+- **Metrics Accuracy**: Cross-reference displayed metrics with raw session data
+- **Loading States**: Test dashboard behavior during API delays or failures
+
+**Debug Steps:**
+1. Open browser dev tools before navigating to dashboard
+2. Monitor console logs during dashboard data fetch
+3. Verify API response matches expected DashboardStatsResponse interface
+4. Check that UI components render data correctly from logged values
+
 ## Future Testing Enhancements
 
 For post-hackathon development:

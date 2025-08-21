@@ -99,7 +99,7 @@ export function OnboardingMessage() {
               A Message for ADHD Brains
             </h4>
             <p className="text-green-700 text-sm leading-relaxed">
-              Your brain works differently, and that's not a bug—it's a feature! ADHD brains can achieve incredible focus when given the right structure and support. Firefly provides that structure without overwhelming you. Remember: progress over perfection, and every small step counts. You've got this! 🌟
+              Your brain works differently, and that&apos;s not a bug—it&apos;s a feature! ADHD brains can achieve incredible focus when given the right structure and support. Firefly provides that structure without overwhelming you. Remember: progress over perfection, and every small step counts. You&apos;ve got this! 🌟
             </p>
           </div>
         </div>

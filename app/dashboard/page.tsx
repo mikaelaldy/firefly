@@ -1,16 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
+import { Header } from '@/components/layout/Header'
+import { Sidebar, SidebarSection } from '@/components/layout/Sidebar'
 import { DashboardStats } from '@/components/dashboard/DashboardStats'
 import { SessionHistory } from '@/components/dashboard/SessionHistory'
 import { PersonalRecords } from '@/components/dashboard/PersonalRecords'
 import { ProgressInsights } from '@/components/dashboard/ProgressInsights'
-import { QuickStart } from '@/components/dashboard/QuickStart'
+import { ReadyToFocus } from '@/components/dashboard/ReadyToFocus'
 import { OnboardingMessage } from '@/components/dashboard/OnboardingMessage'
-import { AuthButton } from '@/components/auth/AuthButton'
-import { PreferencesButton } from '@/components/PreferencesButton'
 
 interface DashboardData {
   totalFocusTime: number;
@@ -46,20 +46,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Redirect to home if not authenticated after auth loads
-    if (!authLoading && !user) {
-      router.push('/')
-      return
-    }
-
-    // Fetch dashboard data if user is authenticated
-    if (user && !authLoading) {
-      fetchDashboardData()
-    }
-  }, [user, authLoading, router])
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -91,6 +78,9 @@ export default function DashboardPage() {
       }
 
       const data = await response.json()
+      console.log('Dashboard data received:', data)
+      console.log('Recent sessions:', data.recentSessions)
+      console.log('Total focus time:', data.totalFocusTime)
       setDashboardData(data)
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
@@ -98,12 +88,25 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    // Redirect to home if not authenticated after auth loads
+    if (!authLoading && !user) {
+      router.push('/')
+      return
+    }
+
+    // Fetch dashboard data if user is authenticated
+    if (user && !authLoading) {
+      fetchDashboardData()
+    }
+  }, [user, authLoading, router, fetchDashboardData])
 
   // Show loading state while auth is loading
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-20">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
@@ -120,112 +123,128 @@ export default function DashboardPage() {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        {/* Top navigation */}
-        <div className="fixed top-6 right-6 z-50 flex items-center space-x-2">
-          <PreferencesButton />
-          <AuthButton />
-        </div>
-
-        <div className="container mx-auto px-6 py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="text-6xl mb-4">😔</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">
-              Oops! Something went wrong
-            </h1>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <button
-              onClick={fetchDashboardData}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors duration-200"
-            >
-              Try Again
-            </button>
+      <>
+        <Header 
+          title="Dashboard" 
+          subtitle="Something went wrong"
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Dashboard' }
+          ]}
+        />
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
+          <div className="container mx-auto px-6">
+            <div className="max-w-2xl mx-auto text-center">
+              <div className="text-6xl mb-4">😔</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Oops! Something went wrong
+              </h2>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <button
+                onClick={fetchDashboardData}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors duration-200"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     )
   }
 
-  // Check if user has any session data
-  const hasSessionData = dashboardData && (
-    dashboardData.recentSessions.length > 0 || 
-    dashboardData.totalFocusTime > 0
-  )
+  // Check if we have dashboard data (show dashboard for all authenticated users)
+  const hasSessionData = !!dashboardData
+  
+  console.log('Dashboard render - hasSessionData:', hasSessionData)
+  console.log('Dashboard render - dashboardData:', dashboardData)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Top navigation */}
-      <div className="fixed top-6 right-6 z-50 flex items-center space-x-2">
-        <PreferencesButton />
-        <AuthButton />
-      </div>
+    <>
+      <Header 
+        title="Your Focus Dashboard" 
+        subtitle="Track your progress and celebrate your wins! 🎉"
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Dashboard' }
+        ]}
+      >
+        {/* Debug: Manual refresh button */}
+        <button
+          onClick={fetchDashboardData}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm"
+        >
+          🔄 Refresh Data
+        </button>
+      </Header>
 
-      <div className="container mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-            Your Focus Dashboard
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Track your progress and celebrate your wins! 🎉
-          </p>
-        </div>
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+        <div className="container mx-auto px-6">
 
-        {/* Show onboarding message if no session data */}
-        {!hasSessionData && !loading ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : !hasSessionData ? (
           <OnboardingMessage />
         ) : (
-          <div className="space-y-8">
-            {/* Quick Start Section */}
-            <div className="max-w-2xl mx-auto">
-              <QuickStart />
-            </div>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar */}
+            <Sidebar>
+              <SidebarSection title="Ready to Focus?">
+                <ReadyToFocus />
+              </SidebarSection>
+            </Sidebar>
 
-            {/* Stats Overview */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Stats</h2>
-              <DashboardStats 
-                stats={dashboardData ? {
-                  totalFocusTime: dashboardData.totalFocusTime,
-                  averageSessionLength: dashboardData.averageSessionLength,
-                  completionRate: dashboardData.completionRate,
-                  sessionsThisWeek: dashboardData.sessionsThisWeek
-                } : null}
-                loading={loading}
-              />
-            </div>
-
-            {/* Main content grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left column */}
-              <div className="space-y-8">
-                <PersonalRecords 
-                  records={dashboardData?.personalRecords || {
-                    longestSession: 0,
-                    bestWeek: 0,
-                    currentStreak: 0,
-                    longestStreak: 0
-                  }}
-                  loading={loading}
-                />
-                
-                <ProgressInsights 
-                  insights={dashboardData?.insights || []}
+            {/* Main content */}
+            <div className="flex-1 space-y-8">
+              {/* Stats Overview */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Stats</h2>
+                <DashboardStats 
+                  stats={dashboardData ? {
+                    totalFocusTime: dashboardData.totalFocusTime,
+                    averageSessionLength: dashboardData.averageSessionLength,
+                    completionRate: dashboardData.completionRate,
+                    sessionsThisWeek: dashboardData.sessionsThisWeek
+                  } : null}
                   loading={loading}
                 />
               </div>
 
-              {/* Right column */}
-              <div>
-                <SessionHistory 
-                  sessions={dashboardData?.recentSessions || []}
-                  loading={loading}
-                />
+              {/* Content grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                {/* Left column */}
+                <div className="space-y-8">
+                  <PersonalRecords 
+                    records={dashboardData?.personalRecords || {
+                      longestSession: 0,
+                      bestWeek: 0,
+                      currentStreak: 0,
+                      longestStreak: 0
+                    }}
+                    loading={loading}
+                  />
+                  
+                  <ProgressInsights 
+                    insights={dashboardData?.insights || []}
+                    loading={loading}
+                  />
+                </div>
+
+                {/* Right column */}
+                <div>
+                  <SessionHistory 
+                    sessions={dashboardData?.recentSessions || []}
+                    loading={loading}
+                  />
+                </div>
               </div>
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

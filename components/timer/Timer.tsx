@@ -6,7 +6,7 @@ import { VisualTimer } from './VisualTimer'
 import { TimerControls } from './TimerControls'
 import { TimerPresets } from './TimerPresets'
 import { calculateVariance, minutesToSeconds, calculateAdjustedElapsed } from '@/lib/timer-utils'
-import { saveSession } from '@/lib/supabase/sessions'
+import { saveSession } from '@/lib/supabase/client-sessions'
 import type { TimerState, TimerSession } from '@/types'
 
 interface TimerProps {

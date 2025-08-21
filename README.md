@@ -1,241 +1,136 @@
 # Firefly ADHD Focus App
 
-A Next.js application designed to help users with ADHD manage focus sessions using AI-powered task suggestions and intelligent timer management.
+A lightweight Next.js application that helps ADHD users overcome task paralysis through AI-powered task breakdown and visual focus timers. Built for immediate action - timer starts in <1 second, works offline, with progressive enhancement.
 
-## Features
+## Key Features
 
-### Enhanced Landing Experience
-- **Compelling Hero Section**: Clear value proposition with ADHD-focused messaging
-- **Feature Showcase**: Six key benefits designed specifically for ADHD brains
-- **Interactive Demo Preview**: Step-by-step walkthrough of the complete user journey
-- **Smooth Onboarding**: Progressive disclosure from landing page to task input
-
-### Core Timer Functionality
-- **Focus Sessions**: 25, 45, or 50-minute timer presets
-- **Visual Timer**: Shrinking disc with mm:ss display
-- **Session Tracking**: Records planned vs actual duration with variance analysis
-- **Progressive Enhancement**: Works offline without AI suggestions
-
-### AI-Powered Task Management
-- **Smart Suggestions**: AI generates first steps and next actions for any goal
-- **Intelligent Caching**: 5-minute response cache for improved performance and reduced API costs
-- **Rate Limiting**: Built-in protection against API abuse (10 requests/minute per IP)
-- **Fallback Support**: Static suggestions when AI is unavailable
-- **Buffer Recommendations**: Intelligent time buffer suggestions for deadlines
-
-### Buffer & Deadline Management
-- **Deadline Detection**: Automatically identifies when tasks are due soon (within 2 hours)
-- **Buffer Suggestions**: Recommends 25% time buffer for urgent tasks
-- **If-Then Planning**: Simple contingency planning for task execution
-- **Visual Timeline**: Non-interactive timeline showing checkpoints and deadlines
-
-### Authentication & Data Persistence
-- **Google OAuth**: Optional sign-in via Supabase with enhanced session management
-- **Secure Session Handling**: HTTP-only cookies with appropriate security settings
-- **Graceful Degradation**: Full functionality without authentication
-- **Local State**: Timer works completely offline
-- **Cloud Sync**: Authenticated users get cross-device session history
-- **Robust Error Handling**: Comprehensive OAuth error handling and recovery
-
-### Security & Privacy
-- **PII Protection**: Automatic sanitization of personal information before AI processing
-- **Row Level Security**: Database policies ensure users only access their own data
-- **No Data Leakage**: Original goal text stays local, only sanitized versions sent to AI
-- **Transparent Processing**: Clear logging of PII detection without storing sensitive data
-
-### User Dashboard & Analytics
-- **Personal Analytics**: Weekly focus time, completion rates, and session history
-- **Achievement Tracking**: Personal records including longest session and best week
-- **Streak Monitoring**: Current and longest focus streaks with visual indicators
-- **Progress Insights**: ADHD-friendly analytics with encouraging messages
-- **Quick Actions**: Prominent "Start New Session" button for immediate focus
-- **Historical Data**: Last 10 sessions with variance analysis and completion status
-
-### User Preferences & Accessibility
-- **ADHD-Optimized Defaults**: Reduced motion, quiet timers, 25-minute sessions
-- **Accessibility Features**: High contrast mode, motion reduction controls
-- **Local Persistence**: Settings saved automatically without requiring login
-- **Instant Application**: Preference changes take effect immediately
+- **Instant Focus**: Timer starts immediately, never blocked by AI processing
+- **Task Breakdown**: AI generates 60-second first steps and actionable next actions
+- **Visual Timer**: Shrinking disc with 25/45/50 minute presets
+- **Variance Tracking**: Compare planned vs actual time with encouraging feedback
+- **Progressive Enhancement**: Core functionality works without AI or authentication
+- **ADHD-Optimized**: Reduced motion, high contrast, minimal cognitive overhead
+- **Dashboard Analytics**: Track progress, streaks, and personal records (when signed in)
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 18+ or Bun
-- Supabase account (for authentication and data persistence)
-- Google AI Studio API key (for AI suggestions)
-
-### Installation
-
+### Development (Fast Iteration)
 ```bash
-# Clone and install dependencies
+# Install dependencies
 bun install
 
 # Copy environment template
 cp .env.example .env.local
 
-# Configure environment variables (see Configuration section)
-# Edit .env.local with your API keys
-
-# Run database setup
-bun run setup:db
-
+# Set up environment variables (see Configuration below)
 # Start development server
 bun run dev
 ```
 
-Visit `http://localhost:3000` to use the app.
+### Production Build & Deploy
+```bash
+# Build for production (stable)
+npm run build
+
+# Start production server
+npm run start
+```
 
 ### Configuration
 
-Create `.env.local` with:
+Create `.env.local` with your API keys:
 
 ```bash
-# Supabase Configuration
+# Supabase (for auth & data persistence)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Google AI Studio Configuration  
+# Google AI Studio (for task suggestions)
 GOOGLE_AI_API_KEY=your_google_ai_api_key
 ```
 
+**Note**: App works without these keys - timer and local state function offline.
+
+## Demo Steps
+
+### Complete User Journey
+1. **Landing Page**: Visit `http://localhost:3000` - see hero, features, demo preview
+2. **Task Input**: Click "Get Started" → enter a goal (e.g., "Write project proposal")
+3. **AI Suggestions**: See 60-second first step + next actions (or fallback if offline)
+4. **Timer Start**: Click "Start Focus Timer" → choose 25/45/50 minutes
+5. **Focus Session**: Visual countdown with pause/resume/stop controls
+6. **Results**: See variance analysis and encouraging feedback
+7. **Dashboard**: Sign in with Google to see analytics and progress tracking
+
+### Testing Offline Mode
+- Disconnect internet → timer still works with fallback suggestions
+- All core functionality available without authentication
+
 ## Architecture
 
-### Tech Stack
-- **Framework**: Next.js 14+ (App Router)
-- **Runtime**: Bun (development), Node.js (production)
-- **Styling**: Tailwind CSS
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth (Google OAuth)
-- **AI**: Google AI Studio (Gemini)
+**Tech Stack**: Next.js 14 + Bun (dev) + npm (prod) + Tailwind + Supabase + Google AI
 
-### Project Structure
-```
-app/                 # Next.js app router pages
-├── api/            # API routes (AI suggestions, dashboard stats)
-├── auth/           # Authentication pages
-├── dashboard/      # User analytics and progress tracking
-├── timer/          # Timer interface
-└── results/        # Session results
+**Key Principle**: Progressive enhancement - timer works immediately, AI enhances the experience
 
-components/         # React components
-├── dashboard/      # Dashboard analytics and progress components
-├── landing/        # Landing page components (Hero, Features, Demo)
-├── timer/          # Timer-specific components
-└── auth/           # Authentication components
+## Development Commands
 
-lib/                # Utilities and configurations
-├── auth/           # Authentication logic
-├── preferences/    # User preferences context and utilities
-├── security/       # PII sanitization and security utilities
-├── supabase/       # Database client
-└── timer-utils.ts  # Timer calculations
-
-types/              # TypeScript type definitions
-```
-
-## Type System
-
-### Core Types
-
-#### Timer & Sessions
-- `TimerState`: Current timer status and timing
-- `TimerSession`: Completed session with variance analysis
-- `UserPreferences`: User settings and defaults
-
-#### AI Integration
-- `SuggestRequest/Response`: AI API contracts
-- `DeadlineInfo`: Deadline detection and buffer calculations
-- `IfThenPlan`: Contingency planning structure
-- `TimelineCheckpoint`: Visual timeline elements
-
-#### Database Models
-- `Profile`: User profile and preferences
-- `Task`: User goals with AI suggestions
-- `Session`: Completed focus sessions
-- `Suggestion`: AI-generated recommendations
-
-### Buffer & Deadline System
-
-The app includes intelligent deadline management:
-
-```typescript
-interface DeadlineInfo {
-  dueDate: Date;
-  timeUntilDue: number; // minutes until due
-  isSoon: boolean; // true if within 2 hours
-  suggestedBuffer: number; // recommended buffer percentage
-}
-```
-
-**If-Then Planning** helps users prepare for contingencies:
-```typescript
-interface IfThenPlan {
-  condition: string; // "If it's 9 AM and not started"
-  action: string; // "warm-up for 10m"
-}
-```
-
-**Timeline Visualization** shows key checkpoints:
-```typescript
-interface TimelineCheckpoint {
-  time: Date;
-  label: string;
-  type: 'start' | 'checkpoint' | 'buffer' | 'deadline';
-  isAutoSuggested?: boolean;
-}
-```
-
-## Development
-
-### Commands
 ```bash
-# Development (fast iteration)
+# Development (fast iteration with Bun)
 bun run dev
 
-# Production build
+# Production build (stable with npm)
 npm run build && npm run start
 
-# Database operations
-bun run setup:db      # Initialize schema
-bun run diagnose:auth # Test authentication
-bun run verify:auth   # Verify auth setup
+# Database setup
+bun run db:setup
+
+# Testing
+bun run test
+bun run verify:testing
+
+# Authentication verification
+bun run verify:auth
 ```
 
-### Testing
-```bash
-# Run tests
-bun test
+### Debugging
 
-# Manual QA checklist
-# 1. Enter goal → see AI suggestion placeholder
-# 2. Start timer → visual countdown works
-# 3. Stop timer → see variance summary
-# 4. Check database → session row exists
-```
+The app includes comprehensive console logging for development and troubleshooting:
+
+- **Session Saving**: Monitor session data persistence and user authentication
+- **Authentication Flow**: Track OAuth callback parameters and session creation
+- **Dashboard Analytics**: Detailed logging of session queries, data processing, and metrics calculations
+  - Session count and data structure validation
+  - User authentication status and token handling
+  - Statistics computation and personal records calculation
+
+Open browser dev tools to view detailed logs during development. See `docs/testing-guide.md` for specific debugging scenarios and log patterns.
+
+## Manual QA Checklist
+
+**Core User Journey** (5 minutes):
+1. ✅ Landing page loads with hero, features, demo preview
+2. ✅ Click "Get Started" → smooth scroll to task input
+3. ✅ Enter goal → see task created confirmation
+4. ✅ AI suggestions appear (or fallback if offline)
+5. ✅ Click "Start Focus Timer" → timer starts within 1 second
+6. ✅ Visual countdown works, pause/resume functional
+7. ✅ Stop timer → see variance summary with encouraging message
+8. ✅ Session saved to database (if authenticated)
+
+**Progressive Enhancement**:
+- ✅ Timer works without AI suggestions
+- ✅ Timer works without authentication
+- ✅ Offline mode provides fallback suggestions
+- ✅ High contrast and reduced motion preferences work
+
+**Authentication Flow**:
+- ✅ Google OAuth sign-in works
+- ✅ Dashboard shows analytics and session history
+- ✅ App works fully without signing in
 
 ## Deployment
 
-The app is designed for easy deployment on Vercel, Netlify, or similar platforms:
-
-1. **Build**: Uses npm for production stability
-2. **Environment**: Configure Supabase and Google AI keys
-3. **Database**: Run migrations via Supabase CLI
-4. **Auth**: Configure OAuth redirect URLs
-
-## Contributing
-
-This is a lean MVP focused on core ADHD focus management needs. The architecture prioritizes:
-
-- **Progressive Enhancement**: Core features work without dependencies
-- **Fast Iteration**: Bun for development speed
-- **Graceful Degradation**: AI and auth failures don't break the timer
-- **Minimal Complexity**: Essential features only
-
-## Documentation
-
-- **Authentication Setup**: `docs/auth-setup.md` - Detailed authentication configuration
-- **API Performance**: `docs/api-performance.md` - Caching, rate limiting, and performance optimization
-- **Buffer & Deadline System**: `docs/buffer-deadline-system.md` - Deadline management features
-- **Dashboard & Analytics**: `docs/dashboard-analytics-system.md` - User progress tracking and insights system
-- **User Preferences**: `docs/preferences-system.md` - Accessibility and user customization system
-- **Security & Privacy**: `docs/security-privacy.md` - PII protection and security implementation
+**Vercel/Netlify Ready**: 
+- Build: `npm run build`
+- Environment: Add Supabase + Google AI keys
+- OAuth: Configure redirect URLs in Supabase dashboard

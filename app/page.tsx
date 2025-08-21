@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { AuthButton } from '@/components/auth/AuthButton'
-import { PreferencesButton } from '@/components/PreferencesButton'
 import { TaskInput } from '@/components/TaskInput'
 import { AIResponse } from '@/components/AIResponse'
 import { BufferDeadlineManager } from '@/components/BufferDeadlineManager'
@@ -80,18 +78,13 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Top navigation - fixed position */}
-      <div className="fixed top-6 right-6 z-50 flex items-center space-x-2">
-        <PreferencesButton />
-        <AuthButton />
-      </div>
+    <div className="bg-white">{/* Removed min-h-screen as it's now handled by layout */}
 
       {/* Enhanced Landing Page */}
       {!showTaskInput ? (
         <div>
           {/* Hero Section */}
-          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-6">
+          <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-6">
             <div className="max-w-6xl mx-auto">
               <HeroSection onGetStarted={handleGetStarted} />
             </div>
@@ -123,7 +116,7 @@ export default function Home() {
         </div>
       ) : (
         /* Task Input Interface */
-        <main id="main-content" className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center px-6 py-12">
+        <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center px-6 py-12">
           <div ref={taskInputRef} className="w-full max-w-2xl mx-auto text-center space-y-12">
             
             {/* Back to landing option */}
@@ -225,7 +218,7 @@ export default function Home() {
               </div>
             )}
           </div>
-        </main>
+        </div>
       )}
     </div>
   )

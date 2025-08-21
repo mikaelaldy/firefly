@@ -57,13 +57,20 @@ interface DashboardStatsResponse {
 - **Sessions This Week**: Count of sessions started since the beginning of the current week
 
 ### Completion Analytics
-- **Completion Rate**: Percentage of started sessions that were completed
+- **Completion Rate**: Percentage of started sessions that were completed (based on completion flag)
 - **Variance Tracking**: Difference between planned and actual session duration
 
+### ADHD-Friendly Approach
+The system counts **all focus time**, not just completed sessions. This design choice recognizes that:
+- Partial sessions still represent valuable focus time
+- ADHD brains benefit from celebrating all effort, not just "perfect" sessions
+- Every minute of focused work contributes to building better habits
+- Completion rate is tracked separately to maintain goal awareness without penalizing partial progress
+
 ### Personal Records
-- **Longest Session**: Maximum duration of any completed session
-- **Best Week**: Highest total focus time in any single week
-- **Current Streak**: Consecutive days with at least one completed session
+- **Longest Session**: Maximum duration of any session with recorded time
+- **Best Week**: Highest total focus time in any single week (includes all sessions)
+- **Current Streak**: Consecutive days with at least one session (any session counts!)
 - **Longest Streak**: Maximum consecutive days achieved historically
 
 ## Streak Calculation
@@ -72,7 +79,7 @@ The streak system encourages daily focus habits:
 
 ### Current Streak
 - Calculated by counting consecutive days backwards from today
-- Only counts days with at least one completed session
+- Counts days with at least one session (completion not required - showing up matters!)
 - Resets to 0 if there's a gap in daily activity
 
 ### Longest Streak
@@ -204,6 +211,23 @@ Prominent call-to-action:
 - Variance computation
 - Insight generation logic
 - Date range calculations
+
+## Recent Updates
+
+### Focus Time Calculation Enhancement
+**Updated**: Focus time tracking now includes all sessions with recorded duration, not just completed ones.
+
+**Rationale**: This change better supports ADHD users by:
+- Recognizing that partial focus sessions still have value
+- Reducing shame around "incomplete" sessions
+- Encouraging users to start sessions without fear of "failure"
+- Providing more accurate representation of actual focus effort
+
+**Technical Changes**:
+- `totalFocusTime`: Now sums all sessions with `actual_duration > 0`
+- `averageSessionLength`: Calculated from all sessions with duration data
+- `personalRecords.bestWeek`: Includes all sessions with duration
+- Completion rate remains separate to track goal achievement
 
 ## Future Enhancements
 

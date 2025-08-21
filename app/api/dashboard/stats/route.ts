@@ -13,7 +13,8 @@ interface DashboardStatsResponse {
     bestWeek: number; // total minutes
     currentStreak: number; // days
     longestStreak: number; // days
-  };ecentSessions: Array<{
+  };
+  recentSessions: Array<{
     id: string;
     goal: string;
     plannedDuration: number; // seconds
@@ -171,6 +172,17 @@ export async function GET(request: NextRequest) {
 
     const allSessions = sessions || [];
     
+    console.log('Dashboard API - Sessions query result:', {
+      sessionsCount: allSessions.length,
+      sessions: allSessions.map(s => ({
+        id: s.id,
+        goal: s.goal,
+        actual_duration: s.actual_duration,
+        user_id: s.user_id,
+        started_at: s.started_at
+      }))
+    });
+    
     // Calculate stats
     const now = new Date();
     const weekStart = getWeekStart(now);
@@ -296,6 +308,13 @@ export async function GET(request: NextRequest) {
         }
       })
     };
+
+    console.log('Dashboard API - Returning stats:', {
+      totalFocusTime: stats.totalFocusTime,
+      recentSessionsCount: stats.recentSessions.length,
+      allSessionsCount: allSessions.length,
+      firstSession: allSessions[0] || 'none'
+    });
 
     return NextResponse.json(stats);
 

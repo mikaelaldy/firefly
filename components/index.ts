@@ -30,4 +30,11 @@ export { SessionHistory } from './dashboard/SessionHistory'
 export { PersonalRecords } from './dashboard/PersonalRecords'
 export { ProgressInsights } from './dashboard/ProgressInsights'
 export { QuickStart } from './dashboard/QuickStart'
+export { ReadyToFocus } from './dashboard/ReadyToFocus'
 export { OnboardingMessage } from './dashboard/OnboardingMessage'
+
+// Layout components
+export { Navbar } from './layout/Navbar'
+export { Header } from './layout/Header'
+export { Footer } from './layout/Footer'
+export { Sidebar, SidebarSection } from './layout/Sidebar'

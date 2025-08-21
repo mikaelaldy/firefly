@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Timer } from '@/components'
+import { Header } from '@/components/layout/Header'
 import type { TimerSession } from '@/types'
 
 function TimerContent() {
@@ -31,32 +32,19 @@ function TimerContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <a 
-              href="/" 
-              className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>Back to Tasks</span>
-            </a>
-          </div>
-          
-          <h1 className="text-xl font-bold text-gray-800">
-            Firefly Timer
-          </h1>
-          
-          <div className="w-24"></div> {/* Spacer for centering */}
-        </div>
-      </header>
+    <>
+      <Header 
+        title="Focus Timer" 
+        subtitle="Stay focused and track your progress"
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Timer' }
+        ]}
+      />
 
-      {/* Main Timer Interface */}
-      <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-12">
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+        {/* Main Timer Interface */}
+        <div className="flex flex-col items-center justify-center px-6 py-12">
         <Timer 
           goal={currentGoal}
           taskId={taskId}
@@ -95,19 +83,30 @@ function TimerContent() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+        </div>
+      </div>
+    </>
   )
 }
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading timer...</p>
+    <>
+      <Header 
+        title="Focus Timer" 
+        subtitle="Loading..."
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Timer' }
+        ]}
+      />
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading timer...</p>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

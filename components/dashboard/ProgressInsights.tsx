@@ -112,7 +112,7 @@ export function ProgressInsights({ insights, loading }: ProgressInsightsProps) {
               ADHD Focus Tip
             </p>
             <p className="text-xs text-purple-700">
-              Your brain works differently, and that's your superpower! These insights help you understand your unique focus patterns.
+              Your brain works differently, and that&apos;s your superpower! These insights help you understand your unique focus patterns.
             </p>
           </div>
         </div>
