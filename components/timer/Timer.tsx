@@ -171,7 +171,7 @@ export function Timer({ goal = 'Focus Session', taskId, onSessionComplete }: Tim
 
     const interval = setInterval(checkCompletion, 1000)
     return () => clearInterval(interval)
-  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration, goal, onSessionComplete])
+  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration, timerState.plannedDuration, goal, taskId, router, onSessionComplete])
 
   // Keyboard shortcuts
   useEffect(() => {

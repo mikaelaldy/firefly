@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { SessionResults } from '@/components/SessionResults'
 import { Header } from '@/components/layout/Header'
@@ -47,7 +47,7 @@ function ResultsContent() {
     setLoading(false)
   }, [searchParams, router])
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     // Continue with the same task - go back to timer with the same goal
     if (session) {
       const params = new URLSearchParams({
@@ -56,12 +56,12 @@ function ResultsContent() {
       })
       router.push(`/timer?${params.toString()}`)
     }
-  }
+  }, [session, router])
 
-  const handleNewTask = () => {
+  const handleNewTask = useCallback(() => {
     // Start fresh - go back to home page
     router.push('/')
-  }
+  }, [router])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -82,7 +82,7 @@ function ResultsContent() {
     document.body.focus()
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [session, router])
+  }, [session, router, handleContinue, handleNewTask])
 
   if (loading) {
     return (

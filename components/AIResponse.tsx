@@ -105,7 +105,7 @@ export function AIResponse({ goal, onSuggestionsReceived, className = '' }: AIRe
       setRetryCount(0)
       setIsLoading(false)
     }
-  }, [goal, currentGoal]) // Remove fetchSuggestions from dependencies
+  }, [goal, currentGoal, fetchSuggestions])
 
   // Loading state - Requirement 2.6 (never block Start button)
   if (isLoading) {

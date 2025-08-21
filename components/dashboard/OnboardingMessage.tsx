@@ -41,7 +41,7 @@ export function OnboardingMessage() {
           Welcome to Firefly!
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          You're about to transform how you approach tasks. Firefly is designed specifically for ADHD brains to overcome task paralysis and build focus habits.
+          You&apos;re about to transform how you approach tasks. Firefly is designed specifically for ADHD brains to overcome task paralysis and build focus habits.
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export function OnboardingMessage() {
           Ready to Start Your First Session?
         </h3>
         <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
-          The hardest part is starting. Once you begin, you'll discover how powerful focused work can be for your ADHD brain.
+          The hardest part is starting. Once you begin, you&apos;ll discover how powerful focused work can be for your ADHD brain.
         </p>
         
         <button
