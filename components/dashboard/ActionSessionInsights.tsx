@@ -239,7 +239,7 @@ export function ActionSessionInsights({ actionSessions, loading }: ActionSession
               <p>• Break down large actions into smaller 5-10 minute tasks for better completion rates.</p>
             )}
             {actionCompletionRate >= 80 && (
-              <p>• Great job! Your action completion rate shows you're building strong focus habits! 🎉</p>
+              <p>• Great job! Your action completion rate shows you&apos;re building strong focus habits! 🎉</p>
             )}
           </div>
         </div>

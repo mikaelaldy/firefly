@@ -60,31 +60,56 @@ class SoundManager {
     }
 
     Object.entries(sounds).forEach(([type, dataUrl]) => {
-      const audio = new Audio(dataUrl)
-      audio.volume = this.config.volume
-      audio.preload = 'auto'
-      this.audioElements.set(type as SoundType, audio)
+      try {
+        const audio = new Audio(dataUrl)
+        audio.volume = this.config.volume
+        audio.preload = 'auto'
+        
+        // Add error handling for audio loading
+        audio.addEventListener('error', (e) => {
+          console.warn(`Failed to load ${type} sound:`, e)
+        })
+        
+        this.audioElements.set(type as SoundType, audio)
+      } catch (error) {
+        console.warn(`Failed to create audio element for ${type}:`, error)
+      }
     })
   }
 
   private generateTickSound(): string {
     // Generate a subtle tick sound using Web Audio API
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate)
-      const data = buffer.getChannelData(0)
-    
-      // Generate a short, subtle tick sound
-      for (let i = 0; i < data.length; i++) {
-        const t = i / audioContext.sampleRate
-        data[i] = Math.sin(800 * 2 * Math.PI * t) * Math.exp(-t * 50) * 0.1
+      if (typeof window === 'undefined') {
+        return this.getFallbackTickSound()
       }
       
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const sampleRate = audioContext.sampleRate
+      const duration = 0.1 // 100ms
+      const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate)
+      const data = buffer.getChannelData(0)
+    
+      // Generate a short, subtle tick sound - more pronounced
+      for (let i = 0; i < data.length; i++) {
+        const t = i / sampleRate
+        // Create a sharper, more audible tick
+        const envelope = Math.exp(-t * 30) // Faster decay
+        const frequency = 1200 // Higher frequency for better audibility
+        data[i] = Math.sin(frequency * 2 * Math.PI * t) * envelope * 0.3 // Louder
+      }
+      
+      console.log('Generated tick sound with Web Audio API')
       return this.bufferToDataUrl(buffer, audioContext)
     } catch (error) {
-      // Fallback for environments without Web Audio API (like tests)
-      return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
+      console.warn('Web Audio API failed, using fallback:', error)
+      return this.getFallbackTickSound()
     }
+  }
+  
+  private getFallbackTickSound(): string {
+    // Simple fallback tick sound - a short beep
+    return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
   }
 
   private generateAlarmSound(): string {
@@ -200,25 +225,44 @@ class SoundManager {
 
   // Public methods
   public playSound(type: SoundType): void {
-    if (!this.config.enabled) return
+    console.log(`Attempting to play sound: ${type}`, {
+      enabled: this.config.enabled,
+      tickingEnabled: this.config.tickingEnabled,
+      alarmEnabled: this.config.alarmEnabled,
+      breakNotificationsEnabled: this.config.breakNotificationsEnabled,
+      volume: this.config.volume
+    })
+    
+    if (!this.config.enabled) {
+      console.log('Sound disabled globally')
+      return
+    }
     
     const shouldPlay = 
       (type === 'tick' && this.config.tickingEnabled) ||
       (type === 'alarm' && this.config.alarmEnabled) ||
       ((type === 'break-start' || type === 'break-end') && this.config.breakNotificationsEnabled)
     
-    if (!shouldPlay) return
+    if (!shouldPlay) {
+      console.log(`Sound type ${type} is disabled`)
+      return
+    }
     
     const audio = this.audioElements.get(type)
     if (audio) {
+      console.log(`Playing ${type} sound, volume: ${this.config.volume}`)
       audio.currentTime = 0
       audio.volume = this.config.volume
       const playPromise = audio.play()
       if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(error => {
+        playPromise.then(() => {
+          console.log(`Successfully played ${type} sound`)
+        }).catch(error => {
           console.warn(`Failed to play ${type} sound:`, error)
         })
       }
+    } else {
+      console.warn(`No audio element found for ${type}`)
     }
   }
 
@@ -254,6 +298,61 @@ class SoundManager {
     return { ...this.config }
   }
 
+  public async enableAudioWithUserGesture(): Promise<boolean> {
+    try {
+      // This should be called from a user gesture (click, touch, etc.)
+      console.log('Enabling audio with user gesture...')
+      
+      // Request audio permission
+      const hasPermission = await this.requestAudioPermission()
+      if (!hasPermission) {
+        console.warn('Audio permission denied')
+        return false
+      }
+      
+      // Test play a silent tick to unlock audio
+      const testAudio = this.audioElements.get('tick')
+      if (testAudio) {
+        const originalVolume = testAudio.volume
+        testAudio.volume = 0.01 // Very quiet test
+        try {
+          await testAudio.play()
+          testAudio.pause()
+          testAudio.currentTime = 0
+          testAudio.volume = originalVolume
+          console.log('Audio unlocked successfully')
+          return true
+        } catch (error) {
+          console.warn('Failed to unlock audio:', error)
+          return false
+        }
+      }
+      
+      return false
+    } catch (error) {
+      console.warn('Error enabling audio:', error)
+      return false
+    }
+  }
+
+  public testTicking(): void {
+    console.log('Testing ticking sound...')
+    this.playSound('tick')
+    
+    // Test continuous ticking for 5 seconds
+    let count = 0
+    const testInterval = setInterval(() => {
+      count++
+      console.log(`Test tick ${count}`)
+      this.playSound('tick')
+      
+      if (count >= 5) {
+        clearInterval(testInterval)
+        console.log('Test ticking completed')
+      }
+    }, 1000)
+  }
+
   public async requestAudioPermission(): Promise<boolean> {
     try {
       // Check if we're in a browser environment
@@ -268,6 +367,21 @@ class SoundManager {
       
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume()
+      }
+      
+      // Test if we can actually play audio by trying to play a silent sound
+      const testAudio = this.audioElements.get('tick')
+      if (testAudio) {
+        testAudio.volume = 0
+        try {
+          await testAudio.play()
+          testAudio.pause()
+          testAudio.currentTime = 0
+          testAudio.volume = this.config.volume
+        } catch (playError) {
+          console.warn('Audio play test failed:', playError)
+          return false
+        }
       }
       
       return true

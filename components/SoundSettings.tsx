@@ -30,8 +30,27 @@ export function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
     soundManager.updateConfig(updates)
   }
 
-  const testSound = (type: 'tick' | 'alarm' | 'break-start' | 'break-end') => {
+  const testSound = async (type: 'tick' | 'alarm' | 'break-start' | 'break-end') => {
+    console.log(`Testing sound: ${type}`)
+    
+    // First try to enable audio with user gesture
+    const audioEnabled = await soundManager.enableAudioWithUserGesture()
+    console.log('Audio enabled:', audioEnabled)
+    
+    // Then play the sound
     soundManager.playSound(type)
+  }
+
+  const testTicking = async () => {
+    console.log('Testing continuous ticking...')
+    
+    // Enable audio first
+    const audioEnabled = await soundManager.enableAudioWithUserGesture()
+    if (audioEnabled) {
+      soundManager.testTicking()
+    } else {
+      console.warn('Could not enable audio for ticking test')
+    }
   }
 
   if (!isOpen) return null
@@ -215,7 +234,7 @@ export function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
               <div>
                 <p className="text-sm text-purple-800 font-medium">ADHD-Friendly Audio</p>
                 <p className="text-xs text-purple-700 mt-1">
-                  Sounds are designed to be helpful without being distracting. Ticking can help with time awareness, but disable it if it's too stimulating.
+                  Sounds are designed to be helpful without being distracting. Ticking can help with time awareness, but disable it if it&apos;s too stimulating.
                 </p>
               </div>
             </div>
