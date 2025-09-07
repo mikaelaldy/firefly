@@ -69,73 +69,93 @@ class SoundManager {
 
   private generateTickSound(): string {
     // Generate a subtle tick sound using Web Audio API
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate)
-    const data = buffer.getChannelData(0)
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate)
+      const data = buffer.getChannelData(0)
     
-    // Generate a short, subtle tick sound
-    for (let i = 0; i < data.length; i++) {
-      const t = i / audioContext.sampleRate
-      data[i] = Math.sin(800 * 2 * Math.PI * t) * Math.exp(-t * 50) * 0.1
+      // Generate a short, subtle tick sound
+      for (let i = 0; i < data.length; i++) {
+        const t = i / audioContext.sampleRate
+        data[i] = Math.sin(800 * 2 * Math.PI * t) * Math.exp(-t * 50) * 0.1
+      }
+      
+      return this.bufferToDataUrl(buffer, audioContext)
+    } catch (error) {
+      // Fallback for environments without Web Audio API (like tests)
+      return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
     }
-    
-    return this.bufferToDataUrl(buffer, audioContext)
   }
 
   private generateAlarmSound(): string {
     // Generate a pleasant but noticeable alarm sound
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate)
-    const data = buffer.getChannelData(0)
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate)
+      const data = buffer.getChannelData(0)
     
-    // Generate a gentle alarm with multiple tones
-    for (let i = 0; i < data.length; i++) {
-      const t = i / audioContext.sampleRate
-      const envelope = Math.sin(t * Math.PI) * Math.exp(-t * 2)
-      data[i] = (
-        Math.sin(523 * 2 * Math.PI * t) * 0.3 + // C5
-        Math.sin(659 * 2 * Math.PI * t) * 0.2 + // E5
-        Math.sin(784 * 2 * Math.PI * t) * 0.1   // G5
-      ) * envelope * 0.3
+      // Generate a gentle alarm with multiple tones
+      for (let i = 0; i < data.length; i++) {
+        const t = i / audioContext.sampleRate
+        const envelope = Math.sin(t * Math.PI) * Math.exp(-t * 2)
+        data[i] = (
+          Math.sin(523 * 2 * Math.PI * t) * 0.3 + // C5
+          Math.sin(659 * 2 * Math.PI * t) * 0.2 + // E5
+          Math.sin(784 * 2 * Math.PI * t) * 0.1   // G5
+        ) * envelope * 0.3
+      }
+      
+      return this.bufferToDataUrl(buffer, audioContext)
+    } catch (error) {
+      // Fallback for environments without Web Audio API
+      return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
     }
-    
-    return this.bufferToDataUrl(buffer, audioContext)
   }
 
   private generateBreakStartSound(): string {
     // Generate a relaxing sound for break start
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 1.5, audioContext.sampleRate)
-    const data = buffer.getChannelData(0)
-    
-    for (let i = 0; i < data.length; i++) {
-      const t = i / audioContext.sampleRate
-      const envelope = Math.exp(-t * 1.5)
-      data[i] = (
-        Math.sin(440 * 2 * Math.PI * t) * 0.2 + // A4
-        Math.sin(554 * 2 * Math.PI * t) * 0.15  // C#5
-      ) * envelope * 0.4
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 1.5, audioContext.sampleRate)
+      const data = buffer.getChannelData(0)
+      
+      for (let i = 0; i < data.length; i++) {
+        const t = i / audioContext.sampleRate
+        const envelope = Math.exp(-t * 1.5)
+        data[i] = (
+          Math.sin(440 * 2 * Math.PI * t) * 0.2 + // A4
+          Math.sin(554 * 2 * Math.PI * t) * 0.15  // C#5
+        ) * envelope * 0.4
+      }
+      
+      return this.bufferToDataUrl(buffer, audioContext)
+    } catch (error) {
+      // Fallback for environments without Web Audio API
+      return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
     }
-    
-    return this.bufferToDataUrl(buffer, audioContext)
   }
 
   private generateBreakEndSound(): string {
     // Generate an energizing sound for break end
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 1, audioContext.sampleRate)
-    const data = buffer.getChannelData(0)
-    
-    for (let i = 0; i < data.length; i++) {
-      const t = i / audioContext.sampleRate
-      const envelope = Math.sin(t * Math.PI * 2) * Math.exp(-t * 3)
-      data[i] = (
-        Math.sin(523 * 2 * Math.PI * t) * 0.25 + // C5
-        Math.sin(698 * 2 * Math.PI * t) * 0.2    // F5
-      ) * envelope * 0.35
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 1, audioContext.sampleRate)
+      const data = buffer.getChannelData(0)
+      
+      for (let i = 0; i < data.length; i++) {
+        const t = i / audioContext.sampleRate
+        const envelope = Math.sin(t * Math.PI * 2) * Math.exp(-t * 3)
+        data[i] = (
+          Math.sin(523 * 2 * Math.PI * t) * 0.25 + // C5
+          Math.sin(698 * 2 * Math.PI * t) * 0.2    // F5
+        ) * envelope * 0.35
+      }
+      
+      return this.bufferToDataUrl(buffer, audioContext)
+    } catch (error) {
+      // Fallback for environments without Web Audio API
+      return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2+LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
     }
-    
-    return this.bufferToDataUrl(buffer, audioContext)
   }
 
   private bufferToDataUrl(buffer: AudioBuffer, audioContext: AudioContext): string {
@@ -193,9 +213,12 @@ class SoundManager {
     if (audio) {
       audio.currentTime = 0
       audio.volume = this.config.volume
-      audio.play().catch(error => {
-        console.warn(`Failed to play ${type} sound:`, error)
-      })
+      const playPromise = audio.play()
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(error => {
+          console.warn(`Failed to play ${type} sound:`, error)
+        })
+      }
     }
   }
 
@@ -233,6 +256,11 @@ class SoundManager {
 
   public async requestAudioPermission(): Promise<boolean> {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return false
+      }
+      
       // Try to create audio context to ensure audio is available
       if (!this.audioContext) {
         this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()

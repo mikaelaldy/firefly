@@ -9,10 +9,12 @@ A lightweight Next.js application that helps ADHD users overcome task paralysis 
 - **Editable Actions**: Modify, delete, and add custom actions with AI time estimation (V1)
 - **Smart Time Estimates**: AI provides realistic time estimates for ADHD users with confidence levels
 - **Visual Timer**: Shrinking disc with 25/45/50 minute presets or custom durations
+- **Sound System**: Optional timer ticking, session alarms, and break notifications with full customization
+- **Automatic Breaks**: Pomodoro-style break management (5min short, 15min long breaks)
 - **Variance Tracking**: Compare planned vs actual time with encouraging feedback
 - **Offline-First Design**: Full functionality works offline with automatic sync when reconnected
 - **Progressive Enhancement**: Core functionality works without AI or authentication
-- **ADHD-Optimized**: Reduced motion, high contrast, minimal cognitive overhead
+- **ADHD-Optimized**: Reduced motion, high contrast, minimal cognitive overhead, customizable audio
 - **Dashboard Analytics**: Track progress, streaks, and personal records (when signed in)
 
 ## Quick Start
@@ -62,10 +64,12 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 3. **AI Suggestions**: See 60-second first step + next actions (or fallback if offline)
 4. **Edit Actions** (V1): Click to edit action text, delete unwanted actions, add custom ones
 5. **Get Time Estimates** (V1): Click "Update with AI" to get realistic time estimates for each action
-6. **Timer Start**: Click "Start Focus Timer" → choose preset or use AI-estimated duration
-7. **Focus Session**: Visual countdown with pause/resume/stop controls
-8. **Results**: See variance analysis and encouraging feedback
-9. **Dashboard**: Sign in with Google to see analytics and progress tracking
+6. **Sound Settings**: Click sound icon to customize ticking, alarms, and break notifications
+7. **Timer Start**: Click "Start Focus Timer" → choose preset or use AI-estimated duration
+8. **Focus Session**: Visual countdown with optional ticking sound, pause/resume/stop controls
+9. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
+10. **Results**: See variance analysis and encouraging feedback
+11. **Dashboard**: Sign in with Google to see analytics and progress tracking
 
 ### Testing Offline Mode
 - Disconnect internet → timer still works with fallback suggestions
@@ -141,6 +145,14 @@ Open browser dev tools to view detailed logs during development. See `docs/testi
 3. ✅ Click "Update with AI" → see time estimates with confidence levels
 4. ✅ Select action with estimate → timer uses custom duration
 5. ✅ Action progress tracked and synced to dashboard
+
+**Sound Features Journey** (additional 2 minutes):
+1. ✅ Click sound icon → access comprehensive sound settings
+2. ✅ Test ticking, alarm, and break notification sounds
+3. ✅ Adjust volume and enable/disable individual sound types
+4. ✅ Start timer → hear optional ticking during focus session
+5. ✅ Complete session → hear completion alarm and automatic break timer
+6. ✅ Experience Pomodoro-style break management (5min/15min breaks)
 
 **Note**: V1 TypeScript interfaces are now implemented for full type safety across the enhanced actions feature.
 

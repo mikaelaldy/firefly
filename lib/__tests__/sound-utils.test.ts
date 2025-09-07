@@ -42,7 +42,7 @@ Object.defineProperty(global, 'webkitAudioContext', {
 
 // Mock HTML Audio element
 const mockAudio = {
-  play: vi.fn().mockResolvedValue(undefined),
+  play: vi.fn().mockReturnValue(Promise.resolve()),
   pause: vi.fn(),
   currentTime: 0,
   volume: 0.5,
@@ -118,31 +118,39 @@ describe('Sound Utilities', () => {
   })
 
   describe('BreakManager', () => {
+    let testBreakManager: any
+    
+    beforeEach(async () => {
+      // Create a fresh BreakManager instance for each test
+      const soundUtilsModule = await import('../sound-utils')
+      testBreakManager = new soundUtilsModule.BreakManager()
+    })
+    
     it('should start with session count 0', () => {
-      expect(breakManager.getSessionCount()).toBe(0)
+      expect(testBreakManager.getSessionCount()).toBe(0)
     })
 
     it('should provide short breaks for sessions 1-3', () => {
-      const break1 = breakManager.completeSession()
+      const break1 = testBreakManager.completeSession()
       expect(break1?.type).toBe('short')
       expect(break1?.duration).toBe(5)
       expect(break1?.sessionCount).toBe(1)
 
-      const break2 = breakManager.completeSession()
+      const break2 = testBreakManager.completeSession()
       expect(break2?.type).toBe('short')
       expect(break2?.sessionCount).toBe(2)
 
-      const break3 = breakManager.completeSession()
+      const break3 = testBreakManager.completeSession()
       expect(break3?.type).toBe('short')
       expect(break3?.sessionCount).toBe(3)
     })
 
     it('should provide long break for 4th session', () => {
       // Complete 4 sessions
-      breakManager.completeSession() // 1
-      breakManager.completeSession() // 2
-      breakManager.completeSession() // 3
-      const break4 = breakManager.completeSession() // 4
+      testBreakManager.completeSession() // 1
+      testBreakManager.completeSession() // 2
+      testBreakManager.completeSession() // 3
+      const break4 = testBreakManager.completeSession() // 4
 
       expect(break4?.type).toBe('long')
       expect(break4?.duration).toBe(15)
@@ -152,41 +160,41 @@ describe('Sound Utilities', () => {
     it('should cycle back to short breaks after long break', () => {
       // Complete 5 sessions (4 + 1)
       for (let i = 0; i < 4; i++) {
-        breakManager.completeSession()
+        testBreakManager.completeSession()
       }
-      const break5 = breakManager.completeSession()
+      const break5 = testBreakManager.completeSession()
 
       expect(break5?.type).toBe('short')
       expect(break5?.sessionCount).toBe(5)
     })
 
     it('should provide next break info', () => {
-      const nextBreak = breakManager.getNextBreakInfo()
+      const nextBreak = testBreakManager.getNextBreakInfo()
       expect(nextBreak.type).toBe('short')
       expect(nextBreak.duration).toBe(5)
 
       // After 3 sessions, next should be long
-      breakManager.completeSession()
-      breakManager.completeSession()
-      breakManager.completeSession()
+      testBreakManager.completeSession()
+      testBreakManager.completeSession()
+      testBreakManager.completeSession()
       
-      const nextLongBreak = breakManager.getNextBreakInfo()
+      const nextLongBreak = testBreakManager.getNextBreakInfo()
       expect(nextLongBreak.type).toBe('long')
       expect(nextLongBreak.duration).toBe(15)
     })
 
     it('should reset session count', () => {
-      breakManager.completeSession()
-      breakManager.completeSession()
-      expect(breakManager.getSessionCount()).toBe(2)
+      testBreakManager.completeSession()
+      testBreakManager.completeSession()
+      expect(testBreakManager.getSessionCount()).toBe(2)
 
-      breakManager.resetSessionCount()
-      expect(breakManager.getSessionCount()).toBe(0)
+      testBreakManager.resetSessionCount()
+      expect(testBreakManager.getSessionCount()).toBe(0)
     })
 
     it('should persist session count in localStorage', () => {
-      breakManager.completeSession()
-      breakManager.completeSession()
+      testBreakManager.completeSession()
+      testBreakManager.completeSession()
 
       // Check localStorage
       const saved = localStorageMock.getItem('firefly_session_count')
