@@ -8,6 +8,7 @@ import { TimerLauncher } from './TimerLauncher'
 import { calculateVariance, minutesToSeconds, calculateAdjustedElapsed } from '@/lib/timer-utils'
 import { saveSession } from '@/lib/supabase/client-sessions'
 import { useActionSession } from '@/lib/action-sessions/context'
+import { soundManager } from '@/lib/sound-utils'
 import type { TimerState, TimerSession, EditableAction } from '@/types'
 
 interface ActionTimerProps {
@@ -15,9 +16,10 @@ interface ActionTimerProps {
   taskId?: string;
   actions?: EditableAction[];
   onSessionComplete?: (session: TimerSession) => void;
+  onShowSoundSettings?: () => void;
 }
 
-export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSessionComplete }: ActionTimerProps) {
+export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSessionComplete, onShowSoundSettings }: ActionTimerProps) {
   const router = useRouter()
   const { state: actionSessionState, setCurrentAction, markActionAsCompleted, updateTimeSpent, startActionSession } = useActionSession()
   
@@ -64,6 +66,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     setSessionStartTime(now)
     pausedTimeRef.current = 0 // Reset paused time tracking
     actionStartTimeRef.current = now // Track action start time
+    
+    // Start ticking sound
+    soundManager.startTicking()
   }, [setCurrentAction])
 
   // Pause timer
@@ -80,6 +85,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
         isPaused: true,
         remaining: remaining
       }))
+      
+      // Stop ticking sound when paused
+      soundManager.stopTicking()
     }
   }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration])
 
@@ -91,6 +99,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       pausedTimeRef.current += pauseDuration
       
       setTimerState(prev => ({ ...prev, isPaused: false }))
+      
+      // Resume ticking sound
+      soundManager.startTicking()
     }
   }, [timerState.isActive, timerState.isPaused])
 
@@ -99,6 +110,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     if (timerState.isActive) {
       const now = new Date()
       const actualDuration = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
+      
+      // Stop ticking sound
+      soundManager.stopTicking()
       
       // Calculate variance using utility function
       const variance = calculateVariance(timerState.plannedDuration, actualDuration)
@@ -175,6 +189,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       const remaining = Math.max(0, timerState.duration - adjustedElapsed)
 
       if (remaining === 0) {
+        // Stop ticking sound
+        soundManager.stopTicking()
+        
         // Timer completed naturally
         
         // If we have a current action, mark it as completed with actual time spent
@@ -287,6 +304,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
             onSelectDuration={startTimer} 
             actions={actions}
             showPresets={true}
+            onShowSoundSettings={onShowSoundSettings}
           />
         </div>
       ) : (

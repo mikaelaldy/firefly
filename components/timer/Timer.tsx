@@ -6,8 +6,11 @@ import { VisualTimer } from './VisualTimer'
 import { TimerControls } from './TimerControls'
 import { TimerLauncher } from './TimerLauncher'
 import { ActionTimer } from './ActionTimer'
+import { BreakTimer } from './BreakTimer'
+import { SoundSettings } from '../SoundSettings'
 import { calculateVariance, minutesToSeconds, calculateAdjustedElapsed } from '@/lib/timer-utils'
 import { saveSession } from '@/lib/supabase/client-sessions'
+import { soundManager, breakManager, type BreakSession } from '@/lib/sound-utils'
 import type { TimerState, TimerSession, EditableAction } from '@/types'
 
 interface TimerProps {
@@ -18,24 +21,96 @@ interface TimerProps {
 }
 
 export function Timer({ goal = 'Focus Session', taskId, actions = [], onSessionComplete }: TimerProps) {
-  // Use ActionTimer when we have actions, otherwise use regular timer
-  if (actions.length > 0) {
+  const [currentBreak, setCurrentBreak] = useState<BreakSession | null>(null)
+  const [showSoundSettings, setShowSoundSettings] = useState(false)
+
+  // Handle session completion and break management
+  const handleSessionComplete = useCallback((session: TimerSession) => {
+    // Play completion sound
+    soundManager.playSound('alarm')
+    
+    // Determine if a break should be offered
+    const breakSession = breakManager.completeSession()
+    
+    if (breakSession) {
+      setCurrentBreak(breakSession)
+    } else {
+      // No break needed, proceed normally
+      onSessionComplete?.(session)
+    }
+  }, [onSessionComplete])
+
+  // Handle break completion
+  const handleBreakComplete = useCallback(() => {
+    setCurrentBreak(null)
+    // Return to timer launcher for next session
+  }, [])
+
+  // Handle break skip
+  const handleSkipBreak = useCallback(() => {
+    setCurrentBreak(null)
+    // Return to timer launcher for next session
+  }, [])
+
+  // Show break timer if we have an active break
+  if (currentBreak) {
     return (
-      <ActionTimer 
-        goal={goal}
-        taskId={taskId}
-        actions={actions}
-        onSessionComplete={onSessionComplete}
+      <BreakTimer
+        breakSession={currentBreak}
+        onBreakComplete={handleBreakComplete}
+        onSkipBreak={handleSkipBreak}
       />
     )
   }
 
+  // Use ActionTimer when we have actions, otherwise use regular timer
+  if (actions.length > 0) {
+    return (
+      <>
+        <ActionTimer 
+          goal={goal}
+          taskId={taskId}
+          actions={actions}
+          onSessionComplete={handleSessionComplete}
+          onShowSoundSettings={() => setShowSoundSettings(true)}
+        />
+        <SoundSettings 
+          isOpen={showSoundSettings} 
+          onClose={() => setShowSoundSettings(false)} 
+        />
+      </>
+    )
+  }
+
   // Regular timer implementation for when no actions are provided
-  return <RegularTimer goal={goal} taskId={taskId} onSessionComplete={onSessionComplete} />
+  return (
+    <>
+      <RegularTimer 
+        goal={goal} 
+        taskId={taskId} 
+        onSessionComplete={handleSessionComplete}
+        onShowSoundSettings={() => setShowSoundSettings(true)}
+      />
+      <SoundSettings 
+        isOpen={showSoundSettings} 
+        onClose={() => setShowSoundSettings(false)} 
+      />
+    </>
+  )
 }
 
 // Separate component for regular timer to avoid hooks issues
-function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskId?: string; onSessionComplete?: (session: TimerSession) => void }) {
+function RegularTimer({ 
+  goal, 
+  taskId, 
+  onSessionComplete, 
+  onShowSoundSettings 
+}: { 
+  goal: string; 
+  taskId?: string; 
+  onSessionComplete?: (session: TimerSession) => void;
+  onShowSoundSettings?: () => void;
+}) {
   const router = useRouter()
   const [timerState, setTimerState] = useState<TimerState>({
     isActive: false,
@@ -68,6 +143,9 @@ function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskI
     setCurrentAction(actionContext || null)
     setShowLauncher(false)
     pausedTimeRef.current = 0 // Reset paused time tracking
+    
+    // Start ticking sound
+    soundManager.startTicking()
   }, [])
 
   // Pause timer
@@ -84,6 +162,9 @@ function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskI
         isPaused: true,
         remaining: remaining
       }))
+      
+      // Stop ticking sound when paused
+      soundManager.stopTicking()
     }
   }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration])
 
@@ -95,6 +176,9 @@ function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskI
       pausedTimeRef.current += pauseDuration
       
       setTimerState(prev => ({ ...prev, isPaused: false }))
+      
+      // Resume ticking sound
+      soundManager.startTicking()
     }
   }, [timerState.isActive, timerState.isPaused])
 
@@ -103,6 +187,9 @@ function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskI
     if (timerState.isActive) {
       const now = new Date()
       const actualDuration = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
+      
+      // Stop ticking sound
+      soundManager.stopTicking()
       
       // Calculate variance using utility function
       const variance = calculateVariance(timerState.plannedDuration, actualDuration)
@@ -160,6 +247,9 @@ function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskI
       const remaining = Math.max(0, timerState.duration - adjustedElapsed)
 
       if (remaining === 0) {
+        // Stop ticking sound
+        soundManager.stopTicking()
+        
         // Timer completed naturally
         const session: TimerSession = {
           id: crypto.randomUUID(),
@@ -225,6 +315,7 @@ function RegularTimer({ goal, taskId, onSessionComplete }: { goal: string; taskI
             onSelectDuration={startTimer} 
             actions={[]}
             showPresets={true}
+            onShowSoundSettings={onShowSoundSettings}
           />
         </div>
       ) : (

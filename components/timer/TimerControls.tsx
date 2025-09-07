@@ -7,9 +7,10 @@ interface TimerControlsProps {
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
+  stopLabel?: string;
 }
 
-export function TimerControls({ timerState, onPause, onResume, onStop }: TimerControlsProps) {
+export function TimerControls({ timerState, onPause, onResume, onStop, stopLabel = 'Stop' }: TimerControlsProps) {
   return (
     <div className="flex items-center justify-center space-x-4">
       {/* Pause/Resume Button */}
@@ -69,7 +70,7 @@ export function TimerControls({ timerState, onPause, onResume, onStop }: TimerCo
               </div>
               <div className="flex items-center space-x-2">
                 <kbd className="px-2 py-1 text-xs bg-gray-100 rounded">Esc</kbd>
-                <span>Stop</span>
+                <span>{stopLabel}</span>
               </div>
             </>
           )}
