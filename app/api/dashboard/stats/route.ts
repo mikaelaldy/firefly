@@ -45,7 +45,10 @@ function getWeekStart(date: Date): Date {
   return new Date(d.setDate(diff));
 }
 
-function generateInsights(stats: Partial<DashboardStatsResponse>): Array<{
+function generateInsights(
+  stats: Partial<DashboardStatsResponse>, 
+  actionSessions: any[]
+): Array<{
   message: string;
   type: 'celebration' | 'encouragement' | 'tip';
 }> {
@@ -53,6 +56,23 @@ function generateInsights(stats: Partial<DashboardStatsResponse>): Array<{
     message: string;
     type: 'celebration' | 'encouragement' | 'tip';
   }> = [];
+
+  // Calculate time estimation accuracy for action sessions
+  const actionSessionsWithEstimates = actionSessions.filter(session => 
+    session.total_estimated_time && session.actual_time_spent
+  );
+  
+  let estimationAccuracy = 0;
+  if (actionSessionsWithEstimates.length > 0) {
+    const accuracySum = actionSessionsWithEstimates.reduce((sum, session) => {
+      const variance = Math.abs(calculateVariance(
+        session.total_estimated_time * 60, 
+        session.actual_time_spent * 60
+      ));
+      return sum + Math.max(0, 100 - variance); // Convert variance to accuracy percentage
+    }, 0);
+    estimationAccuracy = accuracySum / actionSessionsWithEstimates.length;
+  }
 
   // Celebration insights
   if (stats.personalRecords?.currentStreak && stats.personalRecords.currentStreak >= 3) {
@@ -72,6 +92,14 @@ function generateInsights(stats: Partial<DashboardStatsResponse>): Array<{
   if (stats.completionRate && stats.completionRate >= 80) {
     insights.push({
       message: `${stats.completionRate}% completion rate - you're crushing your goals! 💪`,
+      type: 'celebration'
+    });
+  }
+
+  // Time estimation insights for action sessions
+  if (estimationAccuracy >= 80 && actionSessionsWithEstimates.length >= 3) {
+    insights.push({
+      message: `Your time estimates are ${Math.round(estimationAccuracy)}% accurate - you're getting great at planning! 📊`,
       type: 'celebration'
     });
   }
@@ -102,6 +130,34 @@ function generateInsights(stats: Partial<DashboardStatsResponse>): Array<{
       message: "Struggling to finish sessions? Try starting with 10-15 minute timers to build confidence! 💡",
       type: 'tip'
     });
+  }
+
+  // Time estimation tips
+  if (estimationAccuracy < 60 && actionSessionsWithEstimates.length >= 2) {
+    insights.push({
+      message: "Time estimates getting tricky? ADHD brains often underestimate - try adding 25% buffer time! ⏱️",
+      type: 'tip'
+    });
+  }
+
+  if (actionSessions.length > 0) {
+    const completedActions = actionSessions.reduce((total, session) => {
+      return total + (session.editable_actions?.filter((action: any) => action.completed_at).length || 0);
+    }, 0);
+    
+    const totalActions = actionSessions.reduce((total, session) => {
+      return total + (session.editable_actions?.length || 0);
+    }, 0);
+    
+    if (completedActions > 0 && totalActions > 0) {
+      const actionCompletionRate = Math.round((completedActions / totalActions) * 100);
+      if (actionCompletionRate >= 75) {
+        insights.push({
+          message: `${actionCompletionRate}% of your planned actions completed - you're making real progress! ✅`,
+          type: 'celebration'
+        });
+      }
+    }
   }
 
   // Default encouragement if no insights generated
@@ -158,7 +214,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all sessions for the user
+    // Get all sessions for the user (both regular sessions and action sessions)
     const { data: sessions, error: sessionsError } = await supabase
       .from('sessions')
       .select('*')
@@ -173,10 +229,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get action sessions for the user
+    const { data: actionSessions, error: actionSessionsError } = await supabase
+      .from('action_sessions')
+      .select(`
+        *,
+        editable_actions (
+          id,
+          text,
+          estimated_minutes,
+          confidence,
+          is_custom,
+          order_index,
+          completed_at,
+          created_at
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (actionSessionsError) {
+      console.error('Error fetching action sessions:', actionSessionsError);
+      // Don't fail completely, just log the error and continue with regular sessions
+    }
+
     const allSessions = sessions || [];
+    const allActionSessions = actionSessions || [];
     
     console.log('Dashboard API - Sessions query result:', {
       sessionsCount: allSessions.length,
+      actionSessionsCount: allActionSessions.length,
       sessions: allSessions.map(s => ({
         id: s.id,
         goal: s.goal,
@@ -186,40 +268,64 @@ export async function GET(request: NextRequest) {
       }))
     });
     
-    // Calculate stats
+    // Calculate stats including both session types
     const now = new Date();
     const weekStart = getWeekStart(now);
     
-    // Sessions this week
-    const sessionsThisWeek = allSessions.filter(session => 
+    // Sessions this week (both types)
+    const regularSessionsThisWeek = allSessions.filter(session => 
       new Date(session.started_at) >= weekStart
     ).length;
+    
+    const actionSessionsThisWeek = allActionSessions.filter(session => 
+      new Date(session.created_at) >= weekStart
+    ).length;
+    
+    const sessionsThisWeek = regularSessionsThisWeek + actionSessionsThisWeek;
 
     // Total focus time (ALL sessions - partial sessions count too!)
-    const totalFocusTime = allSessions.reduce((total, session) => 
+    const regularFocusTime = allSessions.reduce((total, session) => 
       total + (session.actual_duration || 0), 0
     ) / 60; // Convert to minutes
+    
+    const actionFocusTime = allActionSessions.reduce((total, session) => 
+      total + (session.actual_time_spent || 0), 0
+    ); // Already in minutes
+    
+    const totalFocusTime = regularFocusTime + actionFocusTime;
 
     // Completed sessions for completion rate calculation
     const completedSessions = allSessions.filter(session => session.completed);
+    const completedActionSessions = allActionSessions.filter(session => session.status === 'completed');
 
     // Average session length (based on all sessions with actual duration)
     const sessionsWithDuration = allSessions.filter(session => session.actual_duration && session.actual_duration > 0);
-    const averageSessionLength = sessionsWithDuration.length > 0 
-      ? totalFocusTime / sessionsWithDuration.length 
+    const actionSessionsWithDuration = allActionSessions.filter(session => session.actual_time_spent && session.actual_time_spent > 0);
+    
+    const totalSessionsWithDuration = sessionsWithDuration.length + actionSessionsWithDuration.length;
+    const averageSessionLength = totalSessionsWithDuration > 0 
+      ? totalFocusTime / totalSessionsWithDuration 
       : 0;
 
     // Completion rate
-    const completionRate = allSessions.length > 0 
-      ? Math.round((completedSessions.length / allSessions.length) * 100)
+    const totalSessions = allSessions.length + allActionSessions.length;
+    const totalCompletedSessions = completedSessions.length + completedActionSessions.length;
+    const completionRate = totalSessions > 0 
+      ? Math.round((totalCompletedSessions / totalSessions) * 100)
       : 0;
 
-    // Personal records
-    const longestSession = sessionsWithDuration.length > 0
+    // Personal records (include both session types)
+    const regularLongestSession = sessionsWithDuration.length > 0
       ? Math.max(...sessionsWithDuration.map(s => s.actual_duration || 0)) / 60
       : 0;
+    
+    const actionLongestSession = actionSessionsWithDuration.length > 0
+      ? Math.max(...actionSessionsWithDuration.map(s => s.actual_time_spent || 0))
+      : 0;
+    
+    const longestSession = Math.max(regularLongestSession, actionLongestSession);
 
-    // Calculate streaks
+    // Calculate streaks (include both session types)
     let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
@@ -228,6 +334,11 @@ export async function GET(request: NextRequest) {
     const sessionsByDate = new Map<string, boolean>();
     allSessions.forEach(session => {
       const date = new Date(session.started_at).toDateString();
+      sessionsByDate.set(date, true);
+    });
+    
+    allActionSessions.forEach(session => {
+      const date = new Date(session.created_at).toDateString();
       sessionsByDate.set(date, true);
     });
 
@@ -261,32 +372,67 @@ export async function GET(request: NextRequest) {
 
     // Best week calculation (include all sessions with duration)
     const weeklyTotals = new Map<string, number>();
+    
+    // Add regular sessions
     sessionsWithDuration.forEach(session => {
       const sessionDate = new Date(session.started_at);
       const weekStartDate = getWeekStart(sessionDate);
       const weekKey = weekStartDate.toISOString().split('T')[0];
       
       const currentTotal = weeklyTotals.get(weekKey) || 0;
-      weeklyTotals.set(weekKey, currentTotal + (session.actual_duration || 0));
+      weeklyTotals.set(weekKey, currentTotal + (session.actual_duration || 0) / 60); // Convert to minutes
+    });
+    
+    // Add action sessions
+    actionSessionsWithDuration.forEach(session => {
+      const sessionDate = new Date(session.created_at);
+      const weekStartDate = getWeekStart(sessionDate);
+      const weekKey = weekStartDate.toISOString().split('T')[0];
+      
+      const currentTotal = weeklyTotals.get(weekKey) || 0;
+      weeklyTotals.set(weekKey, currentTotal + (session.actual_time_spent || 0)); // Already in minutes
     });
 
     const bestWeek = weeklyTotals.size > 0 
-      ? Math.max(...Array.from(weeklyTotals.values())) / 60
+      ? Math.max(...Array.from(weeklyTotals.values()))
       : 0;
 
-    // Recent sessions (last 10)
-    const recentSessions = allSessions.slice(0, 10).map(session => ({
-      id: session.id,
-      goal: session.goal,
-      plannedDuration: session.planned_duration,
-      actualDuration: session.actual_duration || 0,
-      completed: session.completed,
-      variance: session.variance || calculateVariance(session.planned_duration, session.actual_duration || 0),
-      startedAt: session.started_at,
-      completedAt: session.completed_at
-    }));
+    // Recent sessions (last 10, combining both types)
+    const combinedSessions = [
+      ...allSessions.map(session => ({
+        id: session.id,
+        goal: session.goal,
+        plannedDuration: session.planned_duration,
+        actualDuration: session.actual_duration || 0,
+        completed: session.completed,
+        variance: session.variance || calculateVariance(session.planned_duration, session.actual_duration || 0),
+        startedAt: session.started_at,
+        completedAt: session.completed_at,
+        type: 'regular' as const
+      })),
+      ...allActionSessions.map(session => ({
+        id: session.id,
+        goal: session.goal,
+        plannedDuration: (session.total_estimated_time || 0) * 60, // Convert to seconds
+        actualDuration: (session.actual_time_spent || 0) * 60, // Convert to seconds
+        completed: session.status === 'completed',
+        variance: calculateVariance(
+          (session.total_estimated_time || 0) * 60, 
+          (session.actual_time_spent || 0) * 60
+        ),
+        startedAt: session.created_at,
+        completedAt: session.status === 'completed' ? session.updated_at : undefined,
+        type: 'action' as const,
+        actions: session.editable_actions || []
+      }))
+    ];
 
-    const stats: DashboardStatsResponse = {
+    // Sort by start date and take the 10 most recent
+    const recentSessions = combinedSessions
+      .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
+      .slice(0, 10);
+
+    const stats: DashboardStatsResponse & { actionSessions: typeof allActionSessions } = {
       totalFocusTime: Math.round(totalFocusTime),
       averageSessionLength: Math.round(averageSessionLength),
       completionRate,
@@ -309,7 +455,8 @@ export async function GET(request: NextRequest) {
           currentStreak,
           longestStreak
         }
-      })
+      }, allActionSessions),
+      actionSessions: allActionSessions
     };
 
     console.log('Dashboard API - Returning stats:', {

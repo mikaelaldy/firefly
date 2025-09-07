@@ -4,18 +4,20 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Timer } from '@/components'
 import { Header } from '@/components/layout/Header'
-import type { TimerSession } from '@/types'
+import type { TimerSession, EditableAction } from '@/types'
 
 function TimerContent() {
   const searchParams = useSearchParams()
   const [completedSessions, setCompletedSessions] = useState<TimerSession[]>([])
   const [currentGoal, setCurrentGoal] = useState('Focus on current task')
   const [taskId, setTaskId] = useState<string | undefined>()
+  const [actions, setActions] = useState<EditableAction[]>([])
 
-  // Get goal and taskId from URL params
+  // Get goal, taskId, and actions from URL params
   useEffect(() => {
     const goalParam = searchParams.get('goal')
     const taskIdParam = searchParams.get('taskId')
+    const actionsParam = searchParams.get('actions')
     
     if (goalParam) {
       setCurrentGoal(goalParam)
@@ -23,6 +25,16 @@ function TimerContent() {
     
     if (taskIdParam) {
       setTaskId(taskIdParam)
+    }
+    
+    if (actionsParam) {
+      try {
+        const parsedActions: EditableAction[] = JSON.parse(actionsParam)
+        setActions(parsedActions)
+      } catch (error) {
+        console.error('Failed to parse actions from URL:', error)
+        setActions([])
+      }
     }
   }, [searchParams])
 
@@ -48,6 +60,7 @@ function TimerContent() {
         <Timer 
           goal={currentGoal}
           taskId={taskId}
+          actions={actions}
           onSessionComplete={handleSessionComplete}
         />
 

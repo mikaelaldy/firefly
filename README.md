@@ -6,8 +6,11 @@ A lightweight Next.js application that helps ADHD users overcome task paralysis 
 
 - **Instant Focus**: Timer starts immediately, never blocked by AI processing
 - **Task Breakdown**: AI generates 60-second first steps and actionable next actions
-- **Visual Timer**: Shrinking disc with 25/45/50 minute presets
+- **Editable Actions**: Modify, delete, and add custom actions with AI time estimation (V1)
+- **Smart Time Estimates**: AI provides realistic time estimates for ADHD users with confidence levels
+- **Visual Timer**: Shrinking disc with 25/45/50 minute presets or custom durations
 - **Variance Tracking**: Compare planned vs actual time with encouraging feedback
+- **Offline-First Design**: Full functionality works offline with automatic sync when reconnected
 - **Progressive Enhancement**: Core functionality works without AI or authentication
 - **ADHD-Optimized**: Reduced motion, high contrast, minimal cognitive overhead
 - **Dashboard Analytics**: Track progress, streaks, and personal records (when signed in)
@@ -57,20 +60,35 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 1. **Landing Page**: Visit `http://localhost:3000` - see hero, features, demo preview
 2. **Task Input**: Click "Get Started" → enter a goal (e.g., "Write project proposal")
 3. **AI Suggestions**: See 60-second first step + next actions (or fallback if offline)
-4. **Timer Start**: Click "Start Focus Timer" → choose 25/45/50 minutes
-5. **Focus Session**: Visual countdown with pause/resume/stop controls
-6. **Results**: See variance analysis and encouraging feedback
-7. **Dashboard**: Sign in with Google to see analytics and progress tracking
+4. **Edit Actions** (V1): Click to edit action text, delete unwanted actions, add custom ones
+5. **Get Time Estimates** (V1): Click "Update with AI" to get realistic time estimates for each action
+6. **Timer Start**: Click "Start Focus Timer" → choose preset or use AI-estimated duration
+7. **Focus Session**: Visual countdown with pause/resume/stop controls
+8. **Results**: See variance analysis and encouraging feedback
+9. **Dashboard**: Sign in with Google to see analytics and progress tracking
 
 ### Testing Offline Mode
 - Disconnect internet → timer still works with fallback suggestions
+- Create action sessions and complete actions while offline
+- Reconnect internet → automatic sync of all offline work
 - All core functionality available without authentication
+- See `docs/offline-sync-system.md` for detailed offline capabilities
 
 ## Architecture
 
 **Tech Stack**: Next.js 14 + Bun (dev) + npm (prod) + Tailwind + Supabase + Google AI
 
 **Key Principle**: Progressive enhancement - timer works immediately, AI enhances the experience
+
+### Timer Architecture
+
+The timer system uses a dual-component architecture:
+
+- **Timer Component**: Smart router that selects appropriate timer implementation
+- **RegularTimer**: Basic timer functionality for standard focus sessions
+- **ActionTimer**: Enhanced timer with action tracking and session management
+
+This separation ensures clean code organization while supporting both basic and advanced use cases. See `docs/timer-architecture.md` for detailed technical documentation.
 
 ## Development Commands
 
@@ -116,6 +134,15 @@ Open browser dev tools to view detailed logs during development. See `docs/testi
 6. ✅ Visual countdown works, pause/resume functional
 7. ✅ Stop timer → see variance summary with encouraging message
 8. ✅ Session saved to database (if authenticated)
+
+**V1 Enhanced Actions Journey** (additional 3 minutes):
+1. ✅ Click to edit AI-generated actions inline
+2. ✅ Delete unwanted actions and add custom ones
+3. ✅ Click "Update with AI" → see time estimates with confidence levels
+4. ✅ Select action with estimate → timer uses custom duration
+5. ✅ Action progress tracked and synced to dashboard
+
+**Note**: V1 TypeScript interfaces are now implemented for full type safety across the enhanced actions feature.
 
 **Progressive Enhancement**:
 - ✅ Timer works without AI suggestions

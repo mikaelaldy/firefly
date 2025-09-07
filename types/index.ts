@@ -46,6 +46,21 @@ export interface SuggestResponse {
   fallbackUsed?: boolean;
 }
 
+// AI Time Estimation API types
+export interface EstimateRequest {
+  actions: string[];
+  context?: string;
+}
+
+export interface EstimateResponse {
+  estimatedActions: {
+    action: string;
+    estimatedMinutes: number;
+    confidence: 'low' | 'medium' | 'high';
+  }[];
+  totalEstimatedTime: number;
+}
+
 // Buffer and deadline types
 export interface DeadlineInfo {
   dueDate: Date;
@@ -112,6 +127,53 @@ export interface Session {
   completed: boolean;
   variance?: number; // percentage difference
   started_at: string;
+  completed_at?: string;
+  created_at: string;
+}
+
+// Enhanced Next Actions types (V1 Feature)
+export interface EditableAction {
+  id: string;
+  text: string;
+  estimatedMinutes?: number;
+  confidence?: 'low' | 'medium' | 'high';
+  isCustom: boolean; // true if user-modified
+  originalText?: string; // for tracking changes
+}
+
+export interface ActionSession {
+  sessionId: string;
+  goal: string;
+  actions: EditableAction[];
+  completedActions: string[];
+  currentActionId?: string;
+  totalEstimatedTime: number;
+  actualTimeSpent: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Database-specific types for action sessions
+export interface ActionSessionRecord {
+  id: string;
+  user_id: string;
+  goal: string;
+  created_at: string;
+  updated_at: string;
+  total_estimated_time?: number; // in minutes
+  actual_time_spent?: number; // in minutes
+  status: 'active' | 'completed' | 'paused';
+}
+
+export interface EditableActionRecord {
+  id: string;
+  session_id: string;
+  text: string;
+  estimated_minutes?: number;
+  confidence?: 'low' | 'medium' | 'high';
+  is_custom: boolean;
+  original_text?: string;
+  order_index: number;
   completed_at?: string;
   created_at: string;
 }

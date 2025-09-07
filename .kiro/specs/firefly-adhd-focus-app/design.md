@@ -24,10 +24,11 @@ graph TB
     A[User Interface] --> B[Next.js App Router]
     B --> C[API Routes]
     C --> D[Google AI Studio SDK]
-    C --> E[Session Storage]
+    C --> E[Supabase Database]
     B --> F[Client Components]
     F --> G[Timer Engine]
     F --> H[State Management]
+    F --> N[Action Editor]
     
     subgraph "External Services"
         D --> I[Gemini 2.0 Flash]
@@ -38,13 +39,25 @@ graph TB
         G --> K[Timer State]
         H --> L[Session Data]
         H --> M[User Preferences]
+        N --> O[Editable Actions]
+    end
+    
+    subgraph "V1 Features"
+        N --> P[AI Time Estimation]
+        O --> Q[Custom Timer Durations]
+        E --> R[Action Session Tracking]
     end
 ```
 
 ### Request Flow
 1. User submits goal → API route → Google AI Studio SDK → Response streams back
 2. Timer operations handled entirely client-side for <1s responsiveness
-3. Session data stored in browser storage, cleared on session end
+3. Session data stored in Supabase with user authentication
+4. **V1 Enhancement Flow**:
+   - User edits next actions → Client state updates immediately
+   - User clicks "Update with AI" → `/api/ai/estimate` → Time estimates returned
+   - User selects action → Timer starts with estimated duration
+   - Session progress synced to dashboard in real-time
 
 ## Components and Interfaces
 
@@ -57,6 +70,7 @@ graph TB
 - **CallToAction Component**: Prominent "Try Firefly Now" button with smooth transition
 - **TaskInput Component**: Centered input field with submit handling (embedded in CTA flow)
 - **AIResponse Component**: Displays first step and next actions
+- **EditableNextActions Component** (New V1): Inline editing, deletion, and AI re-estimation of next actions
 - **TimerLauncher Component**: Preset selection and immediate start capability
 
 #### 2. Timer Interface (`/focus`)
@@ -95,6 +109,23 @@ interface SuggestResponse {
   nextActions: string[];
   bufferRecommendation?: number;
   fallbackUsed?: boolean;
+}
+```
+
+#### `/api/ai/estimate` (New V1 Feature)
+```typescript
+interface EstimateRequest {
+  actions: string[];
+  context?: string;
+}
+
+interface EstimateResponse {
+  estimatedActions: {
+    action: string;
+    estimatedMinutes: number;
+    confidence: 'low' | 'medium' | 'high';
+  }[];
+  totalEstimatedTime: number;
 }
 ```
 
@@ -198,6 +229,30 @@ interface SuggestionCache {
 }
 ```
 
+### Enhanced Next Actions (V1 Feature)
+```typescript
+interface EditableAction {
+  id: string;
+  text: string;
+  estimatedMinutes?: number;
+  confidence?: 'low' | 'medium' | 'high';
+  isCustom: boolean; // true if user-modified
+  originalText?: string; // for tracking changes
+}
+
+interface ActionSession {
+  sessionId: string;
+  goal: string;
+  actions: EditableAction[];
+  completedActions: string[];
+  currentActionId?: string;
+  totalEstimatedTime: number;
+  actualTimeSpent: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
 ### Dashboard Analytics
 ```typescript
 interface UserAnalytics {
@@ -248,17 +303,83 @@ interface UserAnalytics {
 - **Accessibility**: Manual keyboard navigation and screen reader validation
 - **Performance**: Manual validation of <1s timer start requirement
 
+## V1 Feature: Enhanced Next Actions Management
+
+### Component Design
+
+#### EditableNextActions Component
+- **Inline Editing**: Click-to-edit functionality for each action
+- **Delete Actions**: Remove button with confirmation for each action
+- **Add Actions**: Allow users to add custom actions to the list
+- **AI Re-estimation**: "Update with AI" button to get time estimates
+- **Visual Feedback**: Loading states during AI estimation calls
+
+#### ActionTimer Component
+- **Custom Durations**: Use AI-estimated time as timer duration
+- **Action Context**: Display current action being worked on
+- **Progress Tracking**: Mark actions as complete during timer sessions
+
+### Database Schema Extensions
+
+#### action_sessions Table
+```sql
+CREATE TABLE action_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id),
+  goal TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  total_estimated_time INTEGER, -- in minutes
+  actual_time_spent INTEGER DEFAULT 0, -- in minutes
+  status TEXT DEFAULT 'active' -- 'active', 'completed', 'paused'
+);
+```
+
+#### editable_actions Table
+```sql
+CREATE TABLE editable_actions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID REFERENCES action_sessions(id) ON DELETE CASCADE,
+  text TEXT NOT NULL,
+  estimated_minutes INTEGER,
+  confidence TEXT, -- 'low', 'medium', 'high'
+  is_custom BOOLEAN DEFAULT FALSE,
+  original_text TEXT,
+  order_index INTEGER NOT NULL,
+  completed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### AI Integration Enhancement
+
+#### Time Estimation Prompt
+```
+Given these action items: [actions]
+For each action, provide a realistic time estimate in minutes for an ADHD user who may need extra time for task switching and focus building.
+
+Consider:
+- Task complexity and cognitive load
+- Potential for hyperfocus or distraction
+- Buffer time for transitions
+- ADHD-friendly time estimates (slightly longer than neurotypical estimates)
+
+Return estimates with confidence levels.
+```
+
 ## Security Considerations
 
 ### Data Privacy
 - **Supabase RLS**: Row Level Security policies for user data isolation
 - **AI Calls**: Strip personal identifiers before sending to Google AI Studio
 - **Session Security**: Use secure session tokens for authenticated users
+- **Action Data**: User-modified actions stored securely with RLS policies
 
 ### API Security
 - **Rate Limiting**: Implement per-IP and per-user rate limits
 - **Input Validation**: Sanitize all user inputs before AI processing
 - **CORS**: Restrict API access to application domain
+- **Action Validation**: Validate action text length and content before AI estimation
 
 ### Authentication Security
 - **OAuth Flow**: Secure Google OAuth implementation with Supabase Auth

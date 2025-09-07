@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { getVarianceMessage } from '@/lib/timer-utils'
+import { ActionSessionResults } from './ActionSessionResults'
+import { useActionSession } from '@/lib/action-sessions/context'
 import type { TimerSession } from '@/types'
 
 interface SessionResultsProps {
@@ -12,6 +14,7 @@ interface SessionResultsProps {
 
 export function SessionResults({ session, onContinue, onNewTask }: SessionResultsProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const { state: actionSessionState } = useActionSession()
   
   // Convert durations to minutes for display
   const plannedMinutes = Math.round(session.plannedDuration / 60)
@@ -66,7 +69,12 @@ export function SessionResults({ session, onContinue, onNewTask }: SessionResult
   const displayProps = getDisplayProps()
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Action Session Results - show if we have action session data */}
+      {actionSessionState.sessionId && actionSessionState.actions.length > 0 && (
+        <ActionSessionResults sessionId={actionSessionState.sessionId} />
+      )}
+      
       <div className={`${displayProps.bgColor} ${displayProps.borderColor} border-2 rounded-2xl p-8 text-center`}>
         {/* Celebration Header */}
         <div className="mb-6">

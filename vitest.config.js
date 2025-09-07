@@ -1,6 +1,12 @@
 export default {
   test: {
     globals: true,
-    environment: 'node',
+    environment: 'jsdom',
+    setupFiles: ['./vitest.setup.js'],
+  },
+  resolve: {
+    alias: {
+      '@': '.',
+    },
   },
 }

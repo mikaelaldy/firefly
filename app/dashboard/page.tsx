@@ -12,6 +12,7 @@ import { ProgressInsights } from '@/components/dashboard/ProgressInsights'
 import { ReadyToFocus } from '@/components/dashboard/ReadyToFocus'
 import { OnboardingMessage } from '@/components/dashboard/OnboardingMessage'
 import { UserSettings } from '@/components/dashboard/UserSettings'
+import { ActionSessionInsights } from '@/components/dashboard/ActionSessionInsights'
 
 interface DashboardData {
   totalFocusTime: number;
@@ -33,10 +34,37 @@ interface DashboardData {
     variance: number;
     startedAt: string;
     completedAt?: string;
+    type?: 'regular' | 'action';
+    actions?: Array<{
+      id: string;
+      text: string;
+      estimated_minutes?: number;
+      confidence?: 'low' | 'medium' | 'high';
+      is_custom?: boolean;
+      order_index: number;
+      completed_at?: string;
+      created_at: string;
+    }>;
   }>;
   insights: Array<{
     message: string;
     type: 'celebration' | 'encouragement' | 'tip';
+  }>;
+  actionSessions?: Array<{
+    id: string;
+    goal: string;
+    total_estimated_time?: number;
+    actual_time_spent?: number;
+    status: string;
+    created_at: string;
+    editable_actions?: Array<{
+      id: string;
+      text: string;
+      estimated_minutes?: number;
+      confidence?: 'low' | 'medium' | 'high';
+      is_custom?: boolean;
+      completed_at?: string;
+    }>;
   }>;
 }
 
@@ -238,9 +266,20 @@ export default function DashboardPage() {
                     completionRate: dashboardData.completionRate,
                     sessionsThisWeek: dashboardData.sessionsThisWeek
                   } : null}
+                  actionSessions={dashboardData?.actionSessions || []}
                   loading={loading}
                 />
               </div>
+
+              {/* Action Session Insights - Full width if there are action sessions */}
+              {(dashboardData?.actionSessions && dashboardData.actionSessions.length > 0) && (
+                <div className="mb-8">
+                  <ActionSessionInsights 
+                    actionSessions={dashboardData.actionSessions}
+                    loading={loading}
+                  />
+                </div>
+              )}
 
               {/* Content grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -263,11 +302,19 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Right column */}
-                <div>
+                <div className="space-y-8">
                   <SessionHistory 
                     sessions={dashboardData?.recentSessions || []}
                     loading={loading}
                   />
+                  
+                  {/* Show action session insights in sidebar if no action sessions exist yet */}
+                  {(!dashboardData?.actionSessions || dashboardData.actionSessions.length === 0) && (
+                    <ActionSessionInsights 
+                      actionSessions={[]}
+                      loading={loading}
+                    />
+                  )}
                 </div>
               </div>
             </div>

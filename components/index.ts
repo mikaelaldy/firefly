@@ -5,6 +5,7 @@ export { AuthTest } from './auth/AuthTest'
 // Task components
 export { TaskInput } from './TaskInput'
 export { AIResponse } from './AIResponse'
+export { EditableNextActions } from './EditableNextActions'
 export { SessionResults } from './SessionResults'
 export { BufferDeadlineManager } from './BufferDeadlineManager'
 
@@ -17,6 +18,7 @@ export { Timer } from './timer/Timer'
 export { VisualTimer } from './timer/VisualTimer'
 export { TimerControls } from './timer/TimerControls'
 export { TimerPresets } from './timer/TimerPresets'
+export { TimerLauncher } from './timer/TimerLauncher'
 export { TimerTest } from './timer/TimerTest'
 
 // Landing page components

@@ -29,12 +29,25 @@ This checklist covers the complete user journey from task input to session compl
 - [ ] **Fallback handling works** - If AI fails, static suggestions or graceful error message appears
 - [ ] **Timer remains available** - "Start Focus" button is always clickable regardless of AI status
 
+### 2.5. V1 Enhanced Actions Phase (if available)
+- [ ] **Actions are editable** - Click on any AI-generated action to edit text inline
+- [ ] **Edit saves immediately** - Changes to action text are saved without page reload
+- [ ] **Delete actions works** - Delete button removes actions from the list
+- [ ] **Add custom actions** - Users can add their own actions to the list
+- [ ] **Update with AI button** - "Update with AI" button appears after editing actions
+- [ ] **Time estimation works** - Clicking "Update with AI" returns time estimates for each action
+- [ ] **Estimates display correctly** - Time estimates show with confidence levels (low/medium/high)
+- [ ] **Fallback estimates** - Default estimates appear if AI estimation fails
+
 ### 3. Timer Phase
 - [ ] **Timer presets display** - 25, 45, and 50 minute options are visible
+- [ ] **Custom durations work** - If actions have time estimates, custom timer durations are available
+- [ ] **Action selection** - User can select specific action to work on (if V1 features available)
 - [ ] **Timer starts quickly** - Clicking "Start Focus" begins countdown within 1 second
 - [ ] **Visual timer works** - Shrinking disc and mm:ss countdown display correctly
 - [ ] **Timer controls function** - Pause, resume, and stop buttons work as expected
 - [ ] **Timer accuracy** - Time counts down accurately (test for ~30 seconds)
+- [ ] **Action progress** - Current action context is displayed during timer (if V1 available)
 
 ### 4. Session Completion Phase
 - [ ] **Stop timer works** - Manually stopping timer before completion works
@@ -93,6 +106,8 @@ This checklist covers the complete user journey from task input to session compl
 - [ ] **Timer edge cases** - Pausing/resuming multiple times works correctly
 - [ ] **Browser tab switching** - Timer continues accurately when tab is not active
 - [ ] **System sleep/wake** - Timer handles system sleep/wake cycles appropriately
+- [ ] **Timer component routing** - Regular timer used when no actions, ActionTimer used with actions
+- [ ] **Component switching** - Smooth transition between timer types based on action presence
 
 ## Success Criteria
 ✅ **Complete user journey works**: Input → AI suggestions → Timer → Results → Return to input
@@ -101,12 +116,21 @@ This checklist covers the complete user journey from task input to session compl
 ✅ **Data persistence**: Session data is correctly stored and retrievable
 
 ## Test Data Examples
+
+### Sample Goals for Testing
 Use these sample goals for consistent testing:
 - "Write a blog post about productivity"
 - "Clean my desk and organize papers"
 - "Review and respond to emails"
 - "Study for upcoming presentation"
 - "Plan weekend activities"
+
+### V1 Enhanced Actions Test Data
+Sample action modifications for testing:
+- **Original**: "Research the topic" → **Edited**: "Research productivity techniques online"
+- **Original**: "Write content" → **Edited**: "Write 500-word introduction section"
+- **Custom Addition**: "Take a 5-minute break between sections"
+- **Expected Estimates**: 15-45 minutes per action with confidence levels
 
 ## Notes
 - This is a hackathon-scope checklist focusing on core functionality

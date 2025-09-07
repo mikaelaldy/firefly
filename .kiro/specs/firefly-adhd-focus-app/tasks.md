@@ -192,3 +192,157 @@
   - Write quick README: run scripts (Bun for dev, npm for build/deploy), env setup, demo steps
   - Test complete user journey from landing page to dashboard
   - _Requirements: All integration_
+
+## V1 Feature: Enhanced Next Actions Management
+
+- [x] 18. Database schema for action sessions
+
+
+
+
+
+
+  - Create action_sessions table with user_id, goal, estimated/actual time tracking
+  - Create editable_actions table with session relationships and time estimates
+  - Add RLS policies for user data isolation on both tables
+  - Write migration script and test with sample data
+  - Add TypeScript interfaces for EditableAction and ActionSession
+  - _Requirements: 12.11, 12.12_
+
+- [x] 19. AI time estimation API endpoint
+
+
+
+
+
+  - Create /api/ai/estimate endpoint accepting array of action strings
+  - Implement Gemini prompt for ADHD-friendly time estimation
+  - Return structured response with minutes and confidence levels
+  - Add fallback handling and rate limiting
+  - _Requirements: 12.7, 12.8_
+
+- [x] 20. EditableNextActions component
+
+
+
+
+
+- [x] 20.1 Build inline editing functionality
+
+
+
+
+
+
+
+  - Create editable text fields for each AI-generated action
+  - Implement click-to-edit with immediate save to local state
+  - Add visual feedback for editing mode and save states
+  - _Requirements: 12.1, 12.2, 12.3_
+
+- [x] 20.2 Add delete and add action capabilities
+
+
+  - Implement delete button with confirmation for each action
+  - Create "Add Action" button to insert custom actions
+  - Handle reordering of actions in the list
+  - _Requirements: 12.4, 12.5_
+
+- [x] 20.3 Integrate AI re-estimation feature
+
+
+  - Add "Update with AI" button that sends modified actions to /api/ai/estimate
+  - Display loading state during AI estimation calls
+  - Update action list with time estimates and confidence indicators
+  - _Requirements: 12.6, 12.7, 12.8, 12.9_
+
+- [-] 21. Enhanced timer with custom durations
+
+
+
+- [x] 21.1 Modify timer to accept estimated durations
+
+
+
+
+
+
+
+  - Update TimerLauncher to use action estimates instead of presets
+  - Display current action context during timer sessions
+  - Allow selection of specific action to work on
+  - _Requirements: 12.10_
+-
+
+- [x] 21.2 Action progress tracking
+
+
+
+
+
+  - Mark actions as completed when timer finishes
+  - Track actual time spent vs estimated time per action
+  - Update session progress in real-time
+  - _Requirements: 12.11, 12.12_
+
+- [x] 22. Session persistence and sync
+
+
+
+
+
+- [-] 22.1 Save action sessions to database
+
+
+
+
+
+
+
+
+
+
+  - Create ActionSession service for CRUD operations
+  - Persist user modifications and AI estimates to Supabase
+  - Handle offline/online sync for action data
+  - _Requirements: 12.11, 12.12_
+
+- [x] 22.2 Dashboard integration for action tracking
+
+
+
+
+
+
+
+  - Update dashboard to display action session history
+  - Show estimated vs actual time for completed actions
+  - Add insights about time estimation accuracy
+  - _Requirements: 12.12_
+
+- [x] 22.3 Comprehensive offline sync system
+
+
+
+
+
+
+
+
+  - Implement automatic offline detection and graceful degradation
+  - Add localStorage-based offline data storage with sync queuing
+  - Create automatic sync on network reconnection with retry logic
+  - Handle database errors by falling back to offline mode
+  - Add utility functions for sync status monitoring and manual sync
+  - _Requirements: 12.11, 12.12, Progressive Enhancement_
+- [ ] 23. Testing and polish for V1 features
+
+
+
+- [ ] 23. Testing and polish for V1 features
+
+  - Test complete workflow: edit actions → get estimates → run timers → track progress
+  - Verify database persistence and RLS policies
+  - Test AI estimation fallbacks and error handling
+  - Manual QA for action editing UX and timer integration
+  - _Requirements: 12.1-12.12_

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Firefly app implements intelligent caching and rate limiting for the AI suggestion API to ensure optimal performance and prevent abuse while maintaining a responsive user experience.
+The Firefly app implements intelligent caching and rate limiting for AI APIs to ensure optimal performance and prevent abuse while maintaining a responsive user experience. This includes both the task suggestion API and the new V1 time estimation API.
 
 ## AI Suggestion API (`/api/ai/suggest`)
 
@@ -134,6 +134,62 @@ GOOGLE_AI_API_KEY=your_api_key
 # CACHE_DURATION=300000 (5 minutes)
 ```
 
+## AI Time Estimation API (`/api/ai/estimate`) - V1 Feature
+
+### Purpose
+
+The time estimation API provides realistic time estimates for user-modified actions, helping ADHD users plan focused work sessions with appropriate time buffers.
+
+### Request/Response Types
+
+**Request Interface:**
+```typescript
+interface EstimateRequest {
+  actions: string[];
+  context?: string;
+}
+```
+
+**Response Interface:**
+```typescript
+interface EstimateResponse {
+  estimatedActions: {
+    action: string;
+    estimatedMinutes: number;
+    confidence: 'low' | 'medium' | 'high';
+  }[];
+  totalEstimatedTime: number;
+}
+```
+
+### Performance Characteristics
+
+**Response Times:**
+- **Typical**: 800-1500ms (AI processing time)
+- **Fallback**: < 100ms (default estimates)
+- **Rate Limited**: < 10ms (cached response)
+
+**ADHD-Optimized Estimates:**
+- Includes buffer time for task switching
+- Accounts for potential hyperfocus or distraction
+- Slightly longer than neurotypical estimates
+- Confidence levels help users gauge reliability
+
+### Caching Strategy
+
+Similar to the suggestion API, the estimation API implements:
+- **Duration**: 10 minutes per action set
+- **Key Strategy**: Hash of action array + context
+- **Fallback**: Default time estimates (15-30 minutes per action)
+
+### Rate Limiting
+
+**Configuration:**
+- **Window**: 1 minute per user
+- **Limit**: 5 estimation requests per window
+- **Tracking**: By user ID or IP address
+- **Fallback**: Default estimates when rate limited
+
 ## Future Improvements
 
 Potential enhancements for production scale:
@@ -143,3 +199,5 @@ Potential enhancements for production scale:
 - **Cache Analytics**: Track hit rates and optimize cache duration
 - **Smart Prefetching**: Pre-cache common goal patterns
 - **Adaptive Rate Limits**: Adjust limits based on user authentication status
+- **Estimation Learning**: Improve estimates based on actual completion times
+- **Action Similarity**: Cache estimates for similar action patterns

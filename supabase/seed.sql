@@ -74,3 +74,38 @@ $$ LANGUAGE plpgsql;
 
 -- Usage example (commented out):
 -- SELECT public.create_demo_data('your-actual-user-id-here');
+--
+ Create a function to generate demo data for action sessions
+CREATE OR REPLACE FUNCTION public.create_action_sessions_demo_data(target_user_id UUID)
+RETURNS VOID AS $
+DECLARE
+  action_session_1_id UUID;
+  action_session_2_id UUID;
+BEGIN
+  -- Insert demo action sessions
+  INSERT INTO public.action_sessions (user_id, goal, total_estimated_time, actual_time_spent, status) VALUES 
+    (target_user_id, 'Complete project documentation', 120, 95, 'completed')
+    RETURNING id INTO action_session_1_id;
+
+  INSERT INTO public.action_sessions (user_id, goal, total_estimated_time, status) VALUES 
+    (target_user_id, 'Prepare quarterly review presentation', 90, 'active')
+    RETURNING id INTO action_session_2_id;
+
+  -- Insert demo editable actions for first session (completed)
+  INSERT INTO public.editable_actions (session_id, text, estimated_minutes, confidence, is_custom, order_index, completed_at) VALUES 
+    (action_session_1_id, 'Review existing documentation structure', 30, 'high', false, 1, NOW() - INTERVAL '2 hours'),
+    (action_session_1_id, 'Write API documentation', 45, 'medium', false, 2, NOW() - INTERVAL '1 hour'),
+    (action_session_1_id, 'Create user guide examples', 45, 'medium', true, 3, NOW() - INTERVAL '30 minutes');
+
+  -- Insert demo editable actions for second session (active)
+  INSERT INTO public.editable_actions (session_id, text, estimated_minutes, confidence, is_custom, order_index) VALUES 
+    (action_session_2_id, 'Gather Q3 performance metrics', 20, 'high', false, 1),
+    (action_session_2_id, 'Create charts and visualizations', 35, 'medium', false, 2),
+    (action_session_2_id, 'Write executive summary', 25, 'medium', true, 3),
+    (action_session_2_id, 'Practice presentation delivery', 10, 'low', true, 4);
+
+END;
+$ LANGUAGE plpgsql;
+
+-- Usage example for action sessions demo data (commented out):
+-- SELECT public.create_action_sessions_demo_data('your-actual-user-id-here');

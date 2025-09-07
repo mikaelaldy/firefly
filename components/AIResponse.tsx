@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import type { SuggestResponse } from '@/types'
+import { EditableNextActions } from './EditableNextActions'
+import type { SuggestResponse, EditableAction } from '@/types'
 
 interface AIResponseProps {
   goal: string
   onSuggestionsReceived?: (suggestions: SuggestResponse) => void
+  onActionsChange?: (actions: EditableAction[]) => void
   className?: string
 }
 
-export function AIResponse({ goal, onSuggestionsReceived, className = '' }: AIResponseProps) {
+export function AIResponse({ goal, onSuggestionsReceived, onActionsChange, className = '' }: AIResponseProps) {
   const [suggestions, setSuggestions] = useState<SuggestResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -193,30 +195,14 @@ export function AIResponse({ goal, onSuggestionsReceived, className = '' }: AIRe
           </div>
         </div>
 
-        {/* Next Actions - 3-5 actionable steps (Requirement 2.3) */}
+        {/* Next Actions - Editable with AI re-estimation (Requirements 12.1, 12.2, 12.3) */}
         {suggestions.nextActions && suggestions.nextActions.length > 0 && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 transition-all duration-200 hover:shadow-md">
-            <div className="flex items-center space-x-2 mb-3">
-              <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-purple-800 font-semibold text-sm">
-                📋 Next Actions
-              </h3>
-            </div>
-            <ul className="space-y-2">
-              {suggestions.nextActions.map((action, index) => (
-                <li key={index} className="flex items-start space-x-3 text-purple-700">
-                  <span className="text-purple-500 font-medium text-sm mt-0.5 flex-shrink-0">
-                    {index + 2}.
-                  </span>
-                  <span className="text-sm leading-relaxed">{action}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <EditableNextActions
+            initialActions={suggestions.nextActions}
+            onActionsChange={onActionsChange}
+            context={goal}
+            className="transition-all duration-200 hover:shadow-md"
+          />
         )}
 
         {/* Buffer recommendation */}

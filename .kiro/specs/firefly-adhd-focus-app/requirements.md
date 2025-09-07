@@ -155,3 +155,22 @@ The application addresses the common ADHD challenge of getting stuck at the star
 9. WHEN the dashboard is accessed THEN the system SHALL include a prominent "Start New Session" button
 10. WHEN viewing historical data THEN the system SHALL respect user privacy and only show data for the authenticated user
 11. WHEN no historical data exists THEN the system SHALL show an encouraging onboarding message with tips for getting started
+
+### Requirement 12: Enhanced Next Actions Management (V1 Feature)
+
+**User Story:** As an ADHD user, I want to edit, delete, and get time estimates for my next actions, so that I can customize my workflow and use realistic time estimates for focused work sessions.
+
+#### Acceptance Criteria
+
+1. WHEN AI generates next actions THEN the system SHALL display each action with an editable text field
+2. WHEN the user clicks on a next action THEN the system SHALL allow inline editing of the action text
+3. WHEN the user modifies a next action THEN the system SHALL save changes immediately without page reload
+4. WHEN the user wants to remove an action THEN the system SHALL provide a delete button for each next action
+5. WHEN the user deletes a next action THEN the system SHALL remove it from the list with visual confirmation
+6. WHEN the user adds or modifies actions THEN the system SHALL provide an "Update with AI" button
+7. WHEN the user clicks "Update with AI" THEN the system SHALL send the modified actions to AI for time estimation
+8. WHEN AI processes the updated actions THEN the system SHALL return time estimates for each action
+9. WHEN time estimates are received THEN the system SHALL display estimated duration next to each action
+10. WHEN the user selects an action with time estimate THEN the system SHALL use that estimate as the timer duration
+11. WHEN actions are modified or estimated THEN the system SHALL sync this data to the user's dashboard
+12. WHEN dashboard displays session history THEN the system SHALL include custom action data and estimates

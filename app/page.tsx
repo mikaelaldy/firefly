@@ -8,13 +8,14 @@ import { HeroSection } from '@/components/landing/HeroSection'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
 import { DemoPreview } from '@/components/landing/DemoPreview'
 import { useAuth } from '@/lib/auth/context'
-import type { Task, SuggestResponse, DeadlineInfo, IfThenPlan } from '@/types'
+import type { Task, SuggestResponse, DeadlineInfo, IfThenPlan, EditableAction } from '@/types'
 
 export default function Home() {
   const { user, loading } = useAuth()
   const [currentTask, setCurrentTask] = useState<Task | null>(null)
   const [showAIResponse, setShowAIResponse] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<SuggestResponse | null>(null)
+  const [currentActions, setCurrentActions] = useState<EditableAction[]>([])
   const [deadlineInfo, setDeadlineInfo] = useState<DeadlineInfo | null>(null)
   const [ifThenPlan, setIfThenPlan] = useState<IfThenPlan | null>(null)
   const [showTaskInput, setShowTaskInput] = useState(false)
@@ -48,9 +49,14 @@ export default function Home() {
     }
   }
 
+  const handleActionsChange = (actions: EditableAction[]) => {
+    setCurrentActions(actions)
+  }
+
   const handleStartTimer = () => {
     // Progressive enhancement: Timer can start regardless of AI status
     console.log('Starting timer for goal:', currentTask?.goal)
+    console.log('Available actions:', currentActions)
     
     // Build URL with goal and optional deadline info
     const params = new URLSearchParams()
@@ -63,6 +69,11 @@ export default function Home() {
     if (deadlineInfo) {
       params.set('deadline', deadlineInfo.dueDate.toISOString())
       params.set('buffer', deadlineInfo.suggestedBuffer.toString())
+    }
+    
+    // Pass actions as JSON if available
+    if (currentActions.length > 0) {
+      params.set('actions', JSON.stringify(currentActions))
     }
     
     // Navigate to timer page
@@ -142,13 +153,13 @@ export default function Home() {
             </div>
 
             {/* Task Input */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 p-8">
               <TaskInput onTaskCreated={handleTaskCreated} />
             </div>
 
             {/* Task created state with AI Response */}
             {currentTask && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 shadow-lg">
+              <div className="bg-gradient-to-r from-green-50/95 to-emerald-50/95 backdrop-blur-sm border border-green-200 rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center justify-center space-x-3 mb-4">
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -158,7 +169,7 @@ export default function Home() {
                   <span className="text-green-800 font-semibold text-lg">Task Created!</span>
                 </div>
                 
-                <div className="bg-white rounded-lg p-4 mb-6">
+                <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 mb-6 border border-gray-100">
                   <p className="text-gray-800 font-medium">
                     {currentTask.goal}
                   </p>
@@ -170,6 +181,7 @@ export default function Home() {
                     <AIResponse 
                       goal={currentTask.goal}
                       onSuggestionsReceived={handleSuggestionsReceived}
+                      onActionsChange={handleActionsChange}
                     />
                   </div>
                 )}

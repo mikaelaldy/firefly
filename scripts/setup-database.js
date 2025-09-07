@@ -89,13 +89,16 @@ function displayInstructions() {
   console.log('After applying migrations, you can add demo data:');
   console.log('1. Authenticate a user in your app');
   console.log('2. Get the user UUID from auth.users table');
-  console.log('3. Run: SELECT public.create_demo_data(\'USER_UUID_HERE\');\n');
+  console.log('3. Run basic demo data: SELECT public.create_demo_data(\'USER_UUID_HERE\');');
+  console.log('4. Run action sessions demo: SELECT public.create_action_sessions_demo_data(\'USER_UUID_HERE\');\n');
   
   console.log('✅ After setup, your database will have:');
   console.log('- User profiles with preferences');
   console.log('- Tasks table for user goals');
   console.log('- Suggestions table for AI responses');
   console.log('- Sessions table for timer tracking');
+  console.log('- Action sessions for V1 enhanced features');
+  console.log('- Editable actions with AI time estimates');
   console.log('- Row Level Security policies');
   console.log('- Automatic profile creation on signup\n');
   

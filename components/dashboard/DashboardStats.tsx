@@ -9,10 +9,26 @@ interface DashboardStatsProps {
     completionRate: number;
     sessionsThisWeek: number;
   } | null;
+  actionSessions?: Array<{
+    id: string;
+    goal: string;
+    total_estimated_time?: number;
+    actual_time_spent?: number;
+    status: string;
+    created_at: string;
+    editable_actions?: Array<{
+      id: string;
+      text: string;
+      estimated_minutes?: number;
+      confidence?: 'low' | 'medium' | 'high';
+      is_custom?: boolean;
+      completed_at?: string;
+    }>;
+  }>;
   loading: boolean;
 }
 
-export function DashboardStats({ stats, loading }: DashboardStatsProps) {
+export function DashboardStats({ stats, actionSessions = [], loading }: DashboardStatsProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -45,7 +61,34 @@ export function DashboardStats({ stats, loading }: DashboardStatsProps) {
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
-  const statCards = [
+  // Calculate action session stats
+  const totalActions = actionSessions.reduce((total, session) => 
+    total + (session.editable_actions?.length || 0), 0
+  );
+  
+  const completedActions = actionSessions.reduce((total, session) => 
+    total + (session.editable_actions?.filter(action => action.completed_at).length || 0), 0
+  );
+
+  const actionSessionsWithEstimates = actionSessions.filter(session => 
+    session.total_estimated_time && session.actual_time_spent
+  );
+
+  let averageAccuracy = 0;
+  if (actionSessionsWithEstimates.length > 0) {
+    const accuracySum = actionSessionsWithEstimates.reduce((sum, session) => {
+      const estimatedMinutes = session.total_estimated_time || 0;
+      const actualMinutes = session.actual_time_spent || 0;
+      if (estimatedMinutes === 0) return sum;
+      
+      const variance = Math.abs((actualMinutes - estimatedMinutes) / estimatedMinutes);
+      const accuracy = Math.max(0, 1 - variance);
+      return sum + accuracy;
+    }, 0);
+    averageAccuracy = (accuracySum / actionSessionsWithEstimates.length) * 100;
+  }
+
+  const baseStatCards = [
     {
       title: 'Total Focus Time',
       value: formatTime(stats.totalFocusTime),
@@ -80,8 +123,32 @@ export function DashboardStats({ stats, loading }: DashboardStatsProps) {
     }
   ];
 
+  // Add action-specific stats if there are action sessions
+  const actionStatCards = actionSessions.length > 0 ? [
+    {
+      title: 'Actions Completed',
+      value: `${completedActions}/${totalActions}`,
+      icon: '✅',
+      color: 'from-indigo-500 to-indigo-600',
+      bgColor: 'bg-indigo-50',
+      textColor: 'text-indigo-600'
+    },
+    ...(averageAccuracy > 0 ? [{
+      title: 'Time Accuracy',
+      value: `${Math.round(averageAccuracy)}%`,
+      icon: '🎯',
+      color: 'from-teal-500 to-teal-600',
+      bgColor: 'bg-teal-50',
+      textColor: 'text-teal-600'
+    }] : [])
+  ] : [];
+
+  const statCards = [...baseStatCards, ...actionStatCards];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className={`grid grid-cols-1 md:grid-cols-2 ${
+      statCards.length <= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-6'
+    } gap-6`}>
       {statCards.map((card, index) => (
         <div
           key={index}

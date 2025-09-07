@@ -33,10 +33,11 @@ See `docs/manual-qa-checklist.md` for the complete testing checklist.
 
 #### Key Test Scenarios
 1. **Happy Path**: Input → AI suggestions → Timer → Results → Next task
-2. **AI Fallback**: Test behavior when AI services are unavailable
-3. **Timer Edge Cases**: Pause/resume, browser tab switching, system sleep
-4. **Performance**: Timer start latency, AI response times
-5. **Accessibility**: Keyboard navigation, screen reader compatibility
+2. **V1 Enhanced Actions**: Edit actions → Get estimates → Custom timer → Progress tracking
+3. **AI Fallback**: Test behavior when AI services are unavailable
+4. **Timer Edge Cases**: Pause/resume, browser tab switching, system sleep, component switching between RegularTimer and ActionTimer
+5. **Performance**: Timer start latency, AI response times, estimation API speed
+6. **Accessibility**: Keyboard navigation, screen reader compatibility
 
 ## Test Files Structure
 
@@ -104,6 +105,19 @@ Use these consistent test inputs for manual QA:
 
 **Expected Behavior**: PII goals should be sanitized before AI processing while maintaining task context.
 
+### V1 Enhanced Actions Test Data
+
+#### Sample Action Lists for Time Estimation
+- **Documentation Project**: ["Review existing docs", "Write introduction", "Create examples", "Proofread content"]
+- **Email Management**: ["Sort inbox by priority", "Respond to urgent emails", "Archive old messages", "Set up filters"]
+- **Presentation Prep**: ["Research topic", "Create outline", "Design slides", "Practice delivery"]
+
+#### Expected Time Estimates (ADHD-optimized)
+- **Simple tasks**: 15-25 minutes (with buffer)
+- **Complex tasks**: 30-45 minutes (with focus time)
+- **Creative tasks**: 45-60 minutes (allowing for flow state)
+- **Confidence levels**: High for familiar tasks, Medium/Low for new or complex tasks
+
 ### Expected Variance Scenarios
 - **Perfect timing**: 25min planned, 25min actual (0% variance)
 - **Over time**: 25min planned, 30min actual (+20% variance)
@@ -114,6 +128,7 @@ Use these consistent test inputs for manual QA:
 
 ### Unit Test Failures
 - Check timer-utils.ts for any changes to function signatures
+- Verify Timer component routing logic between RegularTimer and ActionTimer
 - Verify test expectations match actual function behavior
 - Run tests in watch mode for rapid iteration
 

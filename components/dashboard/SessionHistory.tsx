@@ -10,6 +10,17 @@ interface SessionHistoryProps {
     variance: number; // percentage
     startedAt: string;
     completedAt?: string;
+    type?: 'regular' | 'action';
+    actions?: Array<{
+      id: string;
+      text: string;
+      estimated_minutes?: number;
+      confidence?: 'low' | 'medium' | 'high';
+      is_custom?: boolean;
+      order_index: number;
+      completed_at?: string;
+      created_at: string;
+    }>;
   }>;
   loading: boolean;
 }
@@ -92,53 +103,104 @@ export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150"
+              className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors duration-150"
             >
-              {/* Status indicator */}
-              <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                session.completed ? 'bg-green-500' : 'bg-yellow-500'
-              }`}></div>
+              <div className="flex items-center space-x-4">
+                {/* Status indicator */}
+                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                  session.completed ? 'bg-green-500' : 'bg-yellow-500'
+                }`}></div>
 
-              {/* Session details */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {session.goal}
-                </p>
-                <div className="flex items-center space-x-3 text-xs text-gray-500 mt-1">
-                  <span>{formatDate(session.startedAt)}</span>
-                  <span>•</span>
-                  <span>
-                    {formatDuration(session.actualDuration)} / {formatDuration(session.plannedDuration)}
-                  </span>
-                  {session.completed && (
-                    <>
-                      <span>•</span>
-                      <span className={getVarianceColor(session.variance)}>
-                        {getVarianceText(session.variance)}
+                {/* Session details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {session.goal}
+                    </p>
+                    {session.type === 'action' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Actions
                       </span>
-                    </>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-3 text-xs text-gray-500">
+                    <span>{formatDate(session.startedAt)}</span>
+                    <span>•</span>
+                    <span>
+                      {formatDuration(session.actualDuration)} / {formatDuration(session.plannedDuration)}
+                    </span>
+                    {session.completed && (
+                      <>
+                        <span>•</span>
+                        <span className={getVarianceColor(session.variance)}>
+                          {getVarianceText(session.variance)}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Session status */}
+                <div className="flex-shrink-0">
+                  {session.completed ? (
+                    <div className="flex items-center space-x-1 text-green-600">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs font-medium">Done</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-1 text-yellow-600">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs font-medium">Partial</span>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Session status */}
-              <div className="flex-shrink-0">
-                {session.completed ? (
-                  <div className="flex items-center space-x-1 text-green-600">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-xs font-medium">Done</span>
+              {/* Action details for action sessions */}
+              {session.type === 'action' && session.actions && session.actions.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-medium text-gray-700">Actions Breakdown</h4>
+                    <span className="text-xs text-gray-500">
+                      {session.actions.filter(action => action.completed_at).length} / {session.actions.length} completed
+                    </span>
                   </div>
-                ) : (
-                  <div className="flex items-center space-x-1 text-yellow-600">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-xs font-medium">Partial</span>
+                  <div className="space-y-1">
+                    {session.actions.slice(0, 3).map((action, index) => (
+                      <div key={action.id} className="flex items-center space-x-2 text-xs">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          action.completed_at ? 'bg-green-400' : 'bg-gray-300'
+                        }`}></div>
+                        <span className={`flex-1 truncate ${
+                          action.completed_at ? 'text-gray-700' : 'text-gray-500'
+                        }`}>
+                          {action.text}
+                        </span>
+                        {action.estimated_minutes && (
+                          <span className="text-gray-400 flex items-center space-x-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            </svg>
+                            <span>{action.estimated_minutes}m</span>
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                    {session.actions.length > 3 && (
+                      <div className="text-xs text-gray-400 pl-4">
+                        +{session.actions.length - 3} more actions
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
