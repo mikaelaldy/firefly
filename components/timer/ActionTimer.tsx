@@ -543,7 +543,11 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                   <Checkbox
                     id={`action-${action.id}`}
                     checked={actionSessionState.completedActionIds.has(action.id)}
-                    onCheckedChange={() => handleToggleActionCompletion(action.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked !== actionSessionState.completedActionIds.has(action.id)) {
+                        handleToggleActionCompletion(action.id)
+                      }
+                    }}
                     className="mr-3"
                   />
                   <label htmlFor={`action-${action.id}`} className="flex-grow text-sm text-gray-800">
@@ -591,67 +595,14 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
               onResume={resumeTimer}
               onStop={stopTimer}
               onMarkComplete={handleMarkCompleteClick}
+              onPrevious={() => handleNavigationClick('previous')}
+              onNext={() => handleNavigationClick('next')}
               showMarkComplete={!!currentAction}
+              showNavigation={true}
+              canGoPrevious={currentActionIndex > 0}
+              canGoNext={currentActionIndex < actionSessionState.actions.length - 1}
             />
-            {/* Action Navigation Controls */}
-            <div className="flex justify-center gap-3 mt-6">
-              <button 
-                onClick={() => handleNavigationClick('previous')} 
-                disabled={currentActionIndex === 0}
-                className="
-                  flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm
-                  transition-all duration-200 transform hover:scale-105 active:scale-95
-                  focus:outline-none focus:ring-2 focus:ring-gray-300
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                  bg-gray-100 hover:bg-gray-200 text-gray-700
-                "
-                aria-label="Go to previous action"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <span>Previous</span>
-              </button>
 
-              <button 
-                onClick={() => {
-                  if(currentAction) {
-                    handleToggleActionCompletion(currentAction.id);
-                    handleNextAction();
-                  }
-                }}
-                className="
-                  flex items-center space-x-2 px-6 py-2 rounded-lg font-medium text-sm
-                  transition-all duration-200 transform hover:scale-105 active:scale-95
-                  focus:outline-none focus:ring-2 focus:ring-green-300
-                  bg-green-600 hover:bg-green-700 text-white
-                "
-                aria-label="Mark current action complete and continue"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <span>Complete & Continue</span>
-              </button>
-
-              <button 
-                onClick={() => handleNavigationClick('next')} 
-                disabled={currentActionIndex >= actionSessionState.actions.length - 1}
-                className="
-                  flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm
-                  transition-all duration-200 transform hover:scale-105 active:scale-95
-                  focus:outline-none focus:ring-2 focus:ring-gray-300
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                  bg-gray-100 hover:bg-gray-200 text-gray-700
-                "
-                aria-label="Skip to next action"
-              >
-                <span>Next</span>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
           </div>
 
           {/* Back to launcher button (when stopped) */}

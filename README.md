@@ -9,7 +9,7 @@ A lightweight Next.js application that helps ADHD users overcome task paralysis 
 - **Editable Actions**: Modify, delete, and add custom actions with AI time estimation (V1)
 - **Smart Time Estimates**: AI provides realistic time estimates for ADHD users with confidence levels
 - **Visual Timer**: Shrinking disc with 25/45/50 minute presets or custom durations
-- **Enhanced Timer Controls**: Mark actions complete early, navigate between actions, comprehensive keyboard shortcuts
+- **Enhanced Timer Controls**: Mark actions complete early, navigate between actions, time extensions, comprehensive keyboard shortcuts
 - **Sound System**: Optional timer ticking, session alarms, and break notifications with full customization and robust error handling
 - **Automatic Breaks**: Pomodoro-style break management (5min short, 15min long breaks)
 - **Variance Tracking**: Compare planned vs actual time with encouraging feedback
@@ -68,9 +68,11 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 6. **Sound Settings**: Click sound icon to customize ticking, alarms, and break notifications
 7. **Timer Start**: Click "Start Focus Timer" → choose preset or use AI-estimated duration
 8. **Focus Session**: Visual countdown with optional ticking sound, pause/resume/stop/mark complete controls, keyboard shortcuts (Space, Enter, Escape, Arrow keys)
-9. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
-10. **Results**: See variance analysis and encouraging feedback
-11. **Dashboard**: Sign in with Google → automatically redirected to three-column dashboard with:
+9. **Time Extensions** (V1.1): When timer reaches zero, choose to add 5/10/15 minutes or custom amount, with extension history tracking
+10. **Action Navigation** (V1.1): Use Previous/Next buttons or arrow keys to switch between actions with confirmation dialogs
+11. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
+12. **Results**: See variance analysis and encouraging feedback
+13. **Dashboard**: Sign in with Google → automatically redirected to three-column dashboard with:
     - **Navigation & Quick Stats**: Left sidebar with today's focus time, current streak, completion rate
     - **Ready to Focus**: Center section with multiple session start options (Quick Focus 25min, Deep Work 50min, Custom Goal)
     - **Personal Records**: Right sidebar showcasing achievements (longest session, best week, streaks)

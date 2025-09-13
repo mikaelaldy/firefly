@@ -214,17 +214,82 @@ The ActionTimer component manages additional state for enhanced controls:
 - **Memory Management**: Event listeners cleaned up on component unmount
 - **Offline Support**: All control actions work without network connection
 
+## V1.1 Advanced Timer Controls (NEW)
+
+### Time Extension System
+
+**Purpose**: Allows users to add more time when the timer reaches zero, supporting ADHD users who often need flexible time management.
+
+**Features**:
+- **Automatic Extension Modal**: Appears when timer reaches zero
+- **Preset Options**: Quick 5, 10, 15 minute extensions
+- **Custom Extensions**: User-defined extension amounts (1-60 minutes)
+- **Extension Tracking**: Visual history of all extensions added to current action
+- **Seamless Integration**: Extensions update timer duration without losing progress
+
+**Implementation**:
+```typescript
+// TimerExtensionModal provides comprehensive extension options
+<TimerExtensionModal
+  isOpen={showExtensionModal}
+  onClose={() => setShowExtensionModal(false)}
+  onExtend={handleExtendTime}
+  onComplete={handleCompleteAndContinue}
+  actionText={currentAction?.text}
+  currentExtensions={currentActionExtensions}
+/>
+```
+
+### Action Navigation System
+
+**Purpose**: Enables users to switch between actions during focus sessions with proper confirmation and state management.
+
+**Features**:
+- **Previous/Next Navigation**: Arrow buttons to move between actions
+- **Smart Confirmation**: Modal appears when switching during active timer
+- **Progress Preservation**: Current action progress saved when switching
+- **Edge Case Handling**: Proper disabled states at list boundaries
+- **Keyboard Navigation**: Left/Right arrow keys for quick switching
+
+**Implementation**:
+```typescript
+// ActionNavigationModal provides context-aware switching
+<ActionNavigationModal
+  isOpen={showNavigationModal}
+  onClose={() => setShowNavigationModal(false)}
+  onConfirm={handleConfirmedNavigation}
+  direction={navigationDirection}
+  currentActionText={currentAction?.text}
+  targetActionText={targetAction?.text}
+  currentProgress={progressInfo}
+/>
+```
+
+### Enhanced Action Management
+
+**Complete & Continue Button**: 
+- One-click action completion with automatic progression
+- Green styling for positive reinforcement
+- Combines action marking with navigation flow
+- Handles session completion when no more actions remain
+
+**Action Progress Tracking**:
+- Real-time session progress indicator
+- Visual completion status with checkboxes
+- Time tracking per action with extension history
+- Dashboard integration for historical analysis
+
 ## Future Enhancements
 
 ### Short Term
-- **Time Extension Controls**: Add/subtract time from current action
 - **Bulk Action Operations**: Mark multiple actions complete at once
 - **Custom Shortcuts**: User-configurable keyboard shortcuts
+- **Smart Time Suggestions**: AI-powered extension recommendations
 
 ### Long Term
 - **Voice Commands**: Voice-activated timer controls for hands-free operation
 - **Gesture Support**: Touch gestures for mobile timer control
-- **Smart Suggestions**: AI-powered recommendations for action completion
+- **Adaptive Timing**: AI learns user patterns to suggest optimal durations
 
 ## Migration Notes
 

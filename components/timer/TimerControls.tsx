@@ -8,8 +8,13 @@ interface TimerControlsProps {
   onResume: () => void;
   onStop: () => void;
   onMarkComplete?: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
   stopLabel?: string;
   showMarkComplete?: boolean;
+  showNavigation?: boolean;
+  canGoPrevious?: boolean;
+  canGoNext?: boolean;
 }
 
 export function TimerControls({ 
@@ -18,11 +23,36 @@ export function TimerControls({
   onResume, 
   onStop, 
   onMarkComplete,
+  onPrevious,
+  onNext,
   stopLabel = 'Stop',
-  showMarkComplete = false 
+  showMarkComplete = false,
+  showNavigation = false,
+  canGoPrevious = false,
+  canGoNext = false
 }: TimerControlsProps) {
   return (
     <div className="flex items-center justify-center space-x-4">
+      {/* Previous Action Button */}
+      {showNavigation && onPrevious && (
+        <button
+          onClick={onPrevious}
+          disabled={!canGoPrevious}
+          className="
+            flex items-center justify-center w-12 h-12 rounded-full
+            bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold
+            focus:outline-none focus:ring-4 focus:ring-gray-200
+            transition-all duration-200 transform hover:scale-105 active:scale-95
+            disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+          "
+          aria-label="Previous action"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </button>
+      )}
+
       {/* Pause/Resume Button */}
       {timerState.isActive && (
         <button
@@ -83,6 +113,26 @@ export function TimerControls({
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+          </svg>
+        </button>
+      )}
+
+      {/* Next Action Button */}
+      {showNavigation && onNext && (
+        <button
+          onClick={onNext}
+          disabled={!canGoNext}
+          className="
+            flex items-center justify-center w-12 h-12 rounded-full
+            bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold
+            focus:outline-none focus:ring-4 focus:ring-gray-200
+            transition-all duration-200 transform hover:scale-105 active:scale-95
+            disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+          "
+          aria-label="Next action"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
           </svg>
         </button>
       )}
