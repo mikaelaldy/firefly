@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -8,20 +8,44 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {sidebar && (
-            <div className="lg:w-64 lg:flex-shrink-0">
-              {sidebar}
+    <div className="flex bg-gray-50" style={{ height: 'calc(100vh - 4rem)' }}>
+      {/* Sidebar */}
+      {sidebar && (
+        <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 transition-all duration-300 ease-in-out`}>
+          <div className="h-full bg-white border-r border-gray-200 shadow-sm">
+            {/* Sidebar toggle button */}
+            <div className="flex items-center justify-end p-4 border-b border-gray-200">
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg 
+                  className={`w-5 h-5 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
             </div>
-          )}
-          
-          <div className="flex-1">
-            {children}
+            
+            {/* Sidebar content with collapsed prop */}
+            <div className="flex-1 overflow-y-auto">
+              {React.cloneElement(sidebar as React.ReactElement, { collapsed: sidebarCollapsed })}
+            </div>
           </div>
         </div>
+      )}
+      
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
       </div>
     </div>
   )
@@ -100,8 +124,12 @@ export function DashboardCard({
     lg: 'p-8'
   }
 
+  // Check if custom padding is provided in className
+  const hasCustomPadding = className.includes('p-')
+  const defaultPadding = hasCustomPadding ? '' : paddingClasses[padding]
+
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 ${paddingClasses[padding]} ${className}`}>
+    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 ${defaultPadding} ${className}`}>
       {children}
     </div>
   )

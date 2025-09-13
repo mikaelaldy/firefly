@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
-import { Header } from '@/components/layout/Header'
 import { DashboardLayout, DashboardSection, DashboardGrid, DashboardCard } from '@/components/dashboard/DashboardLayout'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { DashboardStats } from '@/components/dashboard/DashboardStats'
@@ -183,160 +183,156 @@ export default function DashboardPage() {
   // Show error state
   if (error) {
     return (
-      <>
-        <Header 
-          title="Dashboard" 
-          subtitle="Something went wrong"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Dashboard' }
-          ]}
-        />
-        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
-          <div className="container mx-auto px-6">
-            <div className="max-w-2xl mx-auto text-center">
-              <div className="text-6xl mb-4">😔</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                Oops! Something went wrong
-              </h2>
-              <p className="text-gray-600 mb-6">{error}</p>
-              <button
-                onClick={fetchDashboardData}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors duration-200"
-              >
-                Try Again
-              </button>
-            </div>
+      <DashboardLayout sidebar={<DashboardSidebar />}>
+        <div className="flex items-center justify-center h-full">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="text-6xl mb-4">😔</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Oops! Something went wrong
+            </h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={fetchDashboardData}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors duration-200"
+            >
+              Try Again
+            </button>
           </div>
         </div>
-      </>
+      </DashboardLayout>
     )
   }
 
   // Show loading state
   if (loading) {
     return (
-      <>
-        <Header 
-          title="Your Focus Dashboard" 
-          subtitle="Track your progress and manage your account"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Dashboard' }
-          ]}
-        />
-        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-20">
+      <DashboardLayout sidebar={<DashboardSidebar />}>
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading your dashboard...</p>
           </div>
         </div>
-      </>
+      </DashboardLayout>
     )
   }
 
   // Show onboarding for new users
   if (!dashboardData) {
     return (
-      <>
-        <Header 
-          title="Your Focus Dashboard" 
-          subtitle="Track your progress and manage your account"
-          breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Dashboard' }
-          ]}
-        />
-        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <OnboardingMessage />
-          </div>
+      <DashboardLayout sidebar={<DashboardSidebar />}>
+        <div className="max-w-4xl mx-auto">
+          <OnboardingMessage />
         </div>
-      </>
+      </DashboardLayout>
     )
   }
 
   return (
     <DashboardLayout sidebar={<DashboardSidebar />}>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Your Focus Dashboard</h1>
-          <p className="text-gray-600 mt-1">Track your progress and manage your account</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">Overview</Button>
-          <Button variant="outline">Settings</Button>
-          <Button onClick={fetchDashboardData} variant="default">Refresh Data</Button>
+      {/* Header with breadcrumbs and actions */}
+      <div className="bg-white border-b border-gray-200 -m-6 mb-6 p-6">
+        <nav className="mb-4" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm">
+            <li>
+              <Link href="/" className="text-gray-500 hover:text-gray-700 transition-colors">
+                Home
+              </Link>
+            </li>
+            <li className="flex items-center">
+              <svg className="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-gray-900 font-medium">Dashboard</span>
+            </li>
+          </ol>
+        </nav>
+        
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Your Focus Dashboard</h1>
+            <p className="text-gray-600 mt-1">Track your progress and manage your account</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline">Overview</Button>
+            <Button variant="outline">Settings</Button>
+            <Button onClick={fetchDashboardData} variant="default">Refresh Data</Button>
+          </div>
         </div>
       </div>
       
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8">
-          <div className="space-y-6">
-            <DashboardCard>
-              <ReadyToFocus />
-            </DashboardCard>
-            
-            <DashboardCard>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Stats</h3>
-              <DashboardStats 
-                stats={dashboardData ? {
-                  totalFocusTime: dashboardData.totalFocusTime,
-                  averageSessionLength: dashboardData.averageSessionLength,
-                  completionRate: dashboardData.completionRate,
-                  sessionsThisWeek: dashboardData.sessionsThisWeek
-                } : null}
-                actionSessions={dashboardData?.actionSessions || []}
-                loading={loading}
-              />
-            </DashboardCard>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main Content Area */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Ready to Focus Section */}
+          <DashboardCard className="p-8">
+            <ReadyToFocus />
+          </DashboardCard>
+          
+          {/* Your Stats Section */}
+          <DashboardCard className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Your Stats</h3>
+            <DashboardStats 
+              stats={dashboardData ? {
+                totalFocusTime: dashboardData.totalFocusTime,
+                averageSessionLength: dashboardData.averageSessionLength,
+                completionRate: dashboardData.completionRate,
+                sessionsThisWeek: dashboardData.sessionsThisWeek
+              } : null}
+              actionSessions={dashboardData?.actionSessions || []}
+              loading={loading}
+            />
+          </DashboardCard>
 
-            {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
-              <div className="grid grid-cols-12 gap-6">
-                <DashboardCard className="col-span-12 md:col-span-5">
-                  <ActionSessionInsights 
-                    actionSessions={dashboardData.actionSessions}
-                    loading={loading}
-                  />
-                </DashboardCard>
-                <DashboardCard className="col-span-12 md:col-span-7">
-                  <TimeEstimationBreakdown 
-                    data={dashboardData.timeEstimationBreakdown}
-                    loading={loading}
-                  />
-                </DashboardCard>
-              </div>
-            )}
-            
-            <DashboardCard>
-              <ProgressInsights 
-                insights={dashboardData?.insights || []}
-                loading={loading}
-              />
-            </DashboardCard>
-          </div>
+          {/* Action Session Insights and Time Estimation */}
+          {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <DashboardCard className="p-6">
+                <ActionSessionInsights 
+                  actionSessions={dashboardData.actionSessions}
+                  loading={loading}
+                />
+              </DashboardCard>
+              <DashboardCard className="p-6">
+                <TimeEstimationBreakdown 
+                  data={dashboardData.timeEstimationBreakdown}
+                  loading={loading}
+                />
+              </DashboardCard>
+            </div>
+          )}
+          
+          {/* Progress Insights */}
+          <DashboardCard className="p-6">
+            <ProgressInsights 
+              insights={dashboardData?.insights || []}
+              loading={loading}
+            />
+          </DashboardCard>
         </div>
 
-        <div className="col-span-12 lg:col-span-4">
-          <div className="space-y-6">
-            <DashboardCard>
-              <PersonalRecords 
-                records={dashboardData?.personalRecords || {
-                  longestSession: 0,
-                  bestWeek: 0,
-                  currentStreak: 0,
-                  longestStreak: 0
-                }}
-                loading={loading}
-              />
-            </DashboardCard>
-            <DashboardCard>
-              <SessionHistory 
-                sessions={dashboardData?.recentSessions || []}
-                loading={loading}
-              />
-            </DashboardCard>
-          </div>
+        {/* Sidebar Content */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Personal Records */}
+          <DashboardCard className="p-6">
+            <PersonalRecords 
+              records={dashboardData?.personalRecords || {
+                longestSession: 0,
+                bestWeek: 0,
+                currentStreak: 0,
+                longestStreak: 0
+              }}
+              loading={loading}
+            />
+          </DashboardCard>
+          
+          {/* Recent Sessions */}
+          <DashboardCard className="p-6">
+            <SessionHistory 
+              sessions={dashboardData?.recentSessions || []}
+              loading={loading}
+            />
+          </DashboardCard>
         </div>
       </div>
     </DashboardLayout>
