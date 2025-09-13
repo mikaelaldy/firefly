@@ -69,7 +69,10 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 8. **Focus Session**: Visual countdown with optional ticking sound, pause/resume/stop controls
 9. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
 10. **Results**: See variance analysis and encouraging feedback
-11. **Dashboard**: Sign in with Google → automatically redirected to dashboard with analytics, progress tracking, and enhanced navigation sidebar
+11. **Dashboard**: Sign in with Google → automatically redirected to three-column dashboard with:
+    - **Navigation & Quick Stats**: Left sidebar with today's focus time, current streak, completion rate
+    - **Ready to Focus**: Center section with multiple session start options (Quick Focus 25min, Deep Work 50min, Custom Goal)
+    - **Personal Records**: Right sidebar showcasing achievements (longest session, best week, streaks)
 
 ### Testing Offline Mode
 - Disconnect internet → timer still works with fallback suggestions
@@ -96,13 +99,15 @@ This separation ensures clean code organization while supporting both basic and 
 
 ### Dashboard Architecture
 
-The dashboard includes specialized components for ADHD-friendly analytics:
+The dashboard features a modern three-column layout optimized for ADHD users:
 
-- **DashboardSidebar**: Enhanced navigation component with quick actions and section navigation (available for integration)
-- **Analytics Components**: Stats, history, records, and insights with encouraging messaging
-- **Progressive Enhancement**: Works with or without historical data
+- **Left Sidebar**: Integrated navigation with quick stats (Today's focus, Current streak, Completion rate)
+- **Center Content**: Primary actions (Ready to Focus section with quick options), weekly stats, recent sessions
+- **Right Sidebar**: Personal records showcase with achievement cards (Longest session, Best week, Current/Longest streaks)
+- **ADHD-Optimized Design**: Clear information hierarchy, reduced cognitive load, positive reinforcement
+- **Progressive Enhancement**: Works with or without historical data, encouraging empty states
 
-See `docs/dashboard-analytics-system.md` and `docs/dashboard-sidebar-component.md` for detailed documentation.
+See `docs/dashboard-analytics-system.md` for detailed documentation.
 
 ## Development Commands
 
