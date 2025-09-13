@@ -102,7 +102,7 @@ export function PersonalRecords({ records, loading }: PersonalRecordsProps) {
       </div>
       <div className="mt-4 p-4 rounded-lg bg-blue-50 border-blue-200 flex items-center space-x-3">
         <div className="text-2xl">🎉</div>
-        <p className="text-sm text-gray-800">Amazing work! You're building incredible focus habits. Every session counts! 🚀</p>
+        <p className="text-sm text-gray-800">Amazing work! You&apos;re building incredible focus habits. Every session counts! 🚀</p>
       </div>
     </div>
   );
