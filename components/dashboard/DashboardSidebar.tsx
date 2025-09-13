@@ -81,7 +81,7 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
     {
       title: 'Tools',
       items: [
-        { label: 'Analytics', icon: '📊', href: '/analytics' },
+        { label: 'Analytics', icon: '📊', href: '/dashboard/analytics' },
         { label: 'Tasks', icon: '✅', href: '/tasks' },
       ]
     },
