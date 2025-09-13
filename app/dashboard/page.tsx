@@ -231,8 +231,8 @@ export default function DashboardPage() {
   return (
     <DashboardLayout sidebar={<DashboardSidebar />}>
       {/* Header with breadcrumbs and actions */}
-      <div className="bg-white border-b border-gray-200 -m-6 mb-6 p-6">
-        <nav className="mb-4" aria-label="Breadcrumb">
+      <div className="bg-white border-b border-gray-200 -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 mb-6 px-4 lg:px-6 py-4">
+        <nav className="mb-3" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-sm">
             <li>
               <Link href="/" className="text-gray-500 hover:text-gray-700 transition-colors">
@@ -248,91 +248,95 @@ export default function DashboardPage() {
           </ol>
         </nav>
         
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Your Focus Dashboard</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Your Focus Dashboard</h1>
             <p className="text-gray-600 mt-1">Track your progress and manage your account</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline">Overview</Button>
-            <Button variant="outline">Settings</Button>
-            <Button onClick={fetchDashboardData} variant="default">Refresh Data</Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm">Overview</Button>
+            <Button variant="outline" size="sm">Settings</Button>
+            <Button onClick={fetchDashboardData} variant="default" size="sm">Refresh Data</Button>
           </div>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         {/* Main Content Area */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Ready to Focus Section */}
-          <DashboardCard className="p-8">
-            <ReadyToFocus />
-          </DashboardCard>
-          
-          {/* Your Stats Section */}
-          <DashboardCard className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Your Stats</h3>
-            <DashboardStats 
-              stats={dashboardData ? {
-                totalFocusTime: dashboardData.totalFocusTime,
-                averageSessionLength: dashboardData.averageSessionLength,
-                completionRate: dashboardData.completionRate,
-                sessionsThisWeek: dashboardData.sessionsThisWeek
-              } : null}
-              actionSessions={dashboardData?.actionSessions || []}
-              loading={loading}
-            />
-          </DashboardCard>
+        <div className="lg:col-span-8">
+          <div className="space-y-4 lg:space-y-6">
+            {/* Ready to Focus Section */}
+            <DashboardCard className="p-6 lg:p-8">
+              <ReadyToFocus />
+            </DashboardCard>
+            
+            {/* Your Stats Section */}
+            <DashboardCard className="p-4 lg:p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 lg:mb-6">Your Stats</h3>
+              <DashboardStats 
+                stats={dashboardData ? {
+                  totalFocusTime: dashboardData.totalFocusTime,
+                  averageSessionLength: dashboardData.averageSessionLength,
+                  completionRate: dashboardData.completionRate,
+                  sessionsThisWeek: dashboardData.sessionsThisWeek
+                } : null}
+                actionSessions={dashboardData?.actionSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
 
-          {/* Action Session Insights and Time Estimation */}
-          {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <DashboardCard className="p-6">
-                <ActionSessionInsights 
-                  actionSessions={dashboardData.actionSessions}
-                  loading={loading}
-                />
-              </DashboardCard>
-              <DashboardCard className="p-6">
-                <TimeEstimationBreakdown 
-                  data={dashboardData.timeEstimationBreakdown}
-                  loading={loading}
-                />
-              </DashboardCard>
-            </div>
-          )}
-          
-          {/* Progress Insights */}
-          <DashboardCard className="p-6">
-            <ProgressInsights 
-              insights={dashboardData?.insights || []}
-              loading={loading}
-            />
-          </DashboardCard>
+            {/* Action Session Insights and Time Estimation */}
+            {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+                <DashboardCard className="p-4 lg:p-6">
+                  <ActionSessionInsights 
+                    actionSessions={dashboardData.actionSessions}
+                    loading={loading}
+                  />
+                </DashboardCard>
+                <DashboardCard className="p-4 lg:p-6">
+                  <TimeEstimationBreakdown 
+                    data={dashboardData.timeEstimationBreakdown}
+                    loading={loading}
+                  />
+                </DashboardCard>
+              </div>
+            )}
+            
+            {/* Progress Insights */}
+            <DashboardCard className="p-4 lg:p-6">
+              <ProgressInsights 
+                insights={dashboardData?.insights || []}
+                loading={loading}
+              />
+            </DashboardCard>
+          </div>
         </div>
 
         {/* Sidebar Content */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Personal Records */}
-          <DashboardCard className="p-6">
-            <PersonalRecords 
-              records={dashboardData?.personalRecords || {
-                longestSession: 0,
-                bestWeek: 0,
-                currentStreak: 0,
-                longestStreak: 0
-              }}
-              loading={loading}
-            />
-          </DashboardCard>
-          
-          {/* Recent Sessions */}
-          <DashboardCard className="p-6">
-            <SessionHistory 
-              sessions={dashboardData?.recentSessions || []}
-              loading={loading}
-            />
-          </DashboardCard>
+        <div className="lg:col-span-4">
+          <div className="space-y-4 lg:space-y-6">
+            {/* Personal Records */}
+            <DashboardCard className="p-4 lg:p-6">
+              <PersonalRecords 
+                records={dashboardData?.personalRecords || {
+                  longestSession: 0,
+                  bestWeek: 0,
+                  currentStreak: 0,
+                  longestStreak: 0
+                }}
+                loading={loading}
+              />
+            </DashboardCard>
+            
+            {/* Recent Sessions */}
+            <DashboardCard className="p-4 lg:p-6">
+              <SessionHistory 
+                sessions={dashboardData?.recentSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
+          </div>
         </div>
       </div>
     </DashboardLayout>

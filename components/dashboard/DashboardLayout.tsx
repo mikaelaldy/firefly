@@ -11,19 +11,20 @@ export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
-    <div className="flex bg-gray-50" style={{ height: 'calc(100vh - 4rem)' }}>
+    <div className="flex bg-gray-50" style={{ minHeight: 'calc(100vh - 4rem)' }}>
       {/* Sidebar */}
       {sidebar && (
         <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 transition-all duration-300 ease-in-out`}>
-          <div className="h-full bg-white border-r border-gray-200 shadow-sm">
+          <div className="h-full bg-white border-r border-gray-200 shadow-sm" style={{ minHeight: 'calc(100vh - 4rem)' }}>
             {/* Sidebar toggle button */}
-            <div className="flex items-center justify-end p-4 border-b border-gray-200">
+            <div className="flex items-center justify-end px-4 py-3 border-b border-gray-200">
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
                 <svg 
-                  className={`w-5 h-5 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} 
+                  className={`w-4 h-4 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -42,8 +43,8 @@ export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
       )}
       
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 p-4 lg:p-6">
           {children}
         </main>
       </div>
