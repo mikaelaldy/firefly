@@ -69,7 +69,7 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 7. **Timer Start**: Click "Start Focus Timer" → choose preset or use AI-estimated duration
 8. **Focus Session**: Visual countdown with optional ticking sound, integrated timer controls (pause/resume/stop/mark complete/navigate), keyboard shortcuts (Space, Enter, Escape, Arrow keys)
 9. **Time Extensions** (V1.1): When timer reaches zero, choose to add 5/10/15 minutes or custom amount, with extension history tracking
-10. **Action Navigation** (V1.1): Use integrated Previous/Next buttons or arrow keys to switch between actions with confirmation dialogs
+10. **Action Navigation** (V1.1): Use integrated Previous/Next buttons or arrow keys to switch between actions with confirmation dialogs and smart session completion
 11. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
 12. **Results**: See variance analysis and encouraging feedback
 13. **Dashboard**: Sign in with Google → automatically redirected to three-column dashboard with:
