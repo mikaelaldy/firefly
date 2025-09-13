@@ -1,11 +1,13 @@
-'use client'
+"use client"
 
 interface DashboardStatsProps {
   stats: {
     totalFocusTime: number;
-    averageSessionLength: number;
     completionRate: number;
-    sessionsThisWeek: number;
+    currentStreak: number;
+    // The following are kept for backward-compat but ignored in hero view
+    averageSessionLength?: number;
+    sessionsThisWeek?: number;
   } | null;
   actionSessions?: Array<{
     editable_actions?: Array<{
@@ -19,9 +21,9 @@ interface DashboardStatsProps {
 
 const StatCard = ({ title, value, icon }: { title: string, value: string, icon: string }) => (
   <div className="text-center">
-    <div className="text-4xl mb-1" aria-hidden="true">{icon}</div>
-    <div className="text-3xl font-extrabold text-gray-900 tracking-tight">{value}</div>
-    <div className="text-xs text-gray-600 mt-0.5">{title}</div>
+    <div className="text-5xl mb-1" aria-hidden="true">{icon}</div>
+    <div className="text-4xl font-extrabold text-gray-900 tracking-tight">{value}</div>
+    <div className="text-xs text-gray-600 mt-1">{title}</div>
   </div>
 );
 
@@ -55,38 +57,7 @@ export function DashboardStats({ stats, actionSessions = [], loading }: Dashboar
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
-  const totalActions = actionSessions.reduce((total, session) => 
-    total + (session.editable_actions?.length || 0), 0
-  );
-  
-  const completedActions = actionSessions.reduce((total, session) => 
-    total + (session.editable_actions?.filter(action => action.completed_at).length || 0), 0
-  );
-
-  const actionSessionsWithEstimates = actionSessions.filter(session => 
-    session.total_estimated_time && session.actual_time_spent
-  );
-
-  let averageAccuracy = 0;
-  if (actionSessionsWithEstimates.length > 0) {
-    const accuracySum = actionSessionsWithEstimates.reduce((sum, session) => {
-      const estimatedMinutes = session.total_estimated_time || 0;
-      const actualMinutes = session.actual_time_spent || 0;
-      if (estimatedMinutes === 0) return sum;
-      
-      const variance = Math.abs((actualMinutes - estimatedMinutes) / estimatedMinutes);
-      const accuracy = Math.max(0, 1 - variance);
-      return sum + accuracy;
-    }, 0);
-    averageAccuracy = (accuracySum / actionSessionsWithEstimates.length) * 100;
-  }
-
   const statCards = [
-    {
-      title: 'This Week',
-      value: `${stats.sessionsThisWeek} sessions`,
-      icon: '📅',
-    },
     {
       title: 'Total Focus Time',
       value: formatTime(stats.totalFocusTime),
@@ -98,32 +69,17 @@ export function DashboardStats({ stats, actionSessions = [], loading }: Dashboar
       icon: '🎯',
     },
     {
-      title: 'Actions Completed',
-      value: `${completedActions}/${totalActions}`,
-      icon: '✅',
-    },
-    {
-      title: 'Time Accuracy',
-      value: `${Math.round(averageAccuracy)}%`,
-      icon: '🎯',
-    },
-    {
-      title: 'Average Session',
-      value: formatTime(stats.averageSessionLength),
-      icon: '📊',
+      title: 'Current Streak',
+      value: `${stats.currentStreak} days`,
+      icon: '🔥',
     },
   ];
 
   return (
-    <div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-6" aria-label="Your stats">
-        {statCards.map((card, index) => (
-          <StatCard key={index} {...card} />
-        ))}
-      </div>
-      <p className="mt-3 text-xs text-gray-500">
-        Tip: Improving time accuracy helps you build realistic plans and reduces time anxiety.
-      </p>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6" aria-label="Key stats">
+      {statCards.map((card, index) => (
+        <StatCard key={index} {...card} />
+      ))}
     </div>
   );
 }

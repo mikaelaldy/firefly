@@ -6,10 +6,9 @@ import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { Accordion, AccordionItem } from '@/components/ui/accordion'
 import { DashboardStats } from '@/components/dashboard/DashboardStats'
 import { PersonalRecords } from '@/components/dashboard/PersonalRecords'
-import { ActionSessionInsights } from '@/components/dashboard/ActionSessionInsights'
+import { ActionSessionAnalysis } from '@/components/dashboard/ActionSessionAnalysis'
 import { SessionHistory } from '@/components/dashboard/SessionHistory'
 import { ProgressInsights } from '@/components/dashboard/ProgressInsights'
-import { TimeEstimationBreakdown } from '@/components/dashboard/TimeEstimationBreakdown'
 import { useAuth } from '@/lib/auth/context'
 
 interface DashboardData {
@@ -68,9 +67,8 @@ export default function AnalyticsPage() {
 						<DashboardStats
 							stats={data ? {
 								totalFocusTime: data.totalFocusTime,
-								averageSessionLength: data.averageSessionLength,
 								completionRate: data.completionRate,
-								sessionsThisWeek: data.sessionsThisWeek,
+								currentStreak: data.personalRecords?.currentStreak || 0,
 							} : null}
 							actionSessions={data?.actionSessions || []}
 							loading={loading}
@@ -83,13 +81,11 @@ export default function AnalyticsPage() {
 					</DashboardCard>
 
 					<DashboardCard className="md:col-span-2">
+						<ActionSessionAnalysis actionSessions={data?.actionSessions || []} loading={loading} timeEstimation={data?.timeEstimationBreakdown} />
+					</DashboardCard>
+
+					<DashboardCard className="md:col-span-2">
 						<Accordion className="w-full">
-							<AccordionItem title="Action Tracking">
-								<ActionSessionInsights actionSessions={data?.actionSessions || []} loading={loading} />
-							</AccordionItem>
-							<AccordionItem title="Time Estimation">
-								<TimeEstimationBreakdown data={data?.timeEstimationBreakdown} loading={loading} />
-							</AccordionItem>
 							<AccordionItem title="Progress Insights">
 								<ProgressInsights insights={data?.insights || []} loading={loading} />
 							</AccordionItem>
