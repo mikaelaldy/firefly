@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { DashboardLayout, DashboardSection, DashboardGrid, DashboardCard } from '@/components/dashboard/DashboardLayout'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
+import { Accordion, AccordionItem } from '@/components/ui/accordion'
 import { DashboardStats } from '@/components/dashboard/DashboardStats'
 import { PersonalRecords } from '@/components/dashboard/PersonalRecords'
 import { ActionSessionInsights } from '@/components/dashboard/ActionSessionInsights'
@@ -58,14 +60,11 @@ export default function AnalyticsPage() {
 	}, [user, fetchData])
 
 	return (
-		<div className="flex min-h-[calc(100vh-64px)]">
-			<aside className="w-64 border-r border-gray-200 hidden md:block">
-				<DashboardSidebar />
-			</aside>
-			<main className="flex-1 p-6 md:p-8">
-				<div className="max-w-6xl mx-auto space-y-6">
-					<section className="p-5 rounded-xl border border-gray-200 bg-white">
-						<h2 className="text-lg font-semibold mb-6">Your Stats</h2>
+		<DashboardLayout sidebar={<DashboardSidebar />}>
+			<DashboardSection id="analytics" title="Your Progress Analytics" subtitle="Review your stats and discover patterns to improve your focus.">
+				<DashboardGrid columns={2}>
+					<DashboardCard className="md:col-span-2">
+						<h3 className="text-lg font-medium mb-4">Quick Stats</h3>
 						<DashboardStats
 							stats={data ? {
 								totalFocusTime: data.totalFocusTime,
@@ -76,32 +75,32 @@ export default function AnalyticsPage() {
 							actionSessions={data?.actionSessions || []}
 							loading={loading}
 						/>
-					</section>
+					</DashboardCard>
 
-					<section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-						<div className="lg:col-span-2 space-y-6">
-							<div className="p-5 rounded-xl border border-gray-200 bg-white">
+					<DashboardCard>
+						<h3 className="text-lg font-medium mb-4">Personal Records</h3>
+						<PersonalRecords records={data?.personalRecords || { longestSession: 0, bestWeek: 0, currentStreak: 0, longestStreak: 0 }} loading={loading} />
+					</DashboardCard>
+
+					<DashboardCard className="md:col-span-2">
+						<Accordion className="w-full">
+							<AccordionItem title="Action Tracking">
 								<ActionSessionInsights actionSessions={data?.actionSessions || []} loading={loading} />
-							</div>
-							<div className="p-5 rounded-xl border border-gray-200 bg-white">
+							</AccordionItem>
+							<AccordionItem title="Time Estimation">
 								<TimeEstimationBreakdown data={data?.timeEstimationBreakdown} loading={loading} />
-							</div>
-							<div className="p-5 rounded-xl border border-gray-200 bg-white">
+							</AccordionItem>
+							<AccordionItem title="Progress Insights">
 								<ProgressInsights insights={data?.insights || []} loading={loading} />
-							</div>
-						</div>
-						<aside className="space-y-6">
-							<div className="p-5 rounded-xl border border-gray-200 bg-white">
-								<PersonalRecords records={data?.personalRecords || { longestSession: 0, bestWeek: 0, currentStreak: 0, longestStreak: 0 }} loading={loading} />
-							</div>
-							<div className="p-5 rounded-xl border border-gray-200 bg-white">
+							</AccordionItem>
+							<AccordionItem title="Session History">
 								<SessionHistory sessions={data?.recentSessions || []} loading={loading} />
-							</div>
-						</aside>
-					</section>
-				</div>
-			</main>
-		</div>
+							</AccordionItem>
+						</Accordion>
+					</DashboardCard>
+				</DashboardGrid>
+			</DashboardSection>
+		</DashboardLayout>
 	)
 }
 

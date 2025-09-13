@@ -12,6 +12,12 @@ interface ActionSessionInsightsProps {
   loading: boolean;
 }
 
+const Progress = ({ percent }: { percent: number }) => (
+  <div className="w-full bg-gray-200 rounded-full h-2.5" aria-label="progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} role="progressbar">
+    <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${percent}%` }}></div>
+  </div>
+)
+
 const InsightCard = ({ title, value, subtitle, icon }: { title: string, value: string, subtitle: string, icon: string }) => (
   <div className="text-center">
     <div className="text-4xl mb-2">{icon}</div>
@@ -97,8 +103,16 @@ export function ActionSessionInsights({ actionSessions, loading }: ActionSession
           icon="🎯"
           title="Time Accuracy"
           value={`${Math.round(averageAccuracy)}%`}
-          subtitle="Estimation accuracy"
+          subtitle="Improving this helps you build realistic plans and reduces time anxiety!"
         />
+      </div>
+
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm text-gray-700">Overall Completion</span>
+          <span className="text-sm font-medium text-gray-900">{actionCompletionRate}%</span>
+        </div>
+        <Progress percent={actionCompletionRate} />
       </div>
     </div>
   );

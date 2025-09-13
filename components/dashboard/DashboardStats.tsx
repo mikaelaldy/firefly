@@ -19,9 +19,9 @@ interface DashboardStatsProps {
 
 const StatCard = ({ title, value, icon }: { title: string, value: string, icon: string }) => (
   <div className="text-center">
-    <div className="text-4xl mb-2">{icon}</div>
-    <div className="text-2xl font-bold text-gray-900">{value}</div>
-    <div className="text-sm text-gray-600">{title}</div>
+    <div className="text-4xl mb-1" aria-hidden="true">{icon}</div>
+    <div className="text-3xl font-extrabold text-gray-900 tracking-tight">{value}</div>
+    <div className="text-xs text-gray-600 mt-0.5">{title}</div>
   </div>
 );
 
@@ -115,10 +115,15 @@ export function DashboardStats({ stats, actionSessions = [], loading }: Dashboar
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-6" aria-label="Your stats">
-      {statCards.map((card, index) => (
-        <StatCard key={index} {...card} />
-      ))}
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-6" aria-label="Your stats">
+        {statCards.map((card, index) => (
+          <StatCard key={index} {...card} />
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-gray-500">
+        Tip: Improving time accuracy helps you build realistic plans and reduces time anxiety.
+      </p>
     </div>
   );
 }
