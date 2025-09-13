@@ -90,7 +90,7 @@ export function PersonalRecords({ records, loading }: PersonalRecordsProps) {
       icon: '⚡',
       color: 'green',
     }
-  ];
+  ] as const;
 
   return (
     <div>
