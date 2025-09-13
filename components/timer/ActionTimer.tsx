@@ -373,10 +373,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }, [timerState, resumeTimer])
 
-  // Handle showing extension modal when timer reaches zero
-  const handleTimerComplete = useCallback(() => {
-    setShowExtensionModal(true)
-  }, [])
+
 
   // Handle timer completion
   useEffect(() => {
@@ -470,12 +467,8 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       // Update the action with extension data
       if (currentActionExtensions.length > 0) {
         // Store extensions in the action (this would typically go to the database)
-        const updatedAction = {
-          ...currentAction,
-          timeExtensions: currentActionExtensions,
-          actualMinutes: actionTimeSpent
-        }
-        // In a real implementation, you'd save this to the database
+        // In a real implementation, you'd save extension data to the database
+        // For now, extensions are tracked in currentActionExtensions state
       }
     }
 

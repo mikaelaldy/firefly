@@ -35,8 +35,13 @@ interface TimerControlsProps {
   onResume: () => void;
   onStop: () => void;
   onMarkComplete?: () => void;        // New: Mark current action complete
+  onPrevious?: () => void;            // New: Navigate to previous action
+  onNext?: () => void;                // New: Navigate to next action
   stopLabel?: string;
   showMarkComplete?: boolean;         // New: Controls visibility of mark complete button
+  showNavigation?: boolean;           // New: Controls visibility of navigation buttons
+  canGoPrevious?: boolean;            // New: Controls previous button enabled state
+  canGoNext?: boolean;                // New: Controls next button enabled state
 }
 ```
 
@@ -74,19 +79,15 @@ The timer controls now include a visual guide showing available keyboard shortcu
 - Automatic timer pause and restart with new action context
 
 **Visual Design**:
-- Gray buttons with arrow icons
-- Disabled state with reduced opacity
-- Hover effects and accessibility labels
+- Circular gray buttons with arrow icons positioned on either side of main timer controls
+- Smaller size (w-12 h-12) compared to main timer controls for visual hierarchy
+- Disabled state with reduced opacity and no hover effects
+- Consistent styling with other timer control buttons
 
-### Complete & Continue Button
-
-**Purpose**: Quick action to mark current action complete and move to next
-
-**Features**:
-- Green button with checkmark icon
-- Combines action completion with navigation
-- Prominent placement for easy access
-- Automatically handles session completion when no more actions
+**Integration**:
+- Controlled via `showNavigation`, `canGoPrevious`, and `canGoNext` props on TimerControls
+- Positioned within the main timer controls layout for easy access
+- Uses the same confirmation modal system as other navigation methods
 
 ## Integration with Action Sessions
 
@@ -147,14 +148,19 @@ The timer controls now include a visual guide showing available keyboard shortcu
 ### Component Structure
 
 ```typescript
-// Enhanced TimerControls with mark complete functionality
+// Enhanced TimerControls with mark complete and navigation functionality
 <TimerControls
   timerState={timerState}
   onPause={pauseTimer}
   onResume={resumeTimer}
   onStop={stopTimer}
   onMarkComplete={handleMarkCompleteClick}  // New prop
+  onPrevious={() => handleNavigationClick('previous')}  // New prop
+  onNext={() => handleNavigationClick('next')}          // New prop
   showMarkComplete={!!currentAction}        // New prop
+  showNavigation={true}                     // New prop
+  canGoPrevious={currentActionIndex > 0}    // New prop
+  canGoNext={currentActionIndex < actions.length - 1}   // New prop
 />
 ```
 
@@ -324,6 +330,11 @@ To enable enhanced timer controls in existing implementations:
   onResume={resumeTimer}
   onStop={stopTimer}
   onMarkComplete={handleMarkComplete}    // Add mark complete handler
+  onPrevious={handlePrevious}            // Add navigation handlers
+  onNext={handleNext}
   showMarkComplete={hasCurrentAction}    // Show when action exists
+  showNavigation={true}                  // Enable navigation controls
+  canGoPrevious={canGoPrev}              // Control button states
+  canGoNext={canGoNext}
 />
 ```
