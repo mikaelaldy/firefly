@@ -76,14 +76,12 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
         { label: 'Home', icon: '🏠', href: '/' },
         { label: 'Dashboard', icon: '📊', href: '/dashboard' },
         { label: 'Focus Timer', icon: '⏱️', href: '/timer' },
-        { label: 'Goals', icon: '🎯', href: '/goals' },
       ]
     },
     {
       title: 'Tools',
       items: [
         { label: 'Analytics', icon: '📈', href: '/dashboard/analytics' },
-        { label: 'Tasks', icon: '✅', href: '/tasks' },
       ]
     },
     {
