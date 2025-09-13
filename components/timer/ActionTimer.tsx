@@ -35,7 +35,16 @@ interface ActionTimerProps {
 
 export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSessionComplete, onShowSoundSettings }: ActionTimerProps) {
   const router = useRouter()
-  const { state: actionSessionState, setCurrentAction, markActionAsCompleted, unmarkActionAsCompleted, updateTimeSpent, startActionSession } = useActionSession()
+  const { 
+    state: actionSessionState, 
+    setCurrentAction, 
+    markActionAsCompleted, 
+    unmarkActionAsCompleted, 
+    updateTimeSpent, 
+    startActionSession,
+    completeSession,
+    getSessionSummary
+  } = useActionSession()
   
   const [timerState, setTimerState] = useState<TimerState>({
     isActive: false,
@@ -155,6 +164,136 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }, [timerState.isActive, timerState.isPaused])
 
+  // Handle session completion
+  const handleSessionComplete = useCallback(async () => {
+    try {
+      // Stop any active timer
+      if (timerState.isActive) {
+        soundManager.stopTicking();
+      }
+
+      // Complete the session in the context
+      await completeSession();
+
+      // Generate session summary
+      const sessionSummary = getSessionSummary();
+      
+      // Create a timer session for the results page
+      const now = new Date();
+      const totalSessionTime = sessionStartTime 
+        ? calculateAdjustedElapsed(sessionStartTime, pausedTimeRef.current)
+        : actionSessionState.actualTimeSpent * 60; // Convert minutes to seconds
+
+      const session: TimerSession = {
+        id: actionSessionState.sessionId || crypto.randomUUID(),
+        goal: actionSessionState.goal || goal,
+        plannedDuration: actionSessionState.totalEstimatedTime * 60, // Convert to seconds
+        actualDuration: totalSessionTime,
+        completed: true, // Session completed (not manually stopped)
+        startedAt: sessionStartTime || new Date(Date.now() - totalSessionTime * 1000),
+        completedAt: now,
+        variance: calculateVariance(
+          actionSessionState.totalEstimatedTime * 60, 
+          totalSessionTime
+        )
+      };
+
+      // Reset timer state
+      setTimerState({
+        isActive: false,
+        isPaused: false,
+        duration: 0,
+        remaining: 0,
+        startTime: new Date(),
+        plannedDuration: 0
+      });
+      
+      setCurrentActionLocal(null);
+      setCurrentAction(null);
+      setShowLauncher(true);
+      setSessionStartTime(null);
+      pausedTimeRef.current = 0;
+      actionStartTimeRef.current = null;
+
+      // Save session to database (non-blocking)
+      try {
+        await saveSession(session, taskId);
+      } catch (error) {
+        console.error('Failed to save session to database:', error);
+        // Continue anyway - don't block user flow
+      }
+
+      // Store session and summary in localStorage for results page
+      localStorage.setItem(`session_${session.id}`, JSON.stringify(session));
+      if (sessionSummary) {
+        localStorage.setItem(`session_summary_${session.id}`, JSON.stringify(sessionSummary));
+      }
+
+      // Store detailed action-level progress data
+      const actionProgressData = {
+        sessionId: session.id,
+        actions: actionSessionState.actions.map(action => ({
+          id: action.id,
+          text: action.text,
+          estimatedMinutes: action.estimatedMinutes,
+          actualMinutes: action.actualMinutes,
+          status: action.status,
+          timeExtensions: action.timeExtensions || [],
+          completedAt: action.completedAt,
+          skippedAt: action.skippedAt
+        })),
+        completionStats: actionSessionState.completionStats,
+        summary: sessionSummary
+      };
+      
+      localStorage.setItem(`action_progress_${session.id}`, JSON.stringify(actionProgressData));
+
+      // Navigate to results page
+      router.push(`/results?session=${session.id}`);
+
+      // Notify parent component
+      onSessionComplete?.(session);
+
+    } catch (error) {
+      console.error('Error completing session:', error);
+      // Fallback: just navigate to results with basic session data
+      const now = new Date();
+      const totalSessionTime = sessionStartTime 
+        ? calculateAdjustedElapsed(sessionStartTime, pausedTimeRef.current)
+        : actionSessionState.actualTimeSpent * 60;
+
+      const fallbackSession: TimerSession = {
+        id: actionSessionState.sessionId || crypto.randomUUID(),
+        goal: actionSessionState.goal || goal,
+        plannedDuration: actionSessionState.totalEstimatedTime * 60,
+        actualDuration: totalSessionTime,
+        completed: true,
+        startedAt: sessionStartTime || new Date(Date.now() - totalSessionTime * 1000),
+        completedAt: now,
+        variance: calculateVariance(actionSessionState.totalEstimatedTime * 60, totalSessionTime)
+      };
+
+      localStorage.setItem(`session_${fallbackSession.id}`, JSON.stringify(fallbackSession));
+      router.push(`/results?session=${fallbackSession.id}`);
+    }
+  }, [
+    timerState.isActive, 
+    completeSession,
+    getSessionSummary,
+    actionSessionState.sessionId,
+    actionSessionState.goal,
+    actionSessionState.totalEstimatedTime,
+    actionSessionState.actualTimeSpent,
+    actionSessionState.actions,
+    actionSessionState.completionStats,
+    sessionStartTime, 
+    goal, 
+    taskId, 
+    router, 
+    onSessionComplete, 
+    setCurrentAction
+  ]);
+
   // Stop timer and create session
   const stopTimer = useCallback(async () => {
     if (timerState.isActive) {
@@ -230,16 +369,37 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }, [timerState, goal, taskId, router, onSessionComplete, currentAction, markActionAsCompleted, updateTimeSpent, sessionStartTime, setCurrentAction])
 
-  const handleNextAction = useCallback(() => {
+  const handleNextAction = useCallback(async () => {
     const nextIndex = currentActionIndex + 1;
-    if (nextIndex < actionSessionState.actions.length) {
-      const nextAction = actionSessionState.actions[nextIndex];
-      startTimer(nextAction.estimatedMinutes || 15, nextAction);
-    } else {
-      // Last action finished, go to results
-      stopTimer();
+    
+    // Check if session is complete (all actions completed or skipped)
+    const isComplete = actionSessionState.isSessionComplete;
+    
+    if (isComplete) {
+      // Session is complete, generate summary and navigate to results
+      await handleSessionComplete();
+      return;
     }
-  }, [currentActionIndex, actionSessionState.actions, startTimer, stopTimer]);
+    
+    if (nextIndex < actionSessionState.actions.length) {
+      // Find next uncompleted action
+      const nextUncompletedIndex = actionSessionState.actions.findIndex(
+        (action, index) => index >= nextIndex && !actionSessionState.completedActionIds.has(action.id)
+      );
+      
+      if (nextUncompletedIndex !== -1) {
+        const nextAction = actionSessionState.actions[nextUncompletedIndex];
+        setCurrentActionIndex(nextUncompletedIndex);
+        startTimer(nextAction.estimatedMinutes || 15, nextAction);
+      } else {
+        // No more uncompleted actions, session is complete
+        await handleSessionComplete();
+      }
+    } else {
+      // Reached end of actions list, session is complete
+      await handleSessionComplete();
+    }
+  }, [currentActionIndex, actionSessionState.actions, actionSessionState.isSessionComplete, actionSessionState.completedActionIds, startTimer, handleSessionComplete]);
 
   const handlePreviousAction = useCallback(() => {
     const prevIndex = currentActionIndex - 1;

@@ -382,7 +382,9 @@
   - Handle edge cases (first/last action, no more actions)
   - _Requirements: 13.7, 13.8, 13.9_
 
-- [-] 25. Action status management
+- [ ] 25. Action status management
+
+
 
 
 
@@ -395,7 +397,9 @@
   - Handle status transitions and validation
   - _Requirements: 13.2, 13.9, 13.10_
 
-- [ ] 25.2 Build session completion logic
+- [x] 25.2 Build session completion logic
+
+
   - Detect when all actions are completed or skipped
   - Generate session summary with completion statistics
   - Save detailed action-level progress data
