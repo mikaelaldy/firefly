@@ -87,8 +87,6 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
     {
       title: 'Account',
       items: [
-        { label: 'Settings', icon: '⚙️', href: '/settings' },
-        { label: 'Help', icon: '❓', href: '/help' },
       ]
     }
   ]
