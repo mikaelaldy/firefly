@@ -441,8 +441,10 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
         estimatedMinutes: action.estimated_minutes,
         confidence: action.confidence,
         isCustom: action.is_custom || false,
-        originalText: action.original_text
-      }))
+        originalText: action.original_text,
+        status: action.completed_at ? 'completed' : 'pending',
+        completedAt: action.completed_at ? new Date(action.completed_at) : undefined
+      }));
 
       // Find completed actions
       const completedIds = new Set(
