@@ -103,6 +103,10 @@ export function TimerControls({
                 </div>
               )}
               <div className="flex items-center space-x-2">
+                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded">← →</kbd>
+                <span>Navigate Actions</span>
+              </div>
+              <div className="flex items-center space-x-2">
                 <kbd className="px-2 py-1 text-xs bg-gray-100 rounded">Esc</kbd>
                 <span>{stopLabel}</span>
               </div>

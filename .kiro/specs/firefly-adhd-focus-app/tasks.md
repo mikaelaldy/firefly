@@ -337,8 +337,10 @@
   - _Requirements: 12.11, 12.12, Progressive Enhancement_
 
 ## V1.1 Feature: Advanced Timer Controls and Action Navigation
+![1757778838523](image/tasks/1757778838523.png)
+- [x] 24. Enhanced timer controls UI
 
-- [-] 24. Enhanced timer controls UI
+
 
 
 
@@ -351,12 +353,15 @@
   - Update action status and record actual time spent
   - _Requirements: 13.1, 13.2, 13.3_
 
-- [-] 24.2 Implement time extension controls
+- [x] 24.2 Implement time extension controls
+
 
   - Add "Add Time" button that appears when timer reaches zero
   - Create preset extension options (5, 10, 15 minutes) and custom input
   - Track time extensions per action and update timer duration
   - _Requirements: 13.4, 13.5, 13.6_
+
+
 
 - [ ] 24.3 Build action navigation system
   - Add Previous/Next action buttons to timer interface

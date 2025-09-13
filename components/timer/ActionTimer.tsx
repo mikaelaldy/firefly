@@ -23,6 +23,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { ActionCompletionModal } from './ActionCompletionModal'
 import { TimerExtensionModal } from './TimerExtensionModal'
+import { ActionNavigationModal } from './ActionNavigationModal'
 
 interface ActionTimerProps {
   goal?: string;
@@ -51,6 +52,8 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const [showMarkCompleteModal, setShowMarkCompleteModal] = useState(false)
   const [showExtensionModal, setShowExtensionModal] = useState(false)
+  const [showNavigationModal, setShowNavigationModal] = useState(false)
+  const [navigationDirection, setNavigationDirection] = useState<'previous' | 'next'>('next')
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null)
   const [currentActionExtensions, setCurrentActionExtensions] = useState<number[]>([])
   const pausedTimeRef = useRef<number>(0) // Track total paused time for drift correction
@@ -65,7 +68,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
   }, [actions, goal, actionSessionState.sessionId, startActionSession])
 
   useEffect(() => {
-    if (actionSessionState.actions.length > 0 && !currentAction) {
+    if (actionSessionState.actions.length > 0 && !currentAction && !timerState.isActive) {
       const firstUncompletedIndex = actionSessionState.actions.findIndex(
         (action) => !actionSessionState.completedActionIds.has(action.id)
       )
@@ -78,13 +81,11 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
         setCurrentAction(actionToStart.id)
         setCurrentActionIndex(indexToStart)
 
-        // If continuing a session, don't show launcher
-        if (actionSessionState.sessionId) {
-            setShowLauncher(false);
-        }
+        // Keep launcher visible so user can start the first action
+        // The launcher will show the action with its estimated time
       }
     }
-  }, [actionSessionState.actions, actionSessionState.completedActionIds, currentAction, setCurrentAction, actionSessionState.sessionId])
+  }, [actionSessionState.actions, actionSessionState.completedActionIds, currentAction, setCurrentAction, actionSessionState.sessionId, timerState.isActive])
 
   // Start timer with selected duration and optional action context
   const startTimer = useCallback((minutes: number, actionContext?: EditableAction) => {
@@ -105,6 +106,10 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       setCurrentActionIndex(index)
       setCurrentActionLocal(actionContext)
       setCurrentAction(actionContext.id)
+    } else if (currentAction) {
+      // If no action context provided but we have a current action, use it
+      const index = actionSessionState.actions.findIndex(a => a.id === currentAction.id)
+      setCurrentActionIndex(index)
     }
 
     setShowLauncher(false)
@@ -114,7 +119,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     
     // Start ticking sound
     soundManager.startTicking()
-  }, [setCurrentAction, actionSessionState.actions])
+  }, [setCurrentAction, actionSessionState.actions, currentAction])
 
   // Pause timer
   const pauseTimer = useCallback(() => {
@@ -243,6 +248,39 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       startTimer(prevAction.estimatedMinutes || 15, prevAction);
     }
   }, [currentActionIndex, actionSessionState.actions, startTimer]);
+
+  // Handle navigation with confirmation when timer is active
+  const handleNavigationClick = useCallback((direction: 'previous' | 'next') => {
+    if (timerState.isActive && !timerState.isPaused) {
+      // Show confirmation modal if timer is running
+      setNavigationDirection(direction)
+      setShowNavigationModal(true)
+    } else {
+      // Direct navigation if timer is not active
+      if (direction === 'next') {
+        handleNextAction()
+      } else {
+        handlePreviousAction()
+      }
+    }
+  }, [timerState.isActive, timerState.isPaused, handleNextAction, handlePreviousAction])
+
+  // Handle confirmed navigation
+  const handleConfirmedNavigation = useCallback(() => {
+    // Pause the current timer first
+    if (timerState.isActive) {
+      pauseTimer()
+    }
+    
+    setShowNavigationModal(false)
+    
+    // Navigate to the target action
+    if (navigationDirection === 'next') {
+      handleNextAction()
+    } else {
+      handlePreviousAction()
+    }
+  }, [timerState.isActive, pauseTimer, navigationDirection, handleNextAction, handlePreviousAction])
   
   const handleToggleActionCompletion = useCallback(async (actionId: string) => {
     const isCompleted = actionSessionState.completedActionIds.has(actionId)
@@ -394,12 +432,18 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       } else if (event.code === 'Escape' && timerState.isActive) {
         event.preventDefault()
         stopTimer()
+      } else if (event.code === 'ArrowLeft' && currentActionIndex > 0) {
+        event.preventDefault()
+        handleNavigationClick('previous')
+      } else if (event.code === 'ArrowRight' && currentActionIndex < actionSessionState.actions.length - 1) {
+        event.preventDefault()
+        handleNavigationClick('next')
       }
     }
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [timerState.isActive, timerState.isPaused, pauseTimer, resumeTimer, stopTimer, currentAction, handleMarkCompleteClick])
+  }, [timerState.isActive, timerState.isPaused, pauseTimer, resumeTimer, stopTimer, currentAction, handleMarkCompleteClick, currentActionIndex, actionSessionState.actions.length, handleNavigationClick])
 
   // Get current action details
   const getCurrentActionDetails = () => {
@@ -549,15 +593,64 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
               onMarkComplete={handleMarkCompleteClick}
               showMarkComplete={!!currentAction}
             />
-            <div className="flex justify-center gap-4 mt-4">
-                <button onClick={handlePreviousAction} disabled={currentActionIndex === 0} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">Previous</button>
-                <button onClick={() => {
-                    if(currentAction) {
-                        handleToggleActionCompletion(currentAction.id);
-                        handleNextAction();
-                    }
-                }} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Finish Action</button>
-                <button onClick={handleNextAction} disabled={currentActionIndex >= actionSessionState.actions.length - 1} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">Next</button>
+            {/* Action Navigation Controls */}
+            <div className="flex justify-center gap-3 mt-6">
+              <button 
+                onClick={() => handleNavigationClick('previous')} 
+                disabled={currentActionIndex === 0}
+                className="
+                  flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm
+                  transition-all duration-200 transform hover:scale-105 active:scale-95
+                  focus:outline-none focus:ring-2 focus:ring-gray-300
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                  bg-gray-100 hover:bg-gray-200 text-gray-700
+                "
+                aria-label="Go to previous action"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Previous</span>
+              </button>
+
+              <button 
+                onClick={() => {
+                  if(currentAction) {
+                    handleToggleActionCompletion(currentAction.id);
+                    handleNextAction();
+                  }
+                }}
+                className="
+                  flex items-center space-x-2 px-6 py-2 rounded-lg font-medium text-sm
+                  transition-all duration-200 transform hover:scale-105 active:scale-95
+                  focus:outline-none focus:ring-2 focus:ring-green-300
+                  bg-green-600 hover:bg-green-700 text-white
+                "
+                aria-label="Mark current action complete and continue"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Complete & Continue</span>
+              </button>
+
+              <button 
+                onClick={() => handleNavigationClick('next')} 
+                disabled={currentActionIndex >= actionSessionState.actions.length - 1}
+                className="
+                  flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm
+                  transition-all duration-200 transform hover:scale-105 active:scale-95
+                  focus:outline-none focus:ring-2 focus:ring-gray-300
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                  bg-gray-100 hover:bg-gray-200 text-gray-700
+                "
+                aria-label="Skip to next action"
+              >
+                <span>Next</span>
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -615,6 +708,32 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
             currentActionIndex + 1 < actionSessionState.actions.length 
               ? actionSessionState.actions[currentActionIndex + 1].text 
               : undefined
+          }
+        />
+      )}
+
+      {/* Action Navigation Modal */}
+      {currentAction && (
+        <ActionNavigationModal
+          isOpen={showNavigationModal}
+          onClose={() => setShowNavigationModal(false)}
+          onConfirm={handleConfirmedNavigation}
+          direction={navigationDirection}
+          currentActionText={currentAction.text}
+          targetActionText={
+            navigationDirection === 'next' && currentActionIndex + 1 < actionSessionState.actions.length
+              ? actionSessionState.actions[currentActionIndex + 1].text
+              : navigationDirection === 'previous' && currentActionIndex > 0
+              ? actionSessionState.actions[currentActionIndex - 1].text
+              : ''
+          }
+          currentProgress={
+            actionStartTimeRef.current ? {
+              timeSpent: Math.ceil(
+                calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
+              ),
+              estimatedTime: currentAction.estimatedMinutes || 0
+            } : undefined
           }
         />
       )}
