@@ -38,6 +38,7 @@ See `docs/manual-qa-checklist.md` for the complete testing checklist.
 4. **Timer Edge Cases**: Pause/resume, browser tab switching, system sleep, component switching between RegularTimer and ActionTimer
 5. **Performance**: Timer start latency, AI response times, estimation API speed
 6. **Accessibility**: Keyboard navigation, screen reader compatibility
+7. **Build & SSR**: Verify `npm run build` succeeds without SSR errors
 
 ## Test Files Structure
 

@@ -25,13 +25,25 @@ class SoundManager {
   
   private tickingInterval: NodeJS.Timeout | null = null
   private audioElements: Map<SoundType, HTMLAudioElement> = new Map()
+  private initialized = false
 
   constructor() {
+    // Don't initialize during SSR
+    if (typeof window !== 'undefined') {
+      this.initialize()
+    }
+  }
+
+  private initialize(): void {
+    if (this.initialized) return
     this.loadConfig()
     this.initializeAudioElements()
+    this.initialized = true
   }
 
   private loadConfig(): void {
+    if (typeof window === 'undefined') return
+    
     try {
       const saved = localStorage.getItem('firefly_sound_config')
       if (saved) {
@@ -43,6 +55,8 @@ class SoundManager {
   }
 
   private saveConfig(): void {
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem('firefly_sound_config', JSON.stringify(this.config))
     } catch (error) {
@@ -51,6 +65,8 @@ class SoundManager {
   }
 
   private initializeAudioElements(): void {
+    if (typeof window === 'undefined') return
+    
     // Create audio elements for different sound types
     const sounds: Record<SoundType, string> = {
       tick: this.generateTickSound(),
@@ -225,6 +241,8 @@ class SoundManager {
 
   // Public methods
   public playSound(type: SoundType): void {
+    if (typeof window === 'undefined') return
+    this.initialize()
     console.log(`Attempting to play sound: ${type}`, {
       enabled: this.config.enabled,
       tickingEnabled: this.config.tickingEnabled,
@@ -267,6 +285,8 @@ class SoundManager {
   }
 
   public startTicking(): void {
+    if (typeof window === 'undefined') return
+    this.initialize()
     if (!this.config.enabled || !this.config.tickingEnabled) return
     
     this.stopTicking() // Clear any existing interval
@@ -278,6 +298,7 @@ class SoundManager {
   }
 
   public stopTicking(): void {
+    if (typeof window === 'undefined') return
     if (this.tickingInterval) {
       clearInterval(this.tickingInterval)
       this.tickingInterval = null
@@ -285,6 +306,8 @@ class SoundManager {
   }
 
   public updateConfig(newConfig: Partial<SoundConfig>): void {
+    if (typeof window === 'undefined') return
+    this.initialize()
     this.config = { ...this.config, ...newConfig }
     this.saveConfig()
     
@@ -295,6 +318,8 @@ class SoundManager {
   }
 
   public getConfig(): SoundConfig {
+    if (typeof window === 'undefined') return this.config
+    this.initialize()
     return { ...this.config }
   }
 
@@ -404,12 +429,23 @@ export interface BreakSession {
 
 export class BreakManager {
   private sessionCount: number = 0
+  private initialized = false
   
   constructor() {
+    if (typeof window !== 'undefined') {
+      this.initialize()
+    }
+  }
+  
+  private initialize(): void {
+    if (this.initialized) return
     this.loadSessionCount()
+    this.initialized = true
   }
   
   private loadSessionCount(): void {
+    if (typeof window === 'undefined') return
+    
     try {
       const saved = localStorage.getItem('firefly_session_count')
       if (saved) {
@@ -421,6 +457,8 @@ export class BreakManager {
   }
   
   private saveSessionCount(): void {
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem('firefly_session_count', this.sessionCount.toString())
     } catch (error) {
@@ -429,6 +467,8 @@ export class BreakManager {
   }
   
   public completeSession(): BreakSession | null {
+    if (typeof window === 'undefined') return null
+    this.initialize()
     this.sessionCount++
     this.saveSessionCount()
     
@@ -451,15 +491,21 @@ export class BreakManager {
   }
   
   public getSessionCount(): number {
+    if (typeof window === 'undefined') return 0
+    this.initialize()
     return this.sessionCount
   }
   
   public resetSessionCount(): void {
+    if (typeof window === 'undefined') return
+    this.initialize()
     this.sessionCount = 0
     this.saveSessionCount()
   }
   
   public getNextBreakInfo(): { type: 'short' | 'long'; duration: number } {
+    if (typeof window === 'undefined') return { type: 'short', duration: 5 }
+    this.initialize()
     const nextSession = this.sessionCount + 1
     if (nextSession % 4 === 0) {
       return { type: 'long', duration: 15 }

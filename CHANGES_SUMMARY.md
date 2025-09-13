@@ -75,7 +75,13 @@
 
 ## Recent Updates
 
-### Latest Fix (Dashboard CSS)
+### Latest Fix (Sound System SSR Safety)
+- **Enhanced BreakManager SSR compatibility**: Added window check to getNextBreakInfo() method
+- **Improved server-side rendering**: Prevents crashes during Next.js build and SSR
+- **Better error handling**: Returns sensible defaults when called during SSR
+- **Updated documentation**: Enhanced sound system reliability documentation
+
+### Previous Fix (Dashboard CSS)
 - **Fixed CSS syntax error**: Corrected incomplete class attribute in dashboard page
 - **Improved stability**: Dashboard now renders properly with complete CSS classes
 - **Updated documentation**: Reflected stable implementation status
@@ -83,13 +89,15 @@
 ## Commit Message Suggestion
 
 ```
-fix(dashboard): correct CSS class attribute syntax error
+fix(sound): enhance BreakManager SSR safety and reliability
 
-- Fix incomplete CSS class attribute in dashboard page layout
-- Ensure proper rendering of dashboard container styling
-- Update documentation to reflect stable implementation status
+- Add window check to getNextBreakInfo() method for SSR compatibility
+- Ensure initialization before accessing session data
+- Return sensible defaults during server-side rendering
+- Update sound system reliability documentation
+- Prevent Next.js build failures and hydration mismatches
 
-Minor syntax fix for improved dashboard stability.
+Improves sound system reliability and SSR compatibility.
 ```
 
 ## Previous Changes (Timer Architecture)
