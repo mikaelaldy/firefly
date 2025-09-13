@@ -8,6 +8,7 @@ interface PersonalRecordsProps {
     longestStreak: number; // days
   };
   loading: boolean;
+  showTitle?: boolean;
 }
 
 const RecordCard = ({ title, value, subtitle, color, icon }: { title: string, value: string, subtitle: string, color: 'yellow' | 'blue' | 'red' | 'green', icon: string }) => {
@@ -19,7 +20,7 @@ const RecordCard = ({ title, value, subtitle, color, icon }: { title: string, va
   }
 
   return (
-    <div className={`p-4 rounded-lg ${colorClasses[color]}`}>
+    <div className={`p-4 rounded-lg h-full ${colorClasses[color]}`}>
       <div className="flex items-center space-x-4">
         <div className="text-3xl">{icon}</div>
         <div>
@@ -32,7 +33,7 @@ const RecordCard = ({ title, value, subtitle, color, icon }: { title: string, va
   )
 }
 
-export function PersonalRecords({ records, loading }: PersonalRecordsProps) {
+export function PersonalRecords({ records, loading, showTitle = true }: PersonalRecordsProps) {
   if (loading) {
     return (
       <div className="animate-pulse grid grid-cols-2 sm:grid-cols-4 gap-3" aria-label="Loading personal records">
@@ -87,8 +88,10 @@ export function PersonalRecords({ records, loading }: PersonalRecordsProps) {
 
   return (
     <section aria-labelledby="records-heading">
-      <h3 id="records-heading" className="text-base font-semibold text-gray-900 mb-3">Personal Records</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {showTitle && (
+        <h3 id="records-heading" className="text-base font-semibold text-gray-900 mb-3">Personal Records</h3>
+      )}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-stretch">
         {recordItems.map((record, index) => (
           <RecordCard key={index} {...record} />
         ))}
