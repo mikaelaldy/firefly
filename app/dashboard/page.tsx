@@ -432,9 +432,9 @@ export default function DashboardPage() {
                 <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
                   <div className="text-2xl">✨</div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">Today's Insight</p>
+                    <p className="text-sm font-medium text-gray-900 mb-1">Today&apos;s Insight</p>
                     <p className="text-sm text-gray-700">
-                      {dashboardData.insights[0]?.message || "You're building great focus habits! Keep going! 🚀"}
+                      {dashboardData.insights[0]?.message || "You&apos;re building great focus habits! Keep going! 🚀"}
                     </p>
                   </div>
                 </div>
