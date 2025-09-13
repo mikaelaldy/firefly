@@ -19,6 +19,11 @@ export interface EditableAction {
   confidence?: 'low' | 'medium' | 'high';
   isCustom: boolean; // true if user-modified
   originalText?: string; // for tracking changes
+  status: 'pending' | 'active' | 'completed' | 'skipped';
+  actualMinutes?: number;
+  timeExtensions?: number[]; // array of added minutes
+  completedAt?: Date;
+  skippedAt?: Date;
 }
 
 export interface ActionSession {
@@ -70,7 +75,11 @@ Two new tables support action session tracking:
 - `is_custom`: True if user modified the action
 - `original_text`: Original AI-generated text
 - `order_index`: Display order within session
+- `status`: Action status (pending, active, completed, skipped) - **Required in V1.1**
+- `actual_minutes`: Time actually spent on action
+- `time_extensions`: Array of extension amounts in minutes
 - `completed_at`: Timestamp when action was completed
+- `skipped_at`: Timestamp when action was skipped
 
 ## User Experience Flow
 
@@ -164,6 +173,7 @@ Two new tables support action session tracking:
 - Database schema with RLS policies
 - Migration scripts and verification tools
 - Core type definitions for EditableAction and ActionSession
+- **V1.1 Enhancement**: Required status field with completion/skip timestamps
 
 ### In Progress (🚧)
 - EditableNextActions component development

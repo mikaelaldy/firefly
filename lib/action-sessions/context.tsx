@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import type { EditableAction } from '@/types'
+import type { EditableAction, SessionCompletionStats } from '@/types'
 import { 
   createActionSession, 
   markActionCompleted, 
@@ -11,6 +11,19 @@ import {
   type ActionSessionData,
   type EditableActionData
 } from '@/lib/supabase/action-sessions'
+import {
+  updateActionStatus,
+  completeAction,
+  skipAction,
+  reactivateAction,
+  activateAction,
+  calculateSessionStats,
+  isSessionComplete,
+  getNextPendingAction,
+  getCurrentActiveAction,
+  generateSessionSummary,
+  addTimeExtension
+} from './action-status'
 
 interface ActionSessionState {
   sessionId: string | null
@@ -23,6 +36,8 @@ interface ActionSessionState {
   status: 'active' | 'completed' | 'paused'
   isLoading: boolean
   error: string | null
+  completionStats: SessionCompletionStats | null
+  isSessionComplete: boolean
 }
 
 interface ActionSessionContextType {
@@ -30,11 +45,15 @@ interface ActionSessionContextType {
   startActionSession: (goal: string, actions: EditableAction[]) => Promise<string | null>
   markActionAsCompleted: (actionId: string, actualMinutesSpent: number) => Promise<void>
   unmarkActionAsCompleted: (actionId: string) => Promise<void>
+  skipAction: (actionId: string) => Promise<void>
+  reactivateAction: (actionId: string) => Promise<void>
   setCurrentAction: (actionId: string | null) => void
   updateTimeSpent: (minutes: number) => Promise<void>
+  addTimeExtension: (actionId: string, extensionMinutes: number) => void
   completeSession: () => Promise<void>
   resetSession: () => void
   loadSession: (sessionId: string) => Promise<void>
+  getSessionSummary: () => { title: string; message: string; type: 'success' | 'partial' | 'incomplete' } | null
 }
 
 const ActionSessionContext = createContext<ActionSessionContextType | undefined>(undefined)
@@ -49,7 +68,9 @@ const initialState: ActionSessionState = {
   actualTimeSpent: 0,
   status: 'active',
   isLoading: false,
-  error: null
+  error: null,
+  completionStats: null,
+  isSessionComplete: false
 }
 
 export function ActionSessionProvider({ children }: { children: React.ReactNode }) {
@@ -62,27 +83,36 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const { sessionId, error } = await createActionSession(goal, actions)
+      // Initialize actions with proper status
+      const initializedActions = actions.map(action => ({
+        ...action,
+        status: action.status || 'pending' as const
+      }))
+
+      const { sessionId, error } = await createActionSession(goal, initializedActions)
       
       if (error) {
         setState(prev => ({ ...prev, error, isLoading: false }))
         return null
       }
 
-      const totalEstimatedTime = actions.reduce((sum, action) => sum + (action.estimatedMinutes || 0), 0)
+      const totalEstimatedTime = initializedActions.reduce((sum, action) => sum + (action.estimatedMinutes || 0), 0)
+      const completionStats = calculateSessionStats(initializedActions)
 
       setState(prev => ({
         ...prev,
         sessionId,
         goal,
-        actions,
+        actions: initializedActions,
         completedActionIds: new Set(),
         currentActionId: null,
         totalEstimatedTime,
         actualTimeSpent: 0,
         status: 'active',
         isLoading: false,
-        error: null
+        error: null,
+        completionStats,
+        isSessionComplete: false
       }))
 
       return sessionId
@@ -113,12 +143,27 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
         return
       }
 
-      setState(prev => ({
-        ...prev,
-        completedActionIds: new Set([...prev.completedActionIds, actionId]),
-        isLoading: false,
-        error: null
-      }))
+      setState(prev => {
+        const updatedActions = prev.actions.map(action => {
+          if (action.id === actionId) {
+            return completeAction(action, actualMinutesSpent)
+          }
+          return action
+        })
+
+        const completionStats = calculateSessionStats(updatedActions)
+        const sessionComplete = isSessionComplete(updatedActions)
+
+        return {
+          ...prev,
+          actions: updatedActions,
+          completedActionIds: new Set([...prev.completedActionIds, actionId]),
+          completionStats,
+          isSessionComplete: sessionComplete,
+          isLoading: false,
+          error: null
+        }
+      })
 
     } catch (error) {
       console.error('Error marking action as completed:', error)
@@ -139,7 +184,6 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
     setState(prev => ({ ...prev, isLoading: true }))
 
     try {
-      // This will be a new function in the supabase client
       const { success, error } = await unmarkActionCompleted(actionId) 
       
       if (error) {
@@ -148,11 +192,25 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
       }
 
       setState(prev => {
+        const updatedActions = prev.actions.map(action => {
+          if (action.id === actionId) {
+            return reactivateAction(action)
+          }
+          return action
+        })
+
         const newCompletedActionIds = new Set(prev.completedActionIds)
         newCompletedActionIds.delete(actionId)
+        
+        const completionStats = calculateSessionStats(updatedActions)
+        const sessionComplete = isSessionComplete(updatedActions)
+
         return {
           ...prev,
+          actions: updatedActions,
           completedActionIds: newCompletedActionIds,
+          completionStats,
+          isSessionComplete: sessionComplete,
           isLoading: false,
           error: null
         }
@@ -169,10 +227,133 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
   }, [state.sessionId])
 
   /**
+   * Skip an action
+   */
+  const skipActionHandler = useCallback(async (actionId: string) => {
+    if (!state.sessionId) return
+
+    setState(prev => ({ ...prev, isLoading: true }))
+
+    try {
+      // For now, we'll handle skipping locally and sync later
+      // In a full implementation, this would call a supabase function
+      
+      setState(prev => {
+        const updatedActions = prev.actions.map(action => {
+          if (action.id === actionId) {
+            return skipAction(action)
+          }
+          return action
+        })
+
+        const completionStats = calculateSessionStats(updatedActions)
+        const sessionComplete = isSessionComplete(updatedActions)
+
+        return {
+          ...prev,
+          actions: updatedActions,
+          completionStats,
+          isSessionComplete: sessionComplete,
+          isLoading: false,
+          error: null
+        }
+      })
+
+    } catch (error) {
+      console.error('Error skipping action:', error)
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Failed to skip action', 
+        isLoading: false 
+      }))
+    }
+  }, [state.sessionId])
+
+  /**
+   * Reactivate a completed or skipped action
+   */
+  const reactivateActionHandler = useCallback(async (actionId: string) => {
+    if (!state.sessionId) return
+
+    setState(prev => ({ ...prev, isLoading: true }))
+
+    try {
+      setState(prev => {
+        const updatedActions = prev.actions.map(action => {
+          if (action.id === actionId) {
+            return reactivateAction(action)
+          }
+          return action
+        })
+
+        // Remove from completed set if it was completed
+        const newCompletedActionIds = new Set(prev.completedActionIds)
+        newCompletedActionIds.delete(actionId)
+
+        const completionStats = calculateSessionStats(updatedActions)
+        const sessionComplete = isSessionComplete(updatedActions)
+
+        return {
+          ...prev,
+          actions: updatedActions,
+          completedActionIds: newCompletedActionIds,
+          completionStats,
+          isSessionComplete: sessionComplete,
+          isLoading: false,
+          error: null
+        }
+      })
+
+    } catch (error) {
+      console.error('Error reactivating action:', error)
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Failed to reactivate action', 
+        isLoading: false 
+      }))
+    }
+  }, [state.sessionId])
+
+  /**
    * Set the current action being worked on
    */
   const setCurrentAction = useCallback((actionId: string | null) => {
-    setState(prev => ({ ...prev, currentActionId: actionId }))
+    setState(prev => {
+      const updatedActions = prev.actions.map(action => {
+        if (action.id === actionId && action.status === 'pending') {
+          return activateAction(action)
+        } else if (action.id !== actionId && action.status === 'active') {
+          // Deactivate other actions
+          return updateActionStatus(action, 'pending')
+        }
+        return action
+      })
+
+      return {
+        ...prev,
+        currentActionId: actionId,
+        actions: updatedActions
+      }
+    })
+  }, [])
+
+  /**
+   * Add time extension to an action
+   */
+  const addTimeExtensionHandler = useCallback((actionId: string, extensionMinutes: number) => {
+    setState(prev => {
+      const updatedActions = prev.actions.map(action => {
+        if (action.id === actionId) {
+          return addTimeExtension(action, extensionMinutes)
+        }
+        return action
+      })
+
+      return {
+        ...prev,
+        actions: updatedActions
+      }
+    })
   }, [])
 
   /**

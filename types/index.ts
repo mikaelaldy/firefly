@@ -139,9 +139,11 @@ export interface EditableAction {
   confidence?: 'low' | 'medium' | 'high';
   isCustom: boolean; // true if user-modified
   originalText?: string; // for tracking changes
-  status?: 'pending' | 'active' | 'completed' | 'skipped';
+  status: 'pending' | 'active' | 'completed' | 'skipped';
   actualMinutes?: number;
   timeExtensions?: number[]; // array of added minutes
+  completedAt?: Date;
+  skippedAt?: Date;
 }
 
 export interface TimerExtension {
@@ -162,6 +164,19 @@ export interface ActionSession {
   actualTimeSpent: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Session completion statistics
+export interface SessionCompletionStats {
+  totalActions: number;
+  completedActions: number;
+  skippedActions: number;
+  pendingActions: number;
+  completionRate: number; // percentage
+  totalEstimatedTime: number;
+  totalActualTime: number;
+  timeVariance: number; // percentage difference
+  averageActionAccuracy: number; // average estimated vs actual time accuracy
 }
 
 // Database-specific types for action sessions

@@ -366,15 +366,30 @@
 
 
 
-- [ ] 24.3 Build action navigation system
+- [x] 24.3 Build action navigation system
+
+
+
+
+
+
+
+
+
+
   - Add Previous/Next action buttons to timer interface
   - Implement action switching with timer pause and confirmation
   - Handle edge cases (first/last action, no more actions)
   - _Requirements: 13.7, 13.8, 13.9_
 
-- [ ] 25. Action status management
+- [-] 25. Action status management
 
-- [ ] 25.1 Implement action status tracking
+
+
+
+- [x] 25.1 Implement action status tracking
+
+
   - Update EditableAction interface with status, actualMinutes, timeExtensions
   - Create action status update functions (complete, skip, reactivate)
   - Handle status transitions and validation
