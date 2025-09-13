@@ -1,210 +1,109 @@
 'use client'
+import { Button } from '@/components/ui/button'
 
 interface SessionHistoryProps {
   sessions: Array<{
     id: string;
     goal: string;
-    plannedDuration: number; // seconds
     actualDuration: number; // seconds
-    completed: boolean;
-    variance: number; // percentage
     startedAt: string;
-    completedAt?: string;
-    type?: 'regular' | 'action';
     actions?: Array<{
       id: string;
       text: string;
-      estimated_minutes?: number;
-      confidence?: 'low' | 'medium' | 'high';
-      is_custom?: boolean;
-      order_index: number;
       completed_at?: string;
-      created_at: string;
     }>;
   }>;
   loading: boolean;
 }
 
+const ActionItem = ({ text, percentage }: { text: string, percentage: number }) => (
+  <div className="flex items-center space-x-2 text-sm">
+    <p className="text-gray-700 truncate flex-1">{text}</p>
+    <span className="text-gray-500 font-medium">{percentage}%</span>
+  </div>
+);
+
 export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-gray-200 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-                <div className="h-4 bg-gray-200 rounded w-16"></div>
+      <div className="animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+        <div className="space-y-4">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="p-4 bg-gray-100 rounded-lg">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     );
   }
 
-  const formatDuration = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}m`;
-  };
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (date.toDateString() === now.toDateString()) return 'Today';
     
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
     
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
+  
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes === 0) return `${remainingSeconds}s`;
+    return `${minutes}m ${remainingSeconds}s`;
+  }
 
-  const getVarianceColor = (variance: number): string => {
-    if (Math.abs(variance) <= 10) return 'text-green-600'; // Within 10% is good
-    if (Math.abs(variance) <= 25) return 'text-yellow-600'; // Within 25% is okay
-    return 'text-red-600'; // Over 25% needs attention
-  };
-
-  const getVarianceText = (variance: number): string => {
-    if (variance === 0) return 'Perfect!';
-    if (variance > 0) return `+${variance}%`;
-    return `${variance}%`;
-  };
+  // Dummy percentages for actions breakdown
+  const dummyPercentages = [10, 45, 30, 0, 0];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Recent Sessions</h3>
-        <div className="text-sm text-gray-500">
-          Last 10 sessions
-        </div>
-      </div>
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Sessions</h3>
+      <div className="space-y-4">
+        {sessions.slice(0, 2).map((session, sessionIndex) => {
+          const completedActions = session.actions?.filter(a => a.completed_at).length || 0;
+          const totalActions = session.actions?.length || 0;
 
-      {sessions.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="text-4xl mb-3">🎯</div>
-          <p className="text-gray-600 mb-2">No sessions yet</p>
-          <p className="text-sm text-gray-500">
-            Start your first focus session to see your history here
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {sessions.map((session) => (
-            <div
-              key={session.id}
-              className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors duration-150"
-            >
-              <div className="flex items-center space-x-4">
-                {/* Status indicator */}
-                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                  session.completed ? 'bg-green-500' : 'bg-yellow-500'
-                }`}></div>
-
-                {/* Session details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {session.goal}
-                    </p>
-                    {session.type === 'action' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Actions
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-3 text-xs text-gray-500">
-                    <span>{formatDate(session.startedAt)}</span>
-                    <span>•</span>
-                    <span>
-                      {formatDuration(session.actualDuration)} / {formatDuration(session.plannedDuration)}
-                    </span>
-                    {session.completed && (
-                      <>
-                        <span>•</span>
-                        <span className={getVarianceColor(session.variance)}>
-                          {getVarianceText(session.variance)}
-                        </span>
-                      </>
-                    )}
-                  </div>
+          return (
+            <div key={session.id} className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h4 className="font-semibold text-gray-800 truncate">{session.goal}</h4>
+                  <p className="text-xs text-gray-500">
+                    {formatDate(session.startedAt)} · {formatDuration(session.actualDuration)}
+                  </p>
                 </div>
-
-                {/* Session status */}
-                <div className="flex-shrink-0">
-                  {session.completed ? (
-                    <div className="flex items-center space-x-1 text-green-600">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xs font-medium">Done</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-1 text-yellow-600">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xs font-medium">Partial</span>
-                    </div>
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm">Actions</Button>
+                  <span className="text-xs font-medium bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">Partial</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-800 mb-1">Actions Breakdown</p>
+                <p className="text-xs text-gray-500 mb-2">{completedActions} / {totalActions} completed</p>
+                <div className="space-y-1">
+                  {session.actions?.slice(0, 3).map((action, actionIndex) => (
+                    <ActionItem key={action.id} text={action.text} percentage={dummyPercentages[actionIndex] || 0} />
+                  ))}
+                   {session.actions && session.actions.length > 3 && (
+                    <p className="text-xs text-gray-500">+ {session.actions.length - 3} more actions</p>
                   )}
                 </div>
               </div>
-
-              {/* Action details for action sessions */}
-              {session.type === 'action' && session.actions && session.actions.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-medium text-gray-700">Actions Breakdown</h4>
-                    <span className="text-xs text-gray-500">
-                      {session.actions.filter(action => action.completed_at).length} / {session.actions.length} completed
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    {session.actions.slice(0, 3).map((action, index) => (
-                      <div key={action.id} className="flex items-center space-x-2 text-xs">
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                          action.completed_at ? 'bg-green-400' : 'bg-gray-300'
-                        }`}></div>
-                        <span className={`flex-1 truncate ${
-                          action.completed_at ? 'text-gray-700' : 'text-gray-500'
-                        }`}>
-                          {action.text}
-                        </span>
-                        {action.estimated_minutes && (
-                          <span className="text-gray-400 flex items-center space-x-1">
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                            </svg>
-                            <span>{action.estimated_minutes}m</span>
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                    {session.actions.length > 3 && (
-                      <div className="text-xs text-gray-400 pl-4">
-                        +{session.actions.length - 3} more actions
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
-          ))}
-        </div>
-      )}
+          )
+        })}
+      </div>
     </div>
   );
 }

@@ -15,6 +15,8 @@ import { OnboardingMessage } from '@/components/dashboard/OnboardingMessage'
 import { UserSettings } from '@/components/dashboard/UserSettings'
 import { ActionSessionInsights } from '@/components/dashboard/ActionSessionInsights'
 import { AuthStatus } from '@/components/AuthStatus'
+import { Button } from '@/components/ui/button' // Assuming you have a Button component
+import { TimeEstimationBreakdown } from '@/components/dashboard/TimeEstimationBreakdown'
 
 interface DashboardData {
   totalFocusTime: number;
@@ -68,6 +70,19 @@ interface DashboardData {
       completed_at?: string;
     }>;
   }>;
+  // Placeholder for Time Estimation Breakdown data
+  timeEstimationBreakdown?: {
+    currentTask: {
+      goal: string;
+      estimated: number;
+      actual: number;
+    };
+    aiConfidenceLevels: Array<{
+      level: 'High' | 'Medium' | 'Low';
+      actions: number;
+      percentage: number;
+    }>;
+  };
 }
 
 export default function DashboardPage() {
@@ -242,111 +257,88 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
-      <Header 
-        title="Your Focus Dashboard" 
-        subtitle="Track your progress and manage your account"
-        breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Dashboard' }
-        ]}
-      />
-
-      <DashboardLayout sidebar={<DashboardSidebar />}>
-        {/* Overview Section */}
-        <DashboardSection 
-          id="overview" 
-          title="Ready to Focus?" 
-          subtitle="Choose how you want to start your next session"
-        >
-          <DashboardCard>
-            <ReadyToFocus />
-          </DashboardCard>
-        </DashboardSection>
-
-        {/* Your Stats Section */}
-        <DashboardSection 
-          id="stats" 
-          title="Your Stats" 
-          subtitle="Track your focus time and progress"
-        >
-          <DashboardCard>
-            <DashboardStats 
-              stats={dashboardData ? {
-                totalFocusTime: dashboardData.totalFocusTime,
-                averageSessionLength: dashboardData.averageSessionLength,
-                completionRate: dashboardData.completionRate,
-                sessionsThisWeek: dashboardData.sessionsThisWeek
-              } : null}
-              actionSessions={dashboardData?.actionSessions || []}
-              loading={loading}
-            />
-          </DashboardCard>
-        </DashboardSection>
-
-        {/* Session History Section */}
-        <DashboardSection 
-          id="sessions" 
-          title="Session History" 
-          subtitle="Review your recent focus sessions"
-        >
-          <DashboardCard>
-            <SessionHistory 
-              sessions={dashboardData?.recentSessions || []}
-              loading={loading}
-            />
-          </DashboardCard>
-        </DashboardSection>
-
-        {/* Personal Records Section */}
-        <DashboardSection 
-          id="records" 
-          title="Personal Records" 
-          subtitle="Your achievements and milestones"
-        >
-          <DashboardCard>
-            <PersonalRecords 
-              records={dashboardData?.personalRecords || {
-                longestSession: 0,
-                bestWeek: 0,
-                currentStreak: 0,
-                longestStreak: 0
-              }}
-              loading={loading}
-            />
-          </DashboardCard>
-        </DashboardSection>
-
-        {/* Progress Insights Section */}
-        <DashboardSection 
-          id="insights" 
-          title="Progress Insights" 
-          subtitle="Personalized tips and encouragement"
-        >
-          <DashboardCard>
-            <ProgressInsights 
-              insights={dashboardData?.insights || []}
-              loading={loading}
-            />
-          </DashboardCard>
-        </DashboardSection>
-
-        {/* Action Sessions Section */}
-        {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
-          <DashboardSection 
-            id="actions" 
-            title="Action Sessions" 
-            subtitle="Your action-based focus sessions"
-          >
+    <DashboardLayout sidebar={<DashboardSidebar />}>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Your Focus Dashboard</h1>
+          <p className="text-gray-600 mt-1">Track your progress and manage your account</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline">Overview</Button>
+          <Button variant="outline">Settings</Button>
+          <Button onClick={fetchDashboardData} variant="default">Refresh Data</Button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-8">
+          <div className="space-y-6">
             <DashboardCard>
-              <ActionSessionInsights 
-                actionSessions={dashboardData.actionSessions}
+              <ReadyToFocus />
+            </DashboardCard>
+            
+            <DashboardCard>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Stats</h3>
+              <DashboardStats 
+                stats={dashboardData ? {
+                  totalFocusTime: dashboardData.totalFocusTime,
+                  averageSessionLength: dashboardData.averageSessionLength,
+                  completionRate: dashboardData.completionRate,
+                  sessionsThisWeek: dashboardData.sessionsThisWeek
+                } : null}
+                actionSessions={dashboardData?.actionSessions || []}
                 loading={loading}
               />
             </DashboardCard>
-          </DashboardSection>
-        )}
-      </DashboardLayout>
-    </>
+
+            {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
+              <div className="grid grid-cols-12 gap-6">
+                <DashboardCard className="col-span-12 md:col-span-5">
+                  <ActionSessionInsights 
+                    actionSessions={dashboardData.actionSessions}
+                    loading={loading}
+                  />
+                </DashboardCard>
+                <DashboardCard className="col-span-12 md:col-span-7">
+                  <TimeEstimationBreakdown 
+                    data={dashboardData.timeEstimationBreakdown}
+                    loading={loading}
+                  />
+                </DashboardCard>
+              </div>
+            )}
+            
+            <DashboardCard>
+              <ProgressInsights 
+                insights={dashboardData?.insights || []}
+                loading={loading}
+              />
+            </DashboardCard>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4">
+          <div className="space-y-6">
+            <DashboardCard>
+              <PersonalRecords 
+                records={dashboardData?.personalRecords || {
+                  longestSession: 0,
+                  bestWeek: 0,
+                  currentStreak: 0,
+                  longestStreak: 0
+                }}
+                loading={loading}
+              />
+            </DashboardCard>
+            <DashboardCard>
+              <SessionHistory 
+                sessions={dashboardData?.recentSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
   )
 }
