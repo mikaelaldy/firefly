@@ -61,11 +61,25 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
 
   useEffect(() => {
     if (actionSessionState.actions.length > 0 && !currentAction) {
-      setCurrentActionLocal(actionSessionState.actions[0])
-      setCurrentAction(actionSessionState.actions[0].id)
-      setCurrentActionIndex(0)
+      const firstUncompletedIndex = actionSessionState.actions.findIndex(
+        (action) => !actionSessionState.completedActionIds.has(action.id)
+      )
+
+      const indexToStart = firstUncompletedIndex === -1 ? actionSessionState.actions.length - 1 : firstUncompletedIndex;
+      
+      if (indexToStart >= 0) {
+        const actionToStart = actionSessionState.actions[indexToStart];
+        setCurrentActionLocal(actionToStart)
+        setCurrentAction(actionToStart.id)
+        setCurrentActionIndex(indexToStart)
+
+        // If continuing a session, don't show launcher
+        if (actionSessionState.sessionId) {
+            setShowLauncher(false);
+        }
+      }
     }
-  }, [actionSessionState.actions, currentAction, setCurrentAction])
+  }, [actionSessionState.actions, actionSessionState.completedActionIds, currentAction, setCurrentAction, actionSessionState.sessionId])
 
   // Start timer with selected duration and optional action context
   const startTimer = useCallback((minutes: number, actionContext?: EditableAction) => {

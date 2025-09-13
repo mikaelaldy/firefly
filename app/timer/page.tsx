@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Timer } from '@/components'
 import { Header } from '@/components/layout/Header'
+import { useActionSession } from '@/lib/action-sessions/context'
 import type { TimerSession, EditableAction } from '@/types'
 
 function TimerContent() {
@@ -12,31 +13,45 @@ function TimerContent() {
   const [currentGoal, setCurrentGoal] = useState('Focus on current task')
   const [taskId, setTaskId] = useState<string | undefined>()
   const [actions, setActions] = useState<EditableAction[]>([])
+  const { loadSession, state: actionSessionState } = useActionSession()
 
-  // Get goal, taskId, and actions from URL params
+  // Get goal, taskId, and actions from URL params or load session
   useEffect(() => {
     const goalParam = searchParams.get('goal')
     const taskIdParam = searchParams.get('taskId')
     const actionsParam = searchParams.get('actions')
-    
-    if (goalParam) {
-      setCurrentGoal(goalParam)
-    }
-    
-    if (taskIdParam) {
-      setTaskId(taskIdParam)
-    }
-    
-    if (actionsParam) {
-      try {
-        const parsedActions: EditableAction[] = JSON.parse(actionsParam)
-        setActions(parsedActions)
-      } catch (error) {
-        console.error('Failed to parse actions from URL:', error)
-        setActions([])
+    const sessionIdParam = searchParams.get('sessionId')
+
+    if (sessionIdParam) {
+      loadSession(sessionIdParam)
+    } else {
+      if (goalParam) {
+        setCurrentGoal(goalParam)
+      }
+      
+      if (taskIdParam) {
+        setTaskId(taskIdParam)
+      }
+      
+      if (actionsParam) {
+        try {
+          const parsedActions: EditableAction[] = JSON.parse(actionsParam)
+          setActions(parsedActions)
+        } catch (error) {
+          console.error('Failed to parse actions from URL:', error)
+          setActions([])
+        }
       }
     }
-  }, [searchParams])
+  }, [searchParams, loadSession])
+
+  // Sync with action session context state
+  useEffect(() => {
+    if (actionSessionState.sessionId) {
+      setActions(actionSessionState.actions)
+      setCurrentGoal(actionSessionState.goal)
+    }
+  }, [actionSessionState.sessionId, actionSessionState.actions, actionSessionState.goal])
 
   const handleSessionComplete = (session: TimerSession) => {
     setCompletedSessions(prev => [...prev, session])

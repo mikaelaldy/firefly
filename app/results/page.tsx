@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { SessionResults } from '@/components/SessionResults'
 import { Header } from '@/components/layout/Header'
+import { useActionSession } from '@/lib/action-sessions/context'
 import type { TimerSession } from '@/types'
 
 function ResultsContent() {
@@ -11,6 +12,7 @@ function ResultsContent() {
   const searchParams = useSearchParams()
   const [session, setSession] = useState<TimerSession | null>(null)
   const [loading, setLoading] = useState(true)
+  const { state: actionSessionState, resetSession } = useActionSession()
 
   useEffect(() => {
     // Get session data from URL params or localStorage
@@ -48,20 +50,20 @@ function ResultsContent() {
   }, [searchParams, router])
 
   const handleContinue = useCallback(() => {
-    // Continue with the same task - go back to timer with the same goal
-    if (session) {
+    // Continue with the same task - go back to timer with the same session
+    if (actionSessionState.sessionId) {
       const params = new URLSearchParams({
-        goal: session.goal,
-        continue: 'true'
+        sessionId: actionSessionState.sessionId,
       })
       router.push(`/timer?${params.toString()}`)
     }
-  }, [session, router])
+  }, [actionSessionState.sessionId, router])
 
   const handleNewTask = useCallback(() => {
     // Start fresh - go back to home page
+    resetSession()
     router.push('/')
-  }, [router])
+  }, [router, resetSession])
 
   // Keyboard shortcuts
   useEffect(() => {
