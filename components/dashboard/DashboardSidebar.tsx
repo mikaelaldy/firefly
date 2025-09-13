@@ -73,7 +73,8 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
     {
       title: 'Focus',
       items: [
-        { label: 'Dashboard', icon: '🏠', href: '/dashboard' },
+        { label: 'Home', icon: '🏠', href: '/' },
+        { label: 'Dashboard', icon: '📊', href: '/dashboard' },
         { label: 'Focus Timer', icon: '⏱️', href: '/timer' },
         { label: 'Goals', icon: '🎯', href: '/goals' },
       ]
@@ -81,7 +82,7 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
     {
       title: 'Tools',
       items: [
-        { label: 'Analytics', icon: '📊', href: '/dashboard/analytics' },
+        { label: 'Analytics', icon: '📈', href: '/dashboard/analytics' },
         { label: 'Tasks', icon: '✅', href: '/tasks' },
       ]
     },
@@ -123,7 +124,7 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
       </div>
 
       {/* User Profile */}
-      {user && !collapsed && (
+      {/* {user && !collapsed && (
         <div className="px-4 pb-4 mb-3 border-b border-gray-200">
           <div className="flex items-center space-x-2 p-2 rounded-lg bg-gray-50">
             <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
@@ -141,7 +142,7 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-2">
