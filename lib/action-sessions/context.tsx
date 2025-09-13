@@ -478,7 +478,8 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
    */
   const getSessionSummary = useCallback(() => {
     if (!state.sessionId) return null
-    return generateSessionSummary(state.actions)
+    const stats = calculateSessionStats(state.actions)
+    return generateSessionSummary(stats)
   }, [state.sessionId, state.actions])
 
   const contextValue: ActionSessionContextType = {
