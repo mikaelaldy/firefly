@@ -348,9 +348,12 @@
 - [x] 24.1 Add "Mark Complete" functionality
 
 
-  - Add "Mark Complete" button to timer interface alongside existing controls
-  - Implement confirmation dialog when marking action complete early
-  - Update action status and record actual time spent
+  - ✅ Add "Mark Complete" button to timer interface alongside existing controls
+  - ✅ Implement confirmation dialog when marking action complete early
+  - ✅ Update action status and record actual time spent
+  - ✅ Enhanced TimerControls component with new props: onMarkComplete, showMarkComplete
+  - ✅ Keyboard shortcut support (Enter key) for mark complete functionality
+  - ✅ Visual keyboard shortcut guide integrated into timer controls
   - _Requirements: 13.1, 13.2, 13.3_
 
 - [x] 24.2 Implement time extension controls

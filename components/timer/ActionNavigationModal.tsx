@@ -49,7 +49,7 @@ export function ActionNavigationModal({
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p className="text-gray-700">
-                You're currently working on an action. Switching will pause the current timer.
+                You&apos;re currently working on an action. Switching will pause the current timer.
               </p>
               
               {/* Current action info */}

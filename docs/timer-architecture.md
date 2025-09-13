@@ -38,7 +38,7 @@ The `RegularTimer` component handles basic timer functionality without action tr
 - Visual countdown with shrinking disc
 - Pause/resume/stop controls
 - Session variance tracking
-- Keyboard shortcuts (Space for pause/resume, Escape for stop)
+- Keyboard shortcuts (Space for pause/resume, Enter for mark complete, Escape for stop, Arrow keys for action navigation)
 - Automatic session saving to database
 
 **State Management:**
@@ -56,8 +56,9 @@ The `ActionTimer` component extends timer functionality with action session mana
 - Current action display with time estimates
 - Session progress indicator showing completed actions
 - Real-time progress updates to dashboard
-- Action completion marking when timer finishes
+- Action completion marking when timer finishes or via "Mark Complete" button
 - Integration with action session context
+- Enhanced timer controls with action-specific functionality
 
 **Enhanced State Management:**
 - All RegularTimer state plus:

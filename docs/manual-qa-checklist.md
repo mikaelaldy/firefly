@@ -45,7 +45,7 @@ This checklist covers the complete user journey from task input to session compl
 - [ ] **Action selection** - User can select specific action to work on (if V1 features available)
 - [ ] **Timer starts quickly** - Clicking "Start Focus" begins countdown within 1 second
 - [ ] **Visual timer works** - Shrinking disc and mm:ss countdown display correctly
-- [ ] **Timer controls function** - Pause, resume, and stop buttons work as expected
+- [ ] **Timer controls function** - Pause, resume, stop, and mark complete buttons work as expected
 - [ ] **Timer accuracy** - Time counts down accurately (test for ~30 seconds)
 - [ ] **Action progress** - Current action context is displayed during timer (if V1 available)
 
@@ -63,6 +63,7 @@ This checklist covers the complete user journey from task input to session compl
 - [ ] **State management** - App maintains appropriate state between phases
 - [ ] **Responsive design** - Interface works on different screen sizes, especially landing page
 - [ ] **Keyboard navigation** - Tab navigation works throughout the app and landing page
+- [ ] **Timer keyboard shortcuts** - Space (pause/resume), Enter (mark complete), Escape (stop), Arrow keys (navigate actions) work correctly
 
 ## Performance Requirements
 - [ ] **Timer start latency** - Timer begins within 1 second of clicking "Start Focus"
