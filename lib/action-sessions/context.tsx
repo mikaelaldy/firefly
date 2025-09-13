@@ -473,16 +473,28 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
     }
   }, [])
 
+  /**
+   * Get a summary of the session
+   */
+  const getSessionSummary = useCallback(() => {
+    if (!state.sessionId) return null
+    return generateSessionSummary(state.actions)
+  }, [state.sessionId, state.actions])
+
   const contextValue: ActionSessionContextType = {
     state,
     startActionSession,
     markActionAsCompleted,
     unmarkActionAsCompleted,
+    skipAction: skipActionHandler,
+    reactivateAction: reactivateActionHandler,
     setCurrentAction,
     updateTimeSpent,
+    addTimeExtension: addTimeExtensionHandler,
     completeSession,
     resetSession,
-    loadSession
+    loadSession,
+    getSessionSummary
   }
 
   return (
