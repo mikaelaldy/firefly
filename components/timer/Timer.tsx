@@ -355,6 +355,7 @@ function RegularTimer({
               onPause={pauseTimer}
               onResume={resumeTimer}
               onStop={stopTimer}
+              showMarkComplete={false}
             />
           </div>
 

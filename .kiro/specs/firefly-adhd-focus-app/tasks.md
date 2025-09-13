@@ -335,19 +335,88 @@
   - Handle database errors by falling back to offline mode
   - Add utility functions for sync status monitoring and manual sync
   - _Requirements: 12.11, 12.12, Progressive Enhancement_
-- [x] 23. Testing and polish for V1 features
+
+## V1.1 Feature: Advanced Timer Controls and Action Navigation
+
+- [-] 24. Enhanced timer controls UI
 
 
 
 
+- [x] 24.1 Add "Mark Complete" functionality
 
 
+  - Add "Mark Complete" button to timer interface alongside existing controls
+  - Implement confirmation dialog when marking action complete early
+  - Update action status and record actual time spent
+  - _Requirements: 13.1, 13.2, 13.3_
 
+- [-] 24.2 Implement time extension controls
 
-- [ ] 23. Testing and polish for V1 features
+  - Add "Add Time" button that appears when timer reaches zero
+  - Create preset extension options (5, 10, 15 minutes) and custom input
+  - Track time extensions per action and update timer duration
+  - _Requirements: 13.4, 13.5, 13.6_
 
-  - Test complete workflow: edit actions → get estimates → run timers → track progress
-  - Verify database persistence and RLS policies
-  - Test AI estimation fallbacks and error handling
-  - Manual QA for action editing UX and timer integration
-  - _Requirements: 12.1-12.12_
+- [ ] 24.3 Build action navigation system
+  - Add Previous/Next action buttons to timer interface
+  - Implement action switching with timer pause and confirmation
+  - Handle edge cases (first/last action, no more actions)
+  - _Requirements: 13.7, 13.8, 13.9_
+
+- [ ] 25. Action status management
+
+- [ ] 25.1 Implement action status tracking
+  - Update EditableAction interface with status, actualMinutes, timeExtensions
+  - Create action status update functions (complete, skip, reactivate)
+  - Handle status transitions and validation
+  - _Requirements: 13.2, 13.9, 13.10_
+
+- [ ] 25.2 Build session completion logic
+  - Detect when all actions are completed or skipped
+  - Generate session summary with completion statistics
+  - Save detailed action-level progress data
+  - _Requirements: 13.11, 13.12_
+
+- [ ] 26. API endpoints for advanced controls
+
+- [ ] 26.1 Create action update API
+  - Build /api/actions/update endpoint for status changes
+  - Handle action completion, skipping, and reactivation
+  - Return updated session progress information
+  - _Requirements: 13.2, 13.9, 13.10_
+
+- [ ] 26.2 Create timer extension API
+  - Build /api/timer/extend endpoint for time additions
+  - Track extension history and reasons
+  - Update action and session timing data
+  - _Requirements: 13.5, 13.6_
+
+- [ ] 27. Database schema updates
+
+- [ ] 27.1 Extend action tracking tables
+  - Add status, actualMinutes, timeExtensions columns to editable_actions
+  - Create timer_extensions table for detailed extension tracking
+  - Update RLS policies for new data structures
+  - _Requirements: 13.6, 13.12_
+
+- [ ] 27.2 Update session progress tracking
+  - Add completedCount, skippedCount, currentActionIndex to action_sessions
+  - Create indexes for efficient action navigation queries
+  - Test data integrity with action status changes
+  - _Requirements: 13.11, 13.12_
+
+- [ ] 28. Testing and integration
+
+- [ ] 28.1 Test advanced timer workflows
+  - Test complete workflow: start action → mark complete early → move to next
+  - Test time extension: timer ends → add time → continue working
+  - Test action navigation: switch between actions with state preservation
+  - _Requirements: 13.1-13.12_
+
+- [ ] 28.2 Test edge cases and error handling
+  - Test behavior with single action vs multiple actions
+  - Test offline functionality for timer controls
+  - Test data persistence across browser sessions
+  - Manual QA for UX flow and accessibility
+  - _Requirements: 13.1-13.12_

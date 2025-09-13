@@ -139,6 +139,17 @@ export interface EditableAction {
   confidence?: 'low' | 'medium' | 'high';
   isCustom: boolean; // true if user-modified
   originalText?: string; // for tracking changes
+  status?: 'pending' | 'active' | 'completed' | 'skipped';
+  actualMinutes?: number;
+  timeExtensions?: number[]; // array of added minutes
+}
+
+export interface TimerExtension {
+  actionId: string;
+  originalDuration: number;
+  extensionMinutes: number;
+  reason?: string;
+  timestamp: Date;
 }
 
 export interface ActionSession {

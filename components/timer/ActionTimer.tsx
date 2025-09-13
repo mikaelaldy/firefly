@@ -21,6 +21,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ActionCompletionModal } from './ActionCompletionModal'
+import { TimerExtensionModal } from './TimerExtensionModal'
 
 interface ActionTimerProps {
   goal?: string;
@@ -47,7 +49,10 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
   const [currentAction, setCurrentActionLocal] = useState<EditableAction | null>(null)
   const [currentActionIndex, setCurrentActionIndex] = useState(0)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
+  const [showMarkCompleteModal, setShowMarkCompleteModal] = useState(false)
+  const [showExtensionModal, setShowExtensionModal] = useState(false)
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null)
+  const [currentActionExtensions, setCurrentActionExtensions] = useState<number[]>([])
   const pausedTimeRef = useRef<number>(0) // Track total paused time for drift correction
   const pauseStartRef = useRef<number>(0) // Track when pause started
   const actionStartTimeRef = useRef<Date | null>(null) // Track when current action started
@@ -256,6 +261,85 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }, [actionSessionState.completedActionIds, actionSessionState.actions, currentAction, timerState, markActionAsCompleted, unmarkActionAsCompleted]);
 
+  // Handle mark complete button click
+  const handleMarkCompleteClick = useCallback(() => {
+    if (currentAction && timerState.isActive) {
+      setShowMarkCompleteModal(true)
+    }
+  }, [currentAction, timerState.isActive])
+
+  // Handle mark complete confirmation
+  const handleMarkCompleteConfirm = useCallback(async () => {
+    if (currentAction && actionStartTimeRef.current) {
+      // Calculate actual time spent on this action
+      const actionTimeSpent = Math.ceil(
+        calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
+      )
+      
+      // Stop the timer
+      soundManager.stopTicking()
+      
+      // Mark action as completed
+      await markActionAsCompleted(currentAction.id, actionTimeSpent)
+      
+      // Update session time
+      if (sessionStartTime) {
+        const totalSessionTime = Math.ceil(
+          calculateAdjustedElapsed(sessionStartTime, pausedTimeRef.current) / 60
+        )
+        await updateTimeSpent(totalSessionTime)
+      }
+
+      // Reset timer state
+      setTimerState({
+        isActive: false,
+        isPaused: false,
+        duration: 0,
+        remaining: 0,
+        startTime: new Date(),
+        plannedDuration: 0
+      })
+
+      setShowMarkCompleteModal(false)
+      
+      // Move to next action or complete session
+      handleNextAction()
+    }
+  }, [currentAction, markActionAsCompleted, updateTimeSpent, sessionStartTime, handleNextAction])
+
+  // Handle time extension
+  const handleExtendTime = useCallback(async (extensionMinutes: number) => {
+    if (!timerState.isActive) return
+
+    const extensionSeconds = extensionMinutes * 60
+    const currentElapsed = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
+    const newDuration = timerState.duration + extensionSeconds
+    const newRemaining = Math.max(0, newDuration - currentElapsed)
+
+    // Update timer state with new duration
+    setTimerState(prev => ({
+      ...prev,
+      duration: newDuration,
+      remaining: newRemaining
+    }))
+
+    // Track the extension
+    setCurrentActionExtensions(prev => [...prev, extensionMinutes])
+
+    // Resume timer if it was paused
+    if (timerState.isPaused) {
+      resumeTimer()
+    } else {
+      // Restart ticking sound if needed
+      soundManager.startTicking()
+    }
+  }, [timerState, resumeTimer])
+
+  // Handle showing extension modal when timer reaches zero
+  const handleTimerComplete = useCallback(() => {
+    setShowExtensionModal(true)
+  }, [])
+
   // Handle timer completion
   useEffect(() => {
     if (!timerState.isActive || timerState.isPaused) return
@@ -268,15 +352,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
         // Stop ticking sound
         soundManager.stopTicking()
         
-        // Timer completed naturally
-        if (currentAction) {
-            const actionTimeSpent = Math.ceil(
-                calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
-            );
-            markActionAsCompleted(currentAction.id, actionTimeSpent);
-        }
-
-        setShowCompletionDialog(true);
+        // Pause the timer and show extension options
+        setTimerState(prev => ({ ...prev, isPaused: true }))
+        setShowExtensionModal(true)
       }
     }
 
@@ -310,6 +388,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
         } else {
           pauseTimer()
         }
+      } else if (event.code === 'Enter' && timerState.isActive && currentAction) {
+        event.preventDefault()
+        handleMarkCompleteClick()
       } else if (event.code === 'Escape' && timerState.isActive) {
         event.preventDefault()
         stopTimer()
@@ -318,7 +399,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [timerState.isActive, timerState.isPaused, pauseTimer, resumeTimer, stopTimer])
+  }, [timerState.isActive, timerState.isPaused, pauseTimer, resumeTimer, stopTimer, currentAction, handleMarkCompleteClick])
 
   // Get current action details
   const getCurrentActionDetails = () => {
@@ -331,24 +412,33 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }
 
-  const addMoreTime = () => {
-    setShowCompletionDialog(false);
-    const newDuration = timerState.duration + 5 * 60; // Add 5 minutes
-    const remaining = newDuration - calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current);
+  // Handle completing action and moving to next
+  const handleCompleteAndContinue = useCallback(async () => {
+    if (currentAction && actionStartTimeRef.current) {
+      // Calculate actual time spent including extensions
+      const actionTimeSpent = Math.ceil(
+        calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
+      )
+      
+      // Mark action as completed with extensions tracked
+      await markActionAsCompleted(currentAction.id, actionTimeSpent)
+      
+      // Update the action with extension data
+      if (currentActionExtensions.length > 0) {
+        // Store extensions in the action (this would typically go to the database)
+        const updatedAction = {
+          ...currentAction,
+          timeExtensions: currentActionExtensions,
+          actualMinutes: actionTimeSpent
+        }
+        // In a real implementation, you'd save this to the database
+      }
+    }
 
-    setTimerState(prev => ({
-        ...prev,
-        duration: newDuration,
-        remaining: remaining,
-        isPaused: false,
-    }));
-    soundManager.startTicking();
-  };
-
-  const completeAndContinue = () => {
-      setShowCompletionDialog(false);
-      handleNextAction();
-  };
+    setShowExtensionModal(false)
+    setCurrentActionExtensions([])
+    handleNextAction()
+  }, [currentAction, markActionAsCompleted, currentActionExtensions, handleNextAction])
 
 
   return (
@@ -456,6 +546,8 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
               onPause={pauseTimer}
               onResume={resumeTimer}
               onStop={stopTimer}
+              onMarkComplete={handleMarkCompleteClick}
+              showMarkComplete={!!currentAction}
             />
             <div className="flex justify-center gap-4 mt-4">
                 <button onClick={handlePreviousAction} disabled={currentActionIndex === 0} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">Previous</button>
@@ -482,21 +574,50 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
           )}
         </div>
       )}
+       {/* Timer Extension Modal */}
+       <TimerExtensionModal
+         isOpen={showExtensionModal}
+         onClose={() => setShowExtensionModal(false)}
+         onExtend={handleExtendTime}
+         onComplete={handleCompleteAndContinue}
+         actionText={currentAction?.text}
+         currentExtensions={currentActionExtensions}
+       />
+
+       {/* Simple completion dialog for when user chooses to finish without extension */}
        <AlertDialog open={showCompletionDialog} onOpenChange={setShowCompletionDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Time's up!</AlertDialogTitle>
+            <AlertDialogTitle>Complete Action?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your time for this action is over. What would you like to do?
+              Are you ready to mark this action as complete and move to the next one?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowCompletionDialog(false)}>Stay</AlertDialogCancel>
-            <AlertDialogAction onClick={addMoreTime}>Add 5 minutes</AlertDialogAction>
-            <AlertDialogAction onClick={completeAndContinue}>Continue to Next Action</AlertDialogAction>
+            <AlertDialogCancel onClick={() => setShowCompletionDialog(false)}>Continue Working</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCompleteAndContinue}>Complete & Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Mark Complete Modal */}
+      {currentAction && (
+        <ActionCompletionModal
+          isOpen={showMarkCompleteModal}
+          onClose={() => setShowMarkCompleteModal(false)}
+          onConfirm={handleMarkCompleteConfirm}
+          actionText={currentAction.text}
+          estimatedMinutes={currentAction.estimatedMinutes || 0}
+          actualMinutes={actionStartTimeRef.current ? Math.ceil(
+            calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
+          ) : 0}
+          nextActionText={
+            currentActionIndex + 1 < actionSessionState.actions.length 
+              ? actionSessionState.actions[currentActionIndex + 1].text 
+              : undefined
+          }
+        />
+      )}
     </div>
   )
 }

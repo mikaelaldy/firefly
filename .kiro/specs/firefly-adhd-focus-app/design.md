@@ -40,6 +40,7 @@ graph TB
         H --> L[Session Data]
         H --> M[User Preferences]
         N --> O[Editable Actions]
+        G --> S[Action Navigation State]
     end
     
     subgraph "V1 Features"
@@ -47,6 +48,47 @@ graph TB
         O --> Q[Custom Timer Durations]
         E --> R[Action Session Tracking]
     end
+    
+    subgraph "V1.1 Advanced Controls"
+        G --> T[Timer Extensions]
+        S --> U[Action Navigation]
+        F --> V[Completion Modals]
+        T --> W[Extension History]
+        U --> X[Progress Tracking]
+    end
+```
+
+### Advanced Timer Control Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> ActionSelected : User selects action
+    ActionSelected --> TimerRunning : Start timer
+    
+    TimerRunning --> TimerPaused : Pause
+    TimerPaused --> TimerRunning : Resume
+    
+    TimerRunning --> EarlyComplete : Mark Complete
+    TimerRunning --> TimeUp : Timer reaches zero
+    TimerRunning --> NavigateAway : Switch action
+    
+    EarlyComplete --> ConfirmComplete : Show confirmation
+    ConfirmComplete --> ActionCompleted : Confirm
+    ConfirmComplete --> TimerRunning : Cancel
+    
+    TimeUp --> ExtendOrNext : Show options
+    ExtendOrNext --> ExtendTime : Add time
+    ExtendOrNext --> NextAction : Move to next
+    ExtendTime --> TimerRunning : Continue with extension
+    
+    NavigateAway --> PauseAndSwitch : Pause current
+    PauseAndSwitch --> ActionSelected : Select new action
+    
+    ActionCompleted --> NextAction : Auto-advance
+    NextAction --> ActionSelected : Has next action
+    NextAction --> SessionComplete : No more actions
+    
+    SessionComplete --> [*] : End session
 ```
 
 ### Request Flow
@@ -129,6 +171,43 @@ interface EstimateResponse {
 }
 ```
 
+#### `/api/actions/update` (New V1 Feature)
+```typescript
+interface ActionUpdateRequest {
+  sessionId: string;
+  actionId: string;
+  status: 'completed' | 'skipped' | 'active';
+  actualMinutes?: number;
+  timeExtensions?: number[];
+}
+
+interface ActionUpdateResponse {
+  success: boolean;
+  updatedAction: EditableAction;
+  sessionProgress: {
+    completedCount: number;
+    totalCount: number;
+    nextActionId?: string;
+  };
+}
+```
+
+#### `/api/timer/extend` (New V1 Feature)
+```typescript
+interface TimerExtendRequest {
+  sessionId: string;
+  actionId: string;
+  extensionMinutes: number;
+  reason?: string;
+}
+
+interface TimerExtendResponse {
+  success: boolean;
+  newDuration: number;
+  totalExtensions: number;
+}
+```
+
 #### `/api/auth/session`
 ```typescript
 interface SessionData {
@@ -169,7 +248,7 @@ interface DashboardStatsResponse {
 
 ### State Management Interfaces
 
-#### Timer State
+#### Timer State (Enhanced)
 ```typescript
 interface TimerState {
   isActive: boolean;
@@ -178,6 +257,19 @@ interface TimerState {
   remaining: number;
   startTime: Date;
   plannedDuration: number;
+  currentActionId?: string;
+  extensions: TimerExtension[];
+  canMarkComplete: boolean;
+  canNavigate: boolean;
+}
+
+interface ActionNavigationState {
+  currentIndex: number;
+  totalActions: number;
+  canGoNext: boolean;
+  canGoPrevious: boolean;
+  nextActionId?: string;
+  previousActionId?: string;
 }
 ```
 
@@ -238,18 +330,32 @@ interface EditableAction {
   confidence?: 'low' | 'medium' | 'high';
   isCustom: boolean; // true if user-modified
   originalText?: string; // for tracking changes
+  status: 'pending' | 'active' | 'completed' | 'skipped';
+  actualMinutes?: number;
+  timeExtensions?: number[]; // array of added minutes
+  completedAt?: Date;
+  skippedAt?: Date;
 }
 
 interface ActionSession {
   sessionId: string;
   goal: string;
   actions: EditableAction[];
-  completedActions: string[];
-  currentActionId?: string;
+  currentActionIndex: number;
   totalEstimatedTime: number;
   actualTimeSpent: number;
+  completedCount: number;
+  skippedCount: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface TimerExtension {
+  actionId: string;
+  originalDuration: number;
+  extensionMinutes: number;
+  reason?: string;
+  timestamp: Date;
 }
 ```
 
@@ -318,6 +424,33 @@ interface UserAnalytics {
 - **Custom Durations**: Use AI-estimated time as timer duration
 - **Action Context**: Display current action being worked on
 - **Progress Tracking**: Mark actions as complete during timer sessions
+- **Advanced Controls**: Mark complete early, add time extensions, navigate between actions
+- **Action Navigation**: Previous/Next buttons with state preservation
+- **Completion Handling**: Smart prompts when timer ends or action completes early
+
+#### TimerControls Component (Enhanced)
+- **Mark Complete Button**: Early completion with confirmation
+- **Time Extension**: Quick add time options (5, 10, 15 min) and custom input
+- **Action Navigation**: Previous/Next action buttons with progress preservation
+- **Smart Prompts**: Context-aware suggestions when timer ends or action completes
+
+#### ActionNavigator Component (New)
+- **Progress Indicator**: Visual progress bar showing current action position
+- **Action Preview**: Display current, previous, and next action titles
+- **Navigation Controls**: Previous/Next buttons with disabled states for boundaries
+- **Status Indicators**: Visual markers for completed, skipped, and active actions
+
+#### TimerExtensionModal Component (New)
+- **Preset Options**: Quick buttons for 5, 10, 15 minute extensions
+- **Custom Input**: Text field for custom time amounts
+- **Extension History**: Show previous extensions for current action
+- **Reason Tracking**: Optional field to note why extension was needed
+
+#### ActionCompletionModal Component (New)
+- **Early Completion Confirmation**: Confirm marking action complete before time ends
+- **Time Tracking**: Display actual vs estimated time
+- **Next Action Preview**: Show what comes next
+- **Break Options**: Offer short break before continuing
 
 ### Database Schema Extensions
 
@@ -335,20 +468,58 @@ CREATE TABLE action_sessions (
 );
 ```
 
-#### editable_actions Table
+#### editable_actions Table (Enhanced)
 ```sql
 CREATE TABLE editable_actions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id UUID REFERENCES action_sessions(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
   estimated_minutes INTEGER,
+  actual_minutes INTEGER DEFAULT 0,
   confidence TEXT, -- 'low', 'medium', 'high'
   is_custom BOOLEAN DEFAULT FALSE,
   original_text TEXT,
   order_index INTEGER NOT NULL,
+  status TEXT DEFAULT 'pending', -- 'pending', 'active', 'completed', 'skipped'
   completed_at TIMESTAMP WITH TIME ZONE,
+  skipped_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add indexes for efficient navigation
+CREATE INDEX idx_editable_actions_session_order ON editable_actions(session_id, order_index);
+CREATE INDEX idx_editable_actions_status ON editable_actions(status);
+```
+
+#### timer_extensions Table (New)
+```sql
+CREATE TABLE timer_extensions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  action_id UUID REFERENCES editable_actions(id) ON DELETE CASCADE,
+  session_id UUID REFERENCES action_sessions(id) ON DELETE CASCADE,
+  extension_minutes INTEGER NOT NULL,
+  reason TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- RLS policies for timer extensions
+ALTER TABLE timer_extensions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own timer extensions" ON timer_extensions
+  FOR ALL USING (
+    session_id IN (
+      SELECT id FROM action_sessions WHERE user_id = auth.uid()
+    )
+  );
+```
+
+#### action_sessions Table (Enhanced)
+```sql
+-- Add new columns to existing table
+ALTER TABLE action_sessions ADD COLUMN current_action_index INTEGER DEFAULT 0;
+ALTER TABLE action_sessions ADD COLUMN completed_count INTEGER DEFAULT 0;
+ALTER TABLE action_sessions ADD COLUMN skipped_count INTEGER DEFAULT 0;
+ALTER TABLE action_sessions ADD COLUMN total_extensions INTEGER DEFAULT 0;
 ```
 
 ### AI Integration Enhancement
@@ -367,6 +538,71 @@ Consider:
 Return estimates with confidence levels.
 ```
 
+### Service Layer Architecture
+
+#### ActionNavigationService
+```typescript
+class ActionNavigationService {
+  getCurrentAction(sessionId: string): Promise<EditableAction | null>
+  getNextAction(sessionId: string): Promise<EditableAction | null>
+  getPreviousAction(sessionId: string): Promise<EditableAction | null>
+  switchToAction(sessionId: string, actionId: string): Promise<ActionNavigationState>
+  getNavigationState(sessionId: string): Promise<ActionNavigationState>
+}
+```
+
+#### TimerExtensionService
+```typescript
+class TimerExtensionService {
+  addExtension(actionId: string, minutes: number, reason?: string): Promise<TimerExtension>
+  getExtensionHistory(actionId: string): Promise<TimerExtension[]>
+  getTotalExtensions(actionId: string): Promise<number>
+  calculateNewDuration(actionId: string, extensionMinutes: number): Promise<number>
+}
+```
+
+#### ActionStatusService
+```typescript
+class ActionStatusService {
+  markComplete(actionId: string, actualMinutes: number): Promise<EditableAction>
+  markSkipped(actionId: string): Promise<EditableAction>
+  reactivateAction(actionId: string): Promise<EditableAction>
+  updateProgress(sessionId: string): Promise<SessionProgress>
+  getCompletionStats(sessionId: string): Promise<CompletionStats>
+}
+
+interface SessionProgress {
+  completedCount: number;
+  skippedCount: number;
+  totalCount: number;
+  currentActionIndex: number;
+  percentComplete: number;
+}
+
+interface CompletionStats {
+  totalActions: number;
+  completed: number;
+  skipped: number;
+  averageAccuracy: number; // estimated vs actual time
+  totalTimeSpent: number;
+  totalExtensions: number;
+}
+```
+
+### Error Handling (Enhanced)
+
+#### Timer Control Failures
+- **Extension Limits**: Prevent excessive time extensions (max 3 per action)
+- **Navigation Boundaries**: Handle first/last action edge cases gracefully
+- **State Conflicts**: Resolve conflicts when multiple tabs modify same session
+- **Offline Actions**: Queue timer control actions for sync when online
+
+#### Action Status Conflicts
+- **Concurrent Updates**: Handle multiple users editing same session (if shared)
+- **Invalid Transitions**: Prevent invalid status changes (e.g., skip completed action)
+- **Data Integrity**: Ensure action counts match actual statuses
+- **Recovery**: Auto-correct inconsistent session state
+
 ## Security Considerations
 
 ### Data Privacy
@@ -374,14 +610,17 @@ Return estimates with confidence levels.
 - **AI Calls**: Strip personal identifiers before sending to Google AI Studio
 - **Session Security**: Use secure session tokens for authenticated users
 - **Action Data**: User-modified actions stored securely with RLS policies
+- **Extension Data**: Timer extensions protected by RLS policies
 
 ### API Security
 - **Rate Limiting**: Implement per-IP and per-user rate limits
 - **Input Validation**: Sanitize all user inputs before AI processing
 - **CORS**: Restrict API access to application domain
 - **Action Validation**: Validate action text length and content before AI estimation
+- **Extension Limits**: Validate extension amounts and prevent abuse
 
 ### Authentication Security
 - **OAuth Flow**: Secure Google OAuth implementation with Supabase Auth
 - **Session Management**: Secure session handling with proper expiration
 - **CSRF Protection**: Built-in Next.js CSRF protection for API routes
+- **Action Ownership**: Verify user owns session before allowing timer controls

@@ -7,10 +7,20 @@ interface TimerControlsProps {
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
+  onMarkComplete?: () => void;
   stopLabel?: string;
+  showMarkComplete?: boolean;
 }
 
-export function TimerControls({ timerState, onPause, onResume, onStop, stopLabel = 'Stop' }: TimerControlsProps) {
+export function TimerControls({ 
+  timerState, 
+  onPause, 
+  onResume, 
+  onStop, 
+  onMarkComplete,
+  stopLabel = 'Stop',
+  showMarkComplete = false 
+}: TimerControlsProps) {
   return (
     <div className="flex items-center justify-center space-x-4">
       {/* Pause/Resume Button */}
@@ -41,6 +51,24 @@ export function TimerControls({ timerState, onPause, onResume, onStop, stopLabel
         </button>
       )}
 
+      {/* Mark Complete Button */}
+      {timerState.isActive && showMarkComplete && onMarkComplete && (
+        <button
+          onClick={onMarkComplete}
+          className="
+            flex items-center justify-center w-16 h-16 rounded-full
+            bg-blue-600 hover:bg-blue-700 text-white font-semibold
+            focus:outline-none focus:ring-4 focus:ring-blue-200
+            transition-all duration-200 transform hover:scale-105 active:scale-95
+          "
+          aria-label="Mark action complete"
+        >
+          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </button>
+      )}
+
       {/* Stop Button */}
       {timerState.isActive && (
         <button
@@ -68,6 +96,12 @@ export function TimerControls({ timerState, onPause, onResume, onStop, stopLabel
                 <kbd className="px-2 py-1 text-xs bg-gray-100 rounded">Space</kbd>
                 <span>{timerState.isPaused ? 'Resume' : 'Pause'}</span>
               </div>
+              {showMarkComplete && (
+                <div className="flex items-center space-x-2">
+                  <kbd className="px-2 py-1 text-xs bg-gray-100 rounded">Enter</kbd>
+                  <span>Mark Complete</span>
+                </div>
+              )}
               <div className="flex items-center space-x-2">
                 <kbd className="px-2 py-1 text-xs bg-gray-100 rounded">Esc</kbd>
                 <span>{stopLabel}</span>

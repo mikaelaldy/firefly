@@ -174,3 +174,22 @@ The application addresses the common ADHD challenge of getting stuck at the star
 10. WHEN the user selects an action with time estimate THEN the system SHALL use that estimate as the timer duration
 11. WHEN actions are modified or estimated THEN the system SHALL sync this data to the user's dashboard
 12. WHEN dashboard displays session history THEN the system SHALL include custom action data and estimates
+
+### Requirement 13: Advanced Timer Controls and Action Navigation (V1 Feature)
+
+**User Story:** As an ADHD user, I want flexible timer controls that let me mark tasks as complete early, add more time when needed, and navigate between actions, so that I can adapt my focus sessions to my actual work pace and needs.
+
+#### Acceptance Criteria
+
+1. WHEN the timer is running THEN the system SHALL display a "Mark Complete" button alongside pause/stop controls
+2. WHEN the user clicks "Mark Complete" THEN the system SHALL mark the current action as finished and offer to move to the next action
+3. WHEN an action is marked complete early THEN the system SHALL record the actual time spent and ask if the user wants to continue to the next action or take a break
+4. WHEN the timer reaches zero THEN the system SHALL ask the user if they want to add more time or move to the next action
+5. WHEN the user chooses to add more time THEN the system SHALL offer preset extensions (5, 10, 15 minutes) or custom time input
+6. WHEN additional time is added THEN the system SHALL restart the timer with the new duration and track the extension
+7. WHEN the user has multiple actions THEN the system SHALL provide "Previous" and "Next" navigation buttons during timer sessions
+8. WHEN the user navigates to a different action THEN the system SHALL pause the current timer and ask if they want to start the new action
+9. WHEN the user skips an action THEN the system SHALL mark it as skipped and move to the next available action
+10. WHEN the user returns to a previous action THEN the system SHALL allow them to uncheck completion status and restart the timer
+11. WHEN all actions are completed or skipped THEN the system SHALL show a session summary with completion statistics
+12. WHEN the session ends THEN the system SHALL save detailed action-level progress data including completions, skips, and time extensions
