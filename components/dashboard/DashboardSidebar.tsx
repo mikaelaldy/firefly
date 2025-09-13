@@ -45,19 +45,19 @@ const QuickStats = ({ collapsed }: { collapsed?: boolean }) => {
 
   return (
     <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-      <h3 className="font-semibold text-gray-800 mb-3 text-sm">Quick Stats</h3>
-      <div className="space-y-2 text-sm">
+      <h3 className="font-semibold text-gray-800 mb-2 text-xs uppercase tracking-wide">Quick Stats</h3>
+      <div className="space-y-1.5 text-xs">
         <div className="flex justify-between items-center">
           <span className="text-gray-600">Today</span>
-          <span className="font-medium text-blue-600">2h 15m</span>
+          <span className="font-semibold text-blue-600">2h 15m</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-600">Streak</span>
-          <span className="font-medium text-green-600">7 days</span>
+          <span className="font-semibold text-green-600">7 days</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-600">Goal</span>
-          <span className="font-medium text-purple-600">85%</span>
+          <span className="font-semibold text-purple-600">85%</span>
         </div>
       </div>
     </div>
@@ -107,7 +107,7 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
   return (
     <div className={`h-full flex flex-col ${className}`}>
       {/* Logo/Brand */}
-      <div className="px-4 py-3">
+      <div className="px-4 py-4">
         {collapsed ? (
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
             <span className="text-white font-bold text-lg">F</span>
@@ -117,37 +117,29 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">F</span>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Firefly</h2>
+            <h2 className="text-lg font-bold text-gray-900">Firefly</h2>
           </div>
         )}
       </div>
 
       {/* User Profile */}
-      {user && (
-        <div className="px-4 pb-3 mb-2 border-b border-gray-200">
-          {collapsed ? (
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-gray-600 font-medium text-sm">
+      {user && !collapsed && (
+        <div className="px-4 pb-4 mb-3 border-b border-gray-200">
+          <div className="flex items-center space-x-2 p-2 rounded-lg bg-gray-50">
+            <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-gray-600 font-medium text-xs">
                 {user.email?.[0]?.toUpperCase() || 'U'}
               </span>
             </div>
-          ) : (
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 font-medium text-sm">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {user.email?.split('@')[0] || 'User'}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {user.email}
-                </p>
-              </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-gray-900 truncate">
+                {user.email?.split('@')[0] || 'User'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user.email}
+              </p>
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -181,15 +173,15 @@ export function DashboardSidebar({ className = '', collapsed = false }: Dashboar
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                         pathname === item.href
-                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                          ? 'bg-blue-50 text-blue-700'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                       title={collapsed ? item.label : undefined}
                     >
-                      <span className={`text-lg ${collapsed ? 'mx-auto' : ''}`}>{item.icon}</span>
-                      {!collapsed && <span className="ml-3">{item.label}</span>}
+                      <span className={`text-base ${collapsed ? 'mx-auto' : ''}`}>{item.icon}</span>
+                      {!collapsed && <span className="ml-3 text-sm">{item.label}</span>}
                     </Link>
                   ))}
                 </div>
