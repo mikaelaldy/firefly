@@ -33,7 +33,7 @@ export default function RootLayout({
             <ActionSessionProvider>
               <div className="flex flex-col min-h-screen">
                 <Navbar />
-                <main id="main-content" className="flex-1 pt-16">
+                <main id="main-content" className="flex-1">
                   {children}
                 </main>
                 <Footer />

@@ -11,22 +11,22 @@ export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
-    <div className="flex bg-gray-50" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+    <div className="flex h-screen pt-16">
       {/* Sidebar */}
       {sidebar && (
-        <div className={`${sidebarCollapsed ? 'w-16' : 'w-56'} flex-shrink-0 transition-all duration-300 ease-in-out`}>
-          <div className="h-full bg-white border-r border-gray-200 shadow-sm" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+        <div className={`fixed top-16 left-0 h-full ${sidebarCollapsed ? 'w-16' : 'w-56'} flex-shrink-0 transition-all duration-300 ease-in-out`}>
+          <div className="h-full bg-white border-r border-gray-200 shadow-sm flex flex-col">
             {/* Sidebar toggle button */}
-            <div className="flex items-center justify-end px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center justify-end px-4 py-3 border-b border-gray-200 flex-shrink-0">
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                 className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
                 title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
-                <svg 
-                  className={`w-4 h-4 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className={`w-4 h-4 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -43,8 +43,8 @@ export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
       )}
       
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 p-4 lg:p-6">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'ml-16' : 'ml-56'}`}>
+        <main className="flex-1 p-4 lg:p-6 bg-gray-50 overflow-y-auto">
           {children}
         </main>
       </div>
