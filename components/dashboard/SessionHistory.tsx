@@ -26,7 +26,7 @@ const ActionItem = ({ text, percentage }: { text: string, percentage: number }) 
 export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
   if (loading) {
     return (
-      <div className="animate-pulse">
+      <div className="animate-pulse" aria-label="Loading recent sessions">
         <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
         <div className="space-y-4">
           {[...Array(2)].map((_, i) => (
@@ -66,11 +66,26 @@ export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
   // Dummy percentages for actions breakdown
   const dummyPercentages = [10, 45, 30, 0, 0];
 
+  const recent = sessions.slice(0, 2)
+  const hasAny = recent.length > 0
+
   return (
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Sessions</h3>
-      <div className="space-y-4">
-        {sessions.slice(0, 2).map((session, sessionIndex) => {
+    <section aria-labelledby="recent-sessions-heading">
+      <div className="flex items-center justify-between mb-4">
+        <h3 id="recent-sessions-heading" className="text-lg font-semibold text-gray-900">Recent Sessions</h3>
+        <a href="/history" className="text-sm text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 rounded px-1">
+          View All Sessions →
+        </a>
+      </div>
+      {!hasAny && (
+        <div className="p-4 rounded-lg bg-gray-50 border border-gray-200" role="status" aria-live="polite">
+          <p className="text-sm text-gray-700">No sessions yet. Start your first session to see history here.</p>
+          <a href="/" className="mt-2 inline-block text-sm font-medium text-blue-700 hover:underline">Start a session</a>
+        </div>
+      )}
+      {hasAny && (
+        <div className="space-y-4">
+        {recent.map((session, sessionIndex) => {
           const completedActions = session.actions?.filter(a => a.completed_at).length || 0;
           const totalActions = session.actions?.length || 0;
 
@@ -103,7 +118,8 @@ export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
             </div>
           )
         })}
-      </div>
-    </div>
+        </div>
+      )}
+    </section>
   );
 }

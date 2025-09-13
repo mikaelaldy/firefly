@@ -24,7 +24,7 @@ const InsightCard = ({ title, value, subtitle, icon }: { title: string, value: s
 export function ActionSessionInsights({ actionSessions, loading }: ActionSessionInsightsProps) {
   if (loading) {
     return (
-      <div className="animate-pulse">
+      <div className="animate-pulse" aria-label="Loading action insights">
         <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
         <div className="grid grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
@@ -42,9 +42,8 @@ export function ActionSessionInsights({ actionSessions, loading }: ActionSession
 
   if (actionSessions.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="text-4xl mb-3">📋</div>
-        <p className="text-gray-600 mb-2">No action sessions yet</p>
+      <div className="text-sm text-gray-700" role="status" aria-live="polite">
+        No action sessions yet. Start a session to see insights.
       </div>
     );
   }

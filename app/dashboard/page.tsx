@@ -17,6 +17,7 @@ import { ActionSessionInsights } from '@/components/dashboard/ActionSessionInsig
 import { AuthStatus } from '@/components/AuthStatus'
 import { Button } from '@/components/ui/button' // Assuming you have a Button component
 import { TimeEstimationBreakdown } from '@/components/dashboard/TimeEstimationBreakdown'
+import { Accordion, AccordionItem } from '@/components/ui/accordion'
 
 interface DashboardData {
   totalFocusTime: number;
@@ -249,61 +250,15 @@ export default function DashboardPage() {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content Area - Takes up 2 columns */}
-          <div className="lg:col-span-2">
-            <div className="space-y-6">
-              {/* Ready to Focus Section */}
-              <DashboardCard>
-                <ReadyToFocus />
-              </DashboardCard>
-              
-              {/* Your Stats Section */}
-              <DashboardCard>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Your Stats</h3>
-                <DashboardStats 
-                  stats={dashboardData ? {
-                    totalFocusTime: dashboardData.totalFocusTime,
-                    averageSessionLength: dashboardData.averageSessionLength,
-                    completionRate: dashboardData.completionRate,
-                    sessionsThisWeek: dashboardData.sessionsThisWeek
-                  } : null}
-                  actionSessions={dashboardData?.actionSessions || []}
-                  loading={loading}
-                />
-              </DashboardCard>
+          {/* Main Content Area - col-span-2 on desktop */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Ready to Focus at the very top */}
+            <DashboardCard>
+              <ReadyToFocus />
+            </DashboardCard>
 
-              {/* Action Session Insights and Time Estimation */}
-              {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <DashboardCard>
-                    <ActionSessionInsights 
-                      actionSessions={dashboardData.actionSessions}
-                      loading={loading}
-                    />
-                  </DashboardCard>
-                  <DashboardCard>
-                    <TimeEstimationBreakdown 
-                      data={dashboardData.timeEstimationBreakdown}
-                      loading={loading}
-                    />
-                  </DashboardCard>
-                </div>
-              )}
-              
-              {/* Progress Insights */}
-              <DashboardCard>
-                <ProgressInsights 
-                  insights={dashboardData?.insights || []}
-                  loading={loading}
-                />
-              </DashboardCard>
-            </div>
-          </div>
-
-          {/* Right Sidebar Content - Takes up 1 column */}
-          <div className="lg:col-span-1">
-            <div className="space-y-6">
-              {/* Personal Records */}
+            {/* Personal Records row comes next on desktop only in side column, but include for mobile order */}
+            <div className="lg:hidden">
               <DashboardCard>
                 <PersonalRecords 
                   records={dashboardData?.personalRecords || {
@@ -315,15 +270,68 @@ export default function DashboardPage() {
                   loading={loading}
                 />
               </DashboardCard>
-              
-              {/* Recent Sessions */}
+            </div>
+
+            {/* Stats card */}
+            <DashboardCard>
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Your Stats</h3>
+              <DashboardStats 
+                stats={dashboardData ? {
+                  totalFocusTime: dashboardData.totalFocusTime,
+                  averageSessionLength: dashboardData.averageSessionLength,
+                  completionRate: dashboardData.completionRate,
+                  sessionsThisWeek: dashboardData.sessionsThisWeek
+                } : null}
+                actionSessions={dashboardData?.actionSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
+
+            {/* Collapsible advanced sections */}
+            <DashboardCard>
+              <Accordion className="w-full">
+                <AccordionItem title="Action Tracking Insights" defaultOpen={false}>
+                  <ActionSessionInsights actionSessions={dashboardData?.actionSessions || []} loading={loading} />
+                </AccordionItem>
+                <AccordionItem title="Time Estimation Breakdown" defaultOpen={false}>
+                  <TimeEstimationBreakdown data={dashboardData?.timeEstimationBreakdown} loading={loading} />
+                </AccordionItem>
+              </Accordion>
+            </DashboardCard>
+
+            {/* Tips at bottom */}
+            <DashboardCard>
+              <ProgressInsights 
+                insights={dashboardData?.insights || []}
+                loading={loading}
+              />
+            </DashboardCard>
+          </div>
+
+          {/* Right Sidebar Content - col-span-1 */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Personal Records compact row */}
+            <div className="hidden lg:block">
               <DashboardCard>
-                <SessionHistory 
-                  sessions={dashboardData?.recentSessions || []}
+                <PersonalRecords 
+                  records={dashboardData?.personalRecords || {
+                    longestSession: 0,
+                    bestWeek: 0,
+                    currentStreak: 0,
+                    longestStreak: 0
+                  }}
                   loading={loading}
                 />
               </DashboardCard>
             </div>
+
+            {/* Recent Sessions limited to 2 items */}
+            <DashboardCard>
+              <SessionHistory 
+                sessions={dashboardData?.recentSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
           </div>
         </div>
       </div>

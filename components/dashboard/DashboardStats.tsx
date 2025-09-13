@@ -83,24 +83,19 @@ export function DashboardStats({ stats, actionSessions = [], loading }: Dashboar
 
   const statCards = [
     {
+      title: 'This Week',
+      value: `${stats.sessionsThisWeek} sessions`,
+      icon: '📅',
+    },
+    {
       title: 'Total Focus Time',
       value: formatTime(stats.totalFocusTime),
       icon: '⏱️',
     },
     {
-      title: 'Average Session',
-      value: formatTime(stats.averageSessionLength),
-      icon: '📊',
-    },
-    {
       title: 'Completion Rate',
       value: `${stats.completionRate}%`,
       icon: '🎯',
-    },
-    {
-      title: 'This Week',
-      value: `${stats.sessionsThisWeek} sessions`,
-      icon: '📅',
     },
     {
       title: 'Actions Completed',
@@ -111,11 +106,16 @@ export function DashboardStats({ stats, actionSessions = [], loading }: Dashboar
       title: 'Time Accuracy',
       value: `${Math.round(averageAccuracy)}%`,
       icon: '🎯',
-    }
+    },
+    {
+      title: 'Average Session',
+      value: formatTime(stats.averageSessionLength),
+      icon: '📊',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-6" aria-label="Your stats">
       {statCards.map((card, index) => (
         <StatCard key={index} {...card} />
       ))}
