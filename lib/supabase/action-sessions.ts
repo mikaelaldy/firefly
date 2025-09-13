@@ -361,6 +361,45 @@ export async function markActionCompleted(
 }
 
 /**
+ * Unmark an action as completed
+ */
+export async function unmarkActionCompleted(
+  actionId: string
+): Promise<{ success: boolean; error?: string; isOffline?: boolean }> {
+  try {
+    const offlineActions = getFromLocalStorage<OfflineAction[]>(OFFLINE_ACTIONS_KEY) || []
+    const offlineAction = offlineActions.find(a => a.offline_id === actionId || a.id === actionId)
+    
+    if (offlineAction || !isOnline()) {
+      if (offlineAction) {
+        offlineAction.completed_at = undefined
+        offlineAction.needs_sync = true
+        saveToLocalStorage(OFFLINE_ACTIONS_KEY, offlineActions)
+      }
+      // Add to pending sync operations for unmarking
+      return { success: true, isOffline: true }
+    }
+
+    const { error } = await supabase
+      .from('editable_actions')
+      .update({
+        completed_at: null
+      })
+      .eq('id', actionId)
+
+    if (error) {
+      console.error('Error unmarking action as completed:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Unexpected error unmarking action as completed:', error)
+    return { success: false, error: 'Network error' }
+  }
+}
+
+/**
  * Update session progress with actual time spent
  */
 export async function updateSessionProgress(

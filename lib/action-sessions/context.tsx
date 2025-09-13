@@ -5,6 +5,7 @@ import type { EditableAction } from '@/types'
 import { 
   createActionSession, 
   markActionCompleted, 
+  unmarkActionCompleted,
   updateSessionProgress,
   getActionSession,
   type ActionSessionData,
@@ -28,6 +29,7 @@ interface ActionSessionContextType {
   state: ActionSessionState
   startActionSession: (goal: string, actions: EditableAction[]) => Promise<string | null>
   markActionAsCompleted: (actionId: string, actualMinutesSpent: number) => Promise<void>
+  unmarkActionAsCompleted: (actionId: string) => Promise<void>
   setCurrentAction: (actionId: string | null) => void
   updateTimeSpent: (minutes: number) => Promise<void>
   completeSession: () => Promise<void>
@@ -123,6 +125,44 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
       setState(prev => ({ 
         ...prev, 
         error: 'Failed to mark action as completed', 
+        isLoading: false 
+      }))
+    }
+  }, [state.sessionId])
+
+  /**
+   * Unmark an action as completed
+   */
+  const unmarkActionAsCompleted = useCallback(async (actionId: string) => {
+    if (!state.sessionId) return
+
+    setState(prev => ({ ...prev, isLoading: true }))
+
+    try {
+      // This will be a new function in the supabase client
+      const { success, error } = await unmarkActionCompleted(actionId) 
+      
+      if (error) {
+        setState(prev => ({ ...prev, error, isLoading: false }))
+        return
+      }
+
+      setState(prev => {
+        const newCompletedActionIds = new Set(prev.completedActionIds)
+        newCompletedActionIds.delete(actionId)
+        return {
+          ...prev,
+          completedActionIds: newCompletedActionIds,
+          isLoading: false,
+          error: null
+        }
+      })
+
+    } catch (error) {
+      console.error('Error unmarking action as completed:', error)
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Failed to unmark action as completed', 
         isLoading: false 
       }))
     }
@@ -254,6 +294,7 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
     state,
     startActionSession,
     markActionAsCompleted,
+    unmarkActionAsCompleted,
     setCurrentAction,
     updateTimeSpent,
     completeSession,

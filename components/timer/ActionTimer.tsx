@@ -10,6 +10,17 @@ import { saveSession } from '@/lib/supabase/client-sessions'
 import { useActionSession } from '@/lib/action-sessions/context'
 import { soundManager } from '@/lib/sound-utils'
 import type { TimerState, TimerSession, EditableAction } from '@/types'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface ActionTimerProps {
   goal?: string;
@@ -21,7 +32,7 @@ interface ActionTimerProps {
 
 export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSessionComplete, onShowSoundSettings }: ActionTimerProps) {
   const router = useRouter()
-  const { state: actionSessionState, setCurrentAction, markActionAsCompleted, updateTimeSpent, startActionSession } = useActionSession()
+  const { state: actionSessionState, setCurrentAction, markActionAsCompleted, unmarkActionAsCompleted, updateTimeSpent, startActionSession } = useActionSession()
   
   const [timerState, setTimerState] = useState<TimerState>({
     isActive: false,
@@ -34,6 +45,8 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
 
   const [showLauncher, setShowLauncher] = useState(true)
   const [currentAction, setCurrentActionLocal] = useState<EditableAction | null>(null)
+  const [currentActionIndex, setCurrentActionIndex] = useState(0)
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null)
   const pausedTimeRef = useRef<number>(0) // Track total paused time for drift correction
   const pauseStartRef = useRef<number>(0) // Track when pause started
@@ -45,6 +58,14 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       startActionSession(goal, actions)
     }
   }, [actions, goal, actionSessionState.sessionId, startActionSession])
+
+  useEffect(() => {
+    if (actionSessionState.actions.length > 0 && !currentAction) {
+      setCurrentActionLocal(actionSessionState.actions[0])
+      setCurrentAction(actionSessionState.actions[0].id)
+      setCurrentActionIndex(0)
+    }
+  }, [actionSessionState.actions, currentAction, setCurrentAction])
 
   // Start timer with selected duration and optional action context
   const startTimer = useCallback((minutes: number, actionContext?: EditableAction) => {
@@ -60,8 +81,13 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       plannedDuration: durationInSeconds
     })
     
-    setCurrentActionLocal(actionContext || null)
-    setCurrentAction(actionContext?.id || null)
+    if (actionContext) {
+      const index = actionSessionState.actions.findIndex(a => a.id === actionContext.id)
+      setCurrentActionIndex(index)
+      setCurrentActionLocal(actionContext)
+      setCurrentAction(actionContext.id)
+    }
+
     setShowLauncher(false)
     setSessionStartTime(now)
     pausedTimeRef.current = 0 // Reset paused time tracking
@@ -69,7 +95,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     
     // Start ticking sound
     soundManager.startTicking()
-  }, [setCurrentAction])
+  }, [setCurrentAction, actionSessionState.actions])
 
   // Pause timer
   const pauseTimer = useCallback(() => {
@@ -180,6 +206,42 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }, [timerState, goal, taskId, router, onSessionComplete, currentAction, markActionAsCompleted, updateTimeSpent, sessionStartTime, setCurrentAction])
 
+  const handleNextAction = useCallback(() => {
+    const nextIndex = currentActionIndex + 1;
+    if (nextIndex < actionSessionState.actions.length) {
+      const nextAction = actionSessionState.actions[nextIndex];
+      startTimer(nextAction.estimatedMinutes || 15, nextAction);
+    } else {
+      // Last action finished, go to results
+      stopTimer();
+    }
+  }, [currentActionIndex, actionSessionState.actions, startTimer, stopTimer]);
+
+  const handlePreviousAction = useCallback(() => {
+    const prevIndex = currentActionIndex - 1;
+    if (prevIndex >= 0) {
+      const prevAction = actionSessionState.actions[prevIndex];
+      startTimer(prevAction.estimatedMinutes || 15, prevAction);
+    }
+  }, [currentActionIndex, actionSessionState.actions, startTimer]);
+  
+  const handleToggleActionCompletion = useCallback(async (actionId: string) => {
+    const isCompleted = actionSessionState.completedActionIds.has(actionId)
+    if (isCompleted) {
+      await unmarkActionAsCompleted(actionId)
+    } else {
+      const action = actionSessionState.actions.find(a => a.id === actionId)
+      if (action) {
+        let timeSpent = action.estimatedMinutes || 0
+        if (action.id === currentAction?.id && timerState.isActive) {
+          const adjustedElapsed = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
+          timeSpent = Math.ceil(adjustedElapsed / 60)
+        }
+        await markActionAsCompleted(actionId, timeSpent)
+      }
+    }
+  }, [actionSessionState.completedActionIds, actionSessionState.actions, currentAction, timerState, markActionAsCompleted, unmarkActionAsCompleted]);
+
   // Handle timer completion
   useEffect(() => {
     if (!timerState.isActive || timerState.isPaused) return
@@ -193,61 +255,20 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
         soundManager.stopTicking()
         
         // Timer completed naturally
-        
-        // If we have a current action, mark it as completed with actual time spent
-        if (currentAction && actionStartTimeRef.current) {
-          const actionTimeSpent = Math.ceil(
-            calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
-          )
-          await markActionAsCompleted(currentAction.id, actionTimeSpent)
+        if (currentAction) {
+            const actionTimeSpent = Math.ceil(
+                calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
+            );
+            markActionAsCompleted(currentAction.id, actionTimeSpent);
         }
 
-        // Update total session time spent
-        if (sessionStartTime) {
-          const totalSessionTime = Math.ceil(
-            calculateAdjustedElapsed(sessionStartTime, pausedTimeRef.current) / 60
-          )
-          await updateTimeSpent(totalSessionTime)
-        }
-
-        const session: TimerSession = {
-          id: crypto.randomUUID(),
-          goal,
-          plannedDuration: timerState.plannedDuration,
-          actualDuration: timerState.duration,
-          completed: true,
-          startedAt: timerState.startTime,
-          completedAt: new Date(),
-          variance: 0 // Perfect completion
-        }
-
-        setTimerState(prev => ({ ...prev, isActive: false }))
-        setCurrentActionLocal(null)
-        setCurrentAction(null)
-        setShowLauncher(true)
-        setSessionStartTime(null)
-        pausedTimeRef.current = 0
-        actionStartTimeRef.current = null
-
-        // Save session to database (non-blocking)
-        saveSession(session, taskId).catch(error => {
-          console.error('Failed to save session to database:', error)
-          // Continue anyway - don't block user flow
-        })
-
-        // Store session in localStorage for results page
-        localStorage.setItem(`session_${session.id}`, JSON.stringify(session))
-
-        // Navigate to results page
-        router.push(`/results?session=${session.id}`)
-
-        onSessionComplete?.(session)
+        setShowCompletionDialog(true);
       }
     }
 
     const interval = setInterval(checkCompletion, 1000)
     return () => clearInterval(interval)
-  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration, timerState.plannedDuration, goal, taskId, router, onSessionComplete, currentAction, markActionAsCompleted, updateTimeSpent, sessionStartTime, setCurrentAction])
+  }, [timerState.isActive, timerState.isPaused, timerState.startTime, timerState.duration, timerState.plannedDuration, goal, taskId, router, onSessionComplete, currentAction, markActionAsCompleted, updateTimeSpent, sessionStartTime, setCurrentAction, handleNextAction])
 
   // Update session progress in real-time
   useEffect(() => {
@@ -296,13 +317,33 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     }
   }
 
+  const addMoreTime = () => {
+    setShowCompletionDialog(false);
+    const newDuration = timerState.duration + 5 * 60; // Add 5 minutes
+    const remaining = newDuration - calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current);
+
+    setTimerState(prev => ({
+        ...prev,
+        duration: newDuration,
+        remaining: remaining,
+        isPaused: false,
+    }));
+    soundManager.startTicking();
+  };
+
+  const completeAndContinue = () => {
+      setShowCompletionDialog(false);
+      handleNextAction();
+  };
+
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
       {showLauncher ? (
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <TimerLauncher 
             onSelectDuration={startTimer} 
-            actions={actions}
+            actions={actionSessionState.actions.length > 0 ? actionSessionState.actions : actions}
             showPresets={true}
             onShowSoundSettings={onShowSoundSettings}
           />
@@ -345,6 +386,26 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
             </div>
           </div>
 
+          {/* Action List */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Actions</h3>
+            <ul className="space-y-2">
+              {actionSessionState.actions.map((action, index) => (
+                <li key={action.id} className={`flex items-center p-2 rounded-lg ${currentActionIndex === index ? 'bg-blue-100' : ''}`}>
+                  <Checkbox
+                    id={`action-${action.id}`}
+                    checked={actionSessionState.completedActionIds.has(action.id)}
+                    onCheckedChange={() => handleToggleActionCompletion(action.id)}
+                    className="mr-3"
+                  />
+                  <label htmlFor={`action-${action.id}`} className="flex-grow text-sm text-gray-800">
+                    {action.text} ({action.estimatedMinutes}m)
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Session Progress Indicator */}
           {actionSessionState.sessionId && (
             <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -382,6 +443,16 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
               onResume={resumeTimer}
               onStop={stopTimer}
             />
+            <div className="flex justify-center gap-4 mt-4">
+                <button onClick={handlePreviousAction} disabled={currentActionIndex === 0} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">Previous</button>
+                <button onClick={() => {
+                    if(currentAction) {
+                        handleToggleActionCompletion(currentAction.id);
+                        handleNextAction();
+                    }
+                }} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Finish Action</button>
+                <button onClick={handleNextAction} disabled={currentActionIndex >= actionSessionState.actions.length - 1} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">Next</button>
+            </div>
           </div>
 
           {/* Back to launcher button (when stopped) */}
@@ -397,6 +468,21 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
           )}
         </div>
       )}
+       <AlertDialog open={showCompletionDialog} onOpenChange={setShowCompletionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Time's up!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your time for this action is over. What would you like to do?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowCompletionDialog(false)}>Stay</AlertDialogCancel>
+            <AlertDialogAction onClick={addMoreTime}>Add 5 minutes</AlertDialogAction>
+            <AlertDialogAction onClick={completeAndContinue}>Continue to Next Action</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
