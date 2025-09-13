@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { Header } from '@/components/layout/Header'
-import { Sidebar, SidebarSection } from '@/components/layout/Sidebar'
+import { DashboardLayout, DashboardSection, DashboardGrid, DashboardCard } from '@/components/dashboard/DashboardLayout'
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { DashboardStats } from '@/components/dashboard/DashboardStats'
 import { SessionHistory } from '@/components/dashboard/SessionHistory'
 import { PersonalRecords } from '@/components/dashboard/PersonalRecords'
@@ -249,94 +250,117 @@ export default function DashboardPage() {
         )}
       </Header>
 
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-        <div className="container mx-auto px-6">
-
-        {activeTab === 'settings' ? (
-          <UserSettings loading={loading} />
-        ) : loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      {activeTab === 'settings' ? (
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <DashboardCard>
+              <UserSettings loading={loading} />
+            </DashboardCard>
           </div>
-        ) : !hasSessionData ? (
-          <OnboardingMessage />
-        ) : (
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar */}
-            <Sidebar>
-              <SidebarSection title="Ready to Focus?">
-                <ReadyToFocus />
-              </SidebarSection>
-            </Sidebar>
+        </div>
+      ) : loading ? (
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your dashboard...</p>
+          </div>
+        </div>
+      ) : !hasSessionData ? (
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <OnboardingMessage />
+          </div>
+        </div>
+      ) : (
+        <DashboardLayout sidebar={<DashboardSidebar />}>
+          {/* Overview Section */}
+          <DashboardSection 
+            id="overview" 
+            title="Dashboard Overview"
+            subtitle="Get a quick overview of your focus journey"
+          >
+            <DashboardCard>
+              <ReadyToFocus />
+            </DashboardCard>
+          </DashboardSection>
 
-            {/* Main content */}
-            <div className="flex-1 space-y-8">
-              {/* Stats Overview */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Stats</h2>
-                <DashboardStats 
-                  stats={dashboardData ? {
-                    totalFocusTime: dashboardData.totalFocusTime,
-                    averageSessionLength: dashboardData.averageSessionLength,
-                    completionRate: dashboardData.completionRate,
-                    sessionsThisWeek: dashboardData.sessionsThisWeek
-                  } : null}
-                  actionSessions={dashboardData?.actionSessions || []}
+          {/* Stats Section */}
+          <DashboardSection 
+            id="stats" 
+            title="Your Stats"
+            subtitle="Track your focus metrics and progress"
+          >
+            <DashboardStats 
+              stats={dashboardData ? {
+                totalFocusTime: dashboardData.totalFocusTime,
+                averageSessionLength: dashboardData.averageSessionLength,
+                completionRate: dashboardData.completionRate,
+                sessionsThisWeek: dashboardData.sessionsThisWeek
+              } : null}
+              actionSessions={dashboardData?.actionSessions || []}
+              loading={loading}
+            />
+          </DashboardSection>
+
+          {/* Action Session Insights */}
+          <DashboardSection 
+            id="actions" 
+            title="Action Sessions"
+            subtitle="AI-powered task breakdown and execution tracking"
+          >
+            <ActionSessionInsights 
+              actionSessions={dashboardData?.actionSessions || []}
+              loading={loading}
+            />
+          </DashboardSection>
+
+          {/* Records and Insights Grid */}
+          <DashboardGrid columns={2}>
+            <div>
+              <DashboardSection 
+                id="records" 
+                title="Personal Records"
+                subtitle="Your best achievements"
+              >
+                <PersonalRecords 
+                  records={dashboardData?.personalRecords || {
+                    longestSession: 0,
+                    bestWeek: 0,
+                    currentStreak: 0,
+                    longestStreak: 0
+                  }}
                   loading={loading}
                 />
-              </div>
-
-              {/* Action Session Insights - Full width if there are action sessions */}
-              {(dashboardData?.actionSessions && dashboardData.actionSessions.length > 0) && (
-                <div className="mb-8">
-                  <ActionSessionInsights 
-                    actionSessions={dashboardData.actionSessions}
-                    loading={loading}
-                  />
-                </div>
-              )}
-
-              {/* Content grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                {/* Left column */}
-                <div className="space-y-8">
-                  <PersonalRecords 
-                    records={dashboardData?.personalRecords || {
-                      longestSession: 0,
-                      bestWeek: 0,
-                      currentStreak: 0,
-                      longestStreak: 0
-                    }}
-                    loading={loading}
-                  />
-                  
-                  <ProgressInsights 
-                    insights={dashboardData?.insights || []}
-                    loading={loading}
-                  />
-                </div>
-
-                {/* Right column */}
-                <div className="space-y-8">
-                  <SessionHistory 
-                    sessions={dashboardData?.recentSessions || []}
-                    loading={loading}
-                  />
-                  
-                  {/* Show action session insights in sidebar if no action sessions exist yet */}
-                  {(!dashboardData?.actionSessions || dashboardData.actionSessions.length === 0) && (
-                    <ActionSessionInsights 
-                      actionSessions={[]}
-                      loading={loading}
-                    />
-                  )}
-                </div>
-              </div>
+              </DashboardSection>
             </div>
-          </div>
-        )}
-        </div>
-      </div>
+
+            <div>
+              <DashboardSection 
+                id="insights" 
+                title="Progress Insights"
+                subtitle="Personalized tips and encouragement"
+              >
+                <ProgressInsights 
+                  insights={dashboardData?.insights || []}
+                  loading={loading}
+                />
+              </DashboardSection>
+            </div>
+          </DashboardGrid>
+
+          {/* Session History */}
+          <DashboardSection 
+            id="sessions" 
+            title="Session History"
+            subtitle="Review your recent focus sessions"
+          >
+            <SessionHistory 
+              sessions={dashboardData?.recentSessions || []}
+              loading={loading}
+            />
+          </DashboardSection>
+        </DashboardLayout>
+      )}
     </>
   )
 }

@@ -13,10 +13,10 @@ interface HeaderProps {
 export function Header({ title, subtitle, breadcrumbs, children }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav className="mb-4" aria-label="Breadcrumb">
+          <nav className="mb-6" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm">
               {breadcrumbs.map((crumb, index) => (
                 <li key={index} className="flex items-center">
@@ -42,13 +42,13 @@ export function Header({ title, subtitle, breadcrumbs, children }: HeaderProps) 
         )}
 
         {/* Title and subtitle */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex-1">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-gray-600 max-w-2xl">
                 {subtitle}
               </p>
             )}
@@ -56,7 +56,7 @@ export function Header({ title, subtitle, breadcrumbs, children }: HeaderProps) 
           
           {/* Additional header content */}
           {children && (
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-3">
               {children}
             </div>
           )}

@@ -69,7 +69,7 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 8. **Focus Session**: Visual countdown with optional ticking sound, pause/resume/stop controls
 9. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
 10. **Results**: See variance analysis and encouraging feedback
-11. **Dashboard**: Sign in with Google → automatically redirected to dashboard with analytics and progress tracking
+11. **Dashboard**: Sign in with Google → automatically redirected to dashboard with analytics, progress tracking, and enhanced navigation sidebar
 
 ### Testing Offline Mode
 - Disconnect internet → timer still works with fallback suggestions
@@ -93,6 +93,16 @@ The timer system uses a dual-component architecture:
 - **ActionTimer**: Enhanced timer with action tracking and session management
 
 This separation ensures clean code organization while supporting both basic and advanced use cases. See `docs/timer-architecture.md` for detailed technical documentation.
+
+### Dashboard Architecture
+
+The dashboard includes specialized components for ADHD-friendly analytics:
+
+- **DashboardSidebar**: Enhanced navigation component with quick actions and section navigation (available for integration)
+- **Analytics Components**: Stats, history, records, and insights with encouraging messaging
+- **Progressive Enhancement**: Works with or without historical data
+
+See `docs/dashboard-analytics-system.md` and `docs/dashboard-sidebar-component.md` for detailed documentation.
 
 ## Development Commands
 
