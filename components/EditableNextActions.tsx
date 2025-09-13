@@ -22,7 +22,8 @@ export function EditableNextActions({
       id: `action-${index}-${Date.now()}`,
       text: action,
       isCustom: false,
-      originalText: action
+      originalText: action,
+      status: 'pending' 
     }))
   )
   
@@ -86,7 +87,8 @@ export function EditableNextActions({
       id: `action-custom-${Date.now()}`,
       text: '',
       isCustom: true,
-      originalText: ''
+      originalText: '',
+      status: 'pending'
     }
     setActions(prev => [...prev, newAction])
     // Immediately start editing the new action
