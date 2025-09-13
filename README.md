@@ -69,7 +69,7 @@ GOOGLE_AI_API_KEY=your_google_ai_api_key
 8. **Focus Session**: Visual countdown with optional ticking sound, pause/resume/stop controls
 9. **Session Complete**: Hear completion alarm, automatic break timer with suggestions
 10. **Results**: See variance analysis and encouraging feedback
-11. **Dashboard**: Sign in with Google to see analytics and progress tracking
+11. **Dashboard**: Sign in with Google → automatically redirected to dashboard with analytics and progress tracking
 
 ### Testing Offline Mode
 - Disconnect internet → timer still works with fallback suggestions
@@ -118,14 +118,16 @@ bun run verify:auth
 
 The app includes comprehensive console logging for development and troubleshooting:
 
+- **Authentication Context**: Enhanced logging for session initialization, auth state changes, and error tracking
 - **Session Saving**: Monitor session data persistence and user authentication
-- **Authentication Flow**: Track OAuth callback parameters and session creation
+- **Authentication Flow**: Production-ready OAuth callback with load balancer support and error handling
+- **Dashboard Authentication**: Enhanced timing for OAuth callback processing with delayed redirect logic
 - **Dashboard Analytics**: Detailed logging of session queries, data processing, and metrics calculations
   - Session count and data structure validation
   - User authentication status and token handling
   - Statistics computation and personal records calculation
 
-Open browser dev tools to view detailed logs during development. See `docs/testing-guide.md` for specific debugging scenarios and log patterns.
+Open browser dev tools to view detailed logs during development. See `docs/auth-setup.md` for authentication debugging and `docs/testing-guide.md` for other debugging scenarios.
 
 ## Manual QA Checklist
 
@@ -163,7 +165,11 @@ Open browser dev tools to view detailed logs during development. See `docs/testi
 - ✅ High contrast and reduced motion preferences work
 
 **Authentication Flow**:
-- ✅ Google OAuth sign-in works
+- ✅ Google OAuth sign-in with production-ready callback handling
+- ✅ Load balancer support for deployment environments
+- ✅ User-friendly error handling with troubleshooting guidance
+- ✅ Successful authentication redirects directly to dashboard
+- ✅ Enhanced dashboard authentication with OAuth callback timing support
 - ✅ Dashboard shows analytics and session history
 - ✅ App works fully without signing in
 

@@ -21,7 +21,7 @@ function AuthCodeErrorContent() {
       const timer = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
-            window.location.href = '/'
+            window.location.href = '/dashboard'
             return 0
           }
           return prev - 1
@@ -57,10 +57,10 @@ function AuthCodeErrorContent() {
             You&apos;re now signed in as {user.email}. Redirecting you to Firefly in {countdown} seconds...
           </p>
           <a 
-            href="/"
+            href="/dashboard"
             className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded"
           >
-            Continue to Firefly
+            Go to Dashboard
           </a>
         </div>
       </div>

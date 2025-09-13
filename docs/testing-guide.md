@@ -145,18 +145,21 @@ The auth callback route provides comprehensive logging for OAuth troubleshooting
 - `Auth callback received:` - Shows all OAuth parameters from provider
 - `Auth exchange result:` - Displays session creation success/failure
 - `OAuth provider error:` - Captures provider-side authentication errors
+- `Dashboard: No user found after auth loaded, redirecting to home` - Shows dashboard redirect timing
 
 **Common Auth Test Scenarios:**
 - **Valid OAuth Flow**: Check for successful code exchange and session creation
 - **Provider Errors**: Test handling of OAuth consent denials or provider issues
 - **Missing Parameters**: Verify graceful handling of malformed callback URLs
 - **Session Persistence**: Confirm authentication state survives page reloads
+- **Dashboard Timing**: Verify dashboard waits for OAuth callback completion before redirecting
 
 **Debug Steps:**
 1. Open browser dev tools before starting auth flow
 2. Monitor console during OAuth redirect process
 3. Look for detailed parameter logging in callback phase
-4. Verify error handling displays user-friendly messages
+4. Verify dashboard authentication timing (1-second delay for OAuth processing)
+5. Verify error handling displays user-friendly messages
 
 ### Session Saving Debugging
 The session saving functionality includes comprehensive logging for troubleshooting data persistence:

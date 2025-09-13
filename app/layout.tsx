@@ -4,7 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
 import { PreferencesProvider } from '@/lib/preferences/context'
 import { ActionSessionProvider } from '@/lib/action-sessions/context'
-import { OfflineSyncProvider } from '@/components/providers/OfflineSyncProvider'
+
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 
@@ -31,15 +31,13 @@ export default function RootLayout({
         <PreferencesProvider>
           <AuthProvider>
             <ActionSessionProvider>
-              <OfflineSyncProvider>
-                <div className="flex flex-col min-h-screen">
-                  <Navbar />
-                  <main id="main-content" className="flex-1">
-                    {children}
-                  </main>
-                  <Footer />
-                </div>
-              </OfflineSyncProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main id="main-content" className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+              </div>
             </ActionSessionProvider>
           </AuthProvider>
         </PreferencesProvider>

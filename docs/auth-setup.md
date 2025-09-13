@@ -25,7 +25,8 @@ If you don't have a Google OAuth application:
 5. Configure the OAuth consent screen
 6. Add authorized redirect URIs:
    - `https://your-project-ref.supabase.co/auth/v1/callback`
-   - `http://localhost:3001/auth/callback` (for local development)
+   - `http://localhost:3000/api/auth/callback` (for local development)
+   - `https://your-domain.com/api/auth/callback` (for production)
 
 ### 3. Update Supabase Site URL
 
@@ -33,73 +34,74 @@ In your Supabase project settings:
 1. Go to **Authentication** > **URL Configuration**
 2. Set **Site URL** to your production domain
 3. Add **Redirect URLs**:
-   - `http://localhost:3001/auth/callback`
-   - `https://your-domain.com/auth/callback`
+   - `http://localhost:3000/api/auth/callback`
+   - `https://your-domain.com/api/auth/callback`
 
 ### 4. Test Authentication
 
 1. Start the development server: `bun run dev`
-2. Navigate to `http://localhost:3001`
+2. Navigate to `http://localhost:3000`
 3. Click "Sign in with Google"
 4. Complete the OAuth flow
 5. Verify you're redirected back to the app and see your email displayed
 
-## Authentication Callback Improvements
+## Authentication Callback Implementation
 
-The auth callback route (`/app/auth/callback/route.ts`) has been enhanced with improved session handling and cookie management:
+The auth callback route (`/app/api/auth/callback/route.ts`) handles the OAuth flow completion with production-ready redirect handling:
 
-### Enhanced Session Management
-- **Explicit Cookie Setting**: Session tokens are now explicitly set as HTTP-only cookies for better security
-- **Improved Error Handling**: More granular error handling with specific error codes and descriptions
-- **Better Logging**: Enhanced debug output with full URL logging and clearer session status tracking
-- **Robust Fallback**: Graceful handling of edge cases where code exchange succeeds but no session is returned
+### Core Functionality
+- **Code Exchange**: Exchanges OAuth authorization code for user session using Supabase Auth
+- **Smart Redirects**: Handles both development and production environments with proper host detection
+- **Error Handling**: Redirects to error page (`/auth/auth-code-error`) when authentication fails
+- **Dashboard Redirect**: Successfully authenticated users are redirected to `/dashboard` for immediate access to their analytics
+- **Next Parameter**: Supports custom redirect destinations via `next` query parameter
 
-### Cookie Configuration
-The callback now sets secure session cookies with optimal settings:
-- **Access Token**: 7-day expiration, HTTP-only, secure in production
-- **Refresh Token**: 30-day expiration, HTTP-only, secure in production
-- **SameSite Policy**: 'lax' for cross-site compatibility
+### Production-Ready Features
+- **Load Balancer Support**: Detects `x-forwarded-host` header for proper HTTPS redirects in production
+- **Environment Detection**: Different redirect logic for development vs production environments
+- **Secure Redirects**: Forces HTTPS in production when behind load balancers
+- **Fallback Handling**: Graceful error handling with user-friendly error page
+
+### Redirect Logic
+```typescript
+// Development: Direct origin redirect
+if (isLocalEnv) {
+  return NextResponse.redirect(`${origin}${next}`)
+}
+
+// Production with load balancer: Use forwarded host
+else if (forwardedHost) {
+  return NextResponse.redirect(`https://${forwardedHost}${next}`)
+}
+
+// Production fallback: Use request origin
+else {
+  return NextResponse.redirect(`${origin}${next}`)
+}
+```
+
+### Error Handling
+- **Missing Code**: Redirects to `/auth/auth-code-error` when no authorization code is present
+- **Exchange Failure**: Redirects to error page when Supabase session exchange fails
+- **User-Friendly Errors**: Error page provides clear feedback and troubleshooting tips
+- **Success Recovery**: If user is actually authenticated despite error page, automatically redirects to `/dashboard` after 3-second countdown
+
+### Dashboard Authentication Flow
+The dashboard page includes enhanced authentication handling to improve user experience after OAuth callbacks:
+
+- **Delayed Redirect**: Waits 1 second before redirecting unauthenticated users to allow OAuth callback processing to complete
+- **OAuth Callback Support**: Prevents premature redirects during the OAuth flow completion
+- **Graceful Loading**: Shows loading state while authentication status is being determined
+- **Automatic Cleanup**: Properly cleans up redirect timers to prevent memory leaks
+
+This improvement addresses timing issues where users might be redirected away from the dashboard before the OAuth callback has fully processed their authentication.
+
+### Cookie Management
+Session cookies are managed automatically by the Supabase server client with secure settings:
+- **HTTP-Only**: Session tokens inaccessible to client-side JavaScript
+- **Secure**: Cookies marked secure in production environments
+- **SameSite**: 'lax' policy for cross-site compatibility
 - **Path**: Root path ('/') for app-wide availability
-
-### Console Logging Features
-- **Callback Parameters**: All URL parameters and full request URL
-- **Session Exchange**: Detailed success/failure logging with session data
-- **Cookie Setting**: Explicit logging of cookie operations
-- **Error Details**: Comprehensive error messages with context
-- **Redirect Tracking**: Clear logging of redirect destinations and reasons
-
-### Viewing Debug Logs
-1. Open browser developer tools (F12)
-2. Navigate to Console tab
-3. Attempt authentication
-4. Look for logs prefixed with "Auth callback received:" and "Auth exchange result:"
-
-### Common Debug Scenarios
-- **Missing Code Parameter**: Check if OAuth provider is sending authorization code
-- **Exchange Errors**: Verify Supabase configuration and redirect URLs
-- **Session Issues**: Check cookie settings and domain configuration
-- **Provider Errors**: Review OAuth consent screen and application settings
-- **Cookie Problems**: Verify secure context and domain settings
-
-### Example Debug Output
-```
-Auth callback received: {
-  code: true,
-  next: "/",
-  origin: "http://localhost:3001",
-  error: null,
-  errorDescription: null,
-  fullUrl: "http://localhost:3001/auth/callback?code=abc123..."
-}
-
-Auth exchange result: {
-  hasSession: true,
-  userId: "user-uuid-here",
-  error: null
-}
-
-Auth successful, redirecting to: http://localhost:3001/
-```
 
 ## Authentication Features Implemented
 
@@ -124,6 +126,42 @@ Auth successful, redirecting to: http://localhost:3001/
 - **6.3**: App functions fully without login (timer + local state)
 - Authentication failures allow continued use without login
 - Prepared for future cloud sync capabilities
+
+## Debugging Authentication
+
+The authentication system includes comprehensive console logging for development and troubleshooting:
+
+### Auth Context Logging
+
+The `AuthProvider` component includes detailed logging for authentication state changes:
+
+- **Initial Session Check**: Logs session availability, errors, and user email on app startup
+- **Auth State Changes**: Monitors all authentication events (sign-in, sign-out, token refresh)
+- **Error Tracking**: Captures and logs authentication errors with context
+
+**Console Output Examples:**
+```javascript
+// Initial session check
+Auth context - Initial session check: { session: true, error: null, userEmail: "user@example.com" }
+
+// Authentication state changes
+Auth context - Auth state change: { event: "SIGNED_IN", session: true, userEmail: "user@example.com" }
+Auth context - Auth state change: { event: "SIGNED_OUT", session: false, userEmail: undefined }
+```
+
+### Debugging Steps
+
+1. **Open Browser Dev Tools**: Press F12 or right-click → Inspect
+2. **Navigate to Console Tab**: View authentication logs in real-time
+3. **Test Authentication Flow**: Sign in/out and monitor console output
+4. **Check for Errors**: Look for error messages with context details
+
+### Common Debug Scenarios
+
+- **Session Not Loading**: Check for "Initial session check" log with error details
+- **OAuth Callback Issues**: Monitor auth state changes during redirect flow
+- **Token Refresh Problems**: Watch for automatic token refresh events
+- **Sign-out Issues**: Verify "SIGNED_OUT" event appears in console
 
 ## Usage in Components
 

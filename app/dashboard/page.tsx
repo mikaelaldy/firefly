@@ -13,6 +13,7 @@ import { ReadyToFocus } from '@/components/dashboard/ReadyToFocus'
 import { OnboardingMessage } from '@/components/dashboard/OnboardingMessage'
 import { UserSettings } from '@/components/dashboard/UserSettings'
 import { ActionSessionInsights } from '@/components/dashboard/ActionSessionInsights'
+import { AuthStatus } from '@/components/AuthStatus'
 
 interface DashboardData {
   totalFocusTime: number;
@@ -76,6 +77,11 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview')
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Dashboard: Auth state changed', { user: !!user, authLoading, userEmail: user?.email })
+  }, [user, authLoading])
+
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true)
@@ -121,16 +127,22 @@ export default function DashboardPage() {
   }, [router])
 
   useEffect(() => {
-    // Redirect to home if not authenticated after auth loads
-    if (!authLoading && !user) {
-      router.push('/')
-      return
-    }
+    // Give more time for auth to load, especially after OAuth callback
+    const redirectTimer = setTimeout(() => {
+      if (!authLoading && !user) {
+        console.log('Dashboard: No user found after auth loaded, redirecting to home')
+        router.push('/')
+        return
+      }
+    }, 1000) // Wait 1 second before redirecting
 
     // Fetch dashboard data if user is authenticated
     if (user && !authLoading) {
+      clearTimeout(redirectTimer)
       fetchDashboardData()
     }
+
+    return () => clearTimeout(redirectTimer)
   }, [user, authLoading, router, fetchDashboardData])
 
   // Show loading state while auth is loading
@@ -140,6 +152,9 @@ export default function DashboardPage() {
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
+          <div className="mt-4">
+            <AuthStatus />
+          </div>
         </div>
       </div>
     )

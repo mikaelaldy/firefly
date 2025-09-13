@@ -25,10 +25,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('Auth context - Initial session check:', { session: !!session, error, userEmail: session?.user?.email })
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      } catch (error) {
+        console.error('Auth context - Error getting initial session:', error)
+        setLoading(false)
+      }
     }
 
     getInitialSession()
@@ -36,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth context - Auth state change:', { event, session: !!session, userEmail: session?.user?.email })
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
@@ -54,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         options: {
           // Redirect to a client callback page that can handle both
           // implicit (hash tokens) and PKCE (code) flows
-          redirectTo: `${window.location.origin}/auth/callback-client`,
+          redirectTo: `${window.location.origin}/auth/callback-client?next=/dashboard`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
