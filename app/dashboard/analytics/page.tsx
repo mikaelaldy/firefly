@@ -76,7 +76,6 @@ export default function AnalyticsPage() {
 					</DashboardCard>
 
 					<DashboardCard>
-						<h3 className="text-lg font-medium mb-4">Personal Records</h3>
 						<PersonalRecords records={data?.personalRecords || { longestSession: 0, bestWeek: 0, currentStreak: 0, longestStreak: 0 }} loading={loading} />
 					</DashboardCard>
 
