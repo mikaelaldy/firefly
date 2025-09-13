@@ -76,7 +76,7 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'settings'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'history'>('overview')
 
   // Debug logging
   useEffect(() => {
@@ -228,6 +228,16 @@ export default function DashboardPage() {
             Overview
           </button>
           <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'history'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            History
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeTab === 'settings'
@@ -239,15 +249,13 @@ export default function DashboardPage() {
           </button>
         </div>
         
-        {/* Debug: Manual refresh button - only show on overview tab */}
-        {activeTab === 'overview' && (
-          <button
-            onClick={fetchDashboardData}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm"
-          >
-            🔄 Refresh Data
-          </button>
-        )}
+        {/* Debug: Manual refresh button */}
+        <button
+          onClick={fetchDashboardData}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm"
+        >
+          🔄 Refresh Data
+        </button>
       </Header>
 
       {activeTab === 'settings' ? (
@@ -255,6 +263,63 @@ export default function DashboardPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <DashboardCard>
               <UserSettings loading={loading} />
+            </DashboardCard>
+          </div>
+        </div>
+      ) : activeTab === 'history' ? (
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            {/* Detailed Stats */}
+            <DashboardCard>
+              <DashboardStats 
+                stats={dashboardData ? {
+                  totalFocusTime: dashboardData.totalFocusTime,
+                  averageSessionLength: dashboardData.averageSessionLength,
+                  completionRate: dashboardData.completionRate,
+                  sessionsThisWeek: dashboardData.sessionsThisWeek
+                } : null}
+                actionSessions={dashboardData?.actionSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
+
+            {/* Personal Records */}
+            <DashboardCard>
+              <PersonalRecords 
+                records={dashboardData?.personalRecords || {
+                  longestSession: 0,
+                  bestWeek: 0,
+                  currentStreak: 0,
+                  longestStreak: 0
+                }}
+                loading={loading}
+              />
+            </DashboardCard>
+
+            {/* Full Session History */}
+            <DashboardCard>
+              <SessionHistory 
+                sessions={dashboardData?.recentSessions || []}
+                loading={loading}
+              />
+            </DashboardCard>
+
+            {/* Action Session Insights */}
+            {dashboardData?.actionSessions && dashboardData.actionSessions.length > 0 && (
+              <DashboardCard>
+                <ActionSessionInsights 
+                  actionSessions={dashboardData.actionSessions}
+                  loading={loading}
+                />
+              </DashboardCard>
+            )}
+
+            {/* Progress Insights */}
+            <DashboardCard>
+              <ProgressInsights 
+                insights={dashboardData?.insights || []}
+                loading={loading}
+              />
             </DashboardCard>
           </div>
         </div>
@@ -272,94 +337,111 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-        <DashboardLayout sidebar={<DashboardSidebar />}>
-          {/* Overview Section */}
-          <DashboardSection 
-            id="overview" 
-            title="Dashboard Overview"
-            subtitle="Get a quick overview of your focus journey"
-          >
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            {/* Primary Action - Always Visible */}
             <DashboardCard>
               <ReadyToFocus />
             </DashboardCard>
-          </DashboardSection>
 
-          {/* Stats Section */}
-          <DashboardSection 
-            id="stats" 
-            title="Your Stats"
-            subtitle="Track your focus metrics and progress"
-          >
-            <DashboardStats 
-              stats={dashboardData ? {
-                totalFocusTime: dashboardData.totalFocusTime,
-                averageSessionLength: dashboardData.averageSessionLength,
-                completionRate: dashboardData.completionRate,
-                sessionsThisWeek: dashboardData.sessionsThisWeek
-              } : null}
-              actionSessions={dashboardData?.actionSessions || []}
-              loading={loading}
-            />
-          </DashboardSection>
+            {/* Essential Stats - Simplified */}
+            <DashboardCard>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">This Week</h2>
+                <div className="text-2xl">📊</div>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {dashboardData ? Math.floor(dashboardData.totalFocusTime / 60) : 0}h
+                  </div>
+                  <div className="text-sm text-gray-600">Focus Time</div>
+                </div>
+                
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {dashboardData?.sessionsThisWeek || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Sessions</div>
+                </div>
+                
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {dashboardData?.completionRate || 0}%
+                  </div>
+                  <div className="text-sm text-gray-600">Completed</div>
+                </div>
+                
+                <div className="text-center p-4 bg-orange-50 rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {dashboardData?.personalRecords?.currentStreak || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Day Streak</div>
+                </div>
+              </div>
+            </DashboardCard>
 
-          {/* Action Session Insights */}
-          <DashboardSection 
-            id="actions" 
-            title="Action Sessions"
-            subtitle="AI-powered task breakdown and execution tracking"
-          >
-            <ActionSessionInsights 
-              actionSessions={dashboardData?.actionSessions || []}
-              loading={loading}
-            />
-          </DashboardSection>
+            {/* Recent Activity - Condensed */}
+            <DashboardCard>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Recent Sessions</h2>
+                <button 
+                  onClick={() => setActiveTab('history')}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  View All →
+                </button>
+              </div>
+              
+              {!dashboardData?.recentSessions?.length ? (
+                <div className="text-center py-6">
+                  <div className="text-3xl mb-2">🎯</div>
+                  <p className="text-gray-600">No sessions yet</p>
+                  <p className="text-sm text-gray-500">Start your first focus session above!</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {dashboardData.recentSessions.slice(0, 3).map((session) => (
+                    <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-2 h-2 rounded-full ${
+                          session.completed ? 'bg-green-500' : 'bg-yellow-500'
+                        }`}></div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                            {session.goal}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {Math.floor(session.actualDuration / 60)}m • {new Date(session.startedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      {session.completed && (
+                        <div className="text-green-600 text-sm">✓</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </DashboardCard>
 
-          {/* Records and Insights Grid */}
-          <DashboardGrid columns={2}>
-            <div>
-              <DashboardSection 
-                id="records" 
-                title="Personal Records"
-                subtitle="Your best achievements"
-              >
-                <PersonalRecords 
-                  records={dashboardData?.personalRecords || {
-                    longestSession: 0,
-                    bestWeek: 0,
-                    currentStreak: 0,
-                    longestStreak: 0
-                  }}
-                  loading={loading}
-                />
-              </DashboardSection>
-            </div>
-
-            <div>
-              <DashboardSection 
-                id="insights" 
-                title="Progress Insights"
-                subtitle="Personalized tips and encouragement"
-              >
-                <ProgressInsights 
-                  insights={dashboardData?.insights || []}
-                  loading={loading}
-                />
-              </DashboardSection>
-            </div>
-          </DashboardGrid>
-
-          {/* Session History */}
-          <DashboardSection 
-            id="sessions" 
-            title="Session History"
-            subtitle="Review your recent focus sessions"
-          >
-            <SessionHistory 
-              sessions={dashboardData?.recentSessions || []}
-              loading={loading}
-            />
-          </DashboardSection>
-        </DashboardLayout>
+            {/* Motivational Message */}
+            {dashboardData?.insights && dashboardData.insights.length > 0 && (
+              <DashboardCard>
+                <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+                  <div className="text-2xl">✨</div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">Today's Insight</p>
+                    <p className="text-sm text-gray-700">
+                      {dashboardData.insights[0]?.message || "You're building great focus habits! Keep going! 🚀"}
+                    </p>
+                  </div>
+                </div>
+              </DashboardCard>
+            )}
+          </div>
+        </div>
       )}
     </>
   )
