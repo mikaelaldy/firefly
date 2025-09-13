@@ -9,7 +9,7 @@ A lightweight Next.js application that helps ADHD users overcome task paralysis 
 - **Editable Actions**: Modify, delete, and add custom actions with AI time estimation (V1)
 - **Smart Time Estimates**: AI provides realistic time estimates for ADHD users with confidence levels
 - **Visual Timer**: Shrinking disc with 25/45/50 minute presets or custom durations
-- **Enhanced Timer Controls**: Mark actions complete early, integrated action navigation, time extensions, comprehensive keyboard shortcuts with detailed status tracking
+- **Enhanced Timer Controls**: Mark actions complete early, integrated action navigation with smart session completion, time extensions, comprehensive keyboard shortcuts with detailed status tracking
 - **Sound System**: Optional timer ticking, session alarms, and break notifications with full customization and robust error handling
 - **Automatic Breaks**: Pomodoro-style break management (5min short, 15min long breaks)
 - **Variance Tracking**: Compare planned vs actual time with encouraging feedback
