@@ -514,23 +514,30 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     if (!timerState.isActive || !currentAction) return
 
     const extensionSeconds = extensionMinutes * 60
+    const now = new Date()
     
     // Debug logging for extension
     console.log('Adding time extension:', {
       action: currentAction.text,
       extensionMinutes,
-      currentDuration: timerState.duration,
-      newDuration: timerState.duration + extensionSeconds,
+      originalDuration: timerState.duration,
+      extensionSeconds,
       currentExtensions: currentActionExtensions,
       isPaused: timerState.isPaused
     })
     
-    // Simply add the extension to the current duration
-    // The remaining time will be recalculated in the timer effect
+    // Reset timer with just the extension time
+    // This ensures the timer shows only the extension time remaining
     setTimerState(prev => ({
       ...prev,
-      duration: prev.duration + extensionSeconds
+      duration: extensionSeconds,  // Set duration to only the extension time
+      remaining: extensionSeconds, // Set remaining to the extension time
+      startTime: now,              // Reset start time to now
+      isPaused: false              // Unpause the timer
     }))
+
+    // Reset paused time tracking since we're starting fresh
+    pausedTimeRef.current = 0
 
     // Track the extension locally
     setCurrentActionExtensions(prev => [...prev, extensionMinutes])
@@ -538,14 +545,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     // IMPORTANT: Save the extension to the correct action in the session context
     addTimeExtension(currentAction.id, extensionMinutes)
 
-    // Resume timer if it was paused
-    if (timerState.isPaused) {
-      resumeTimer()
-    } else {
-      // Restart ticking sound if needed
-      soundManager.startTicking()
-    }
-  }, [timerState.isActive, timerState.isPaused, resumeTimer, currentAction, addTimeExtension, currentActionExtensions, timerState.duration])
+    // Start ticking sound for the extended time
+    soundManager.startTicking()
+  }, [timerState.isActive, currentAction, addTimeExtension, currentActionExtensions])
 
 
 
