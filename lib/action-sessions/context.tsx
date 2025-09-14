@@ -146,13 +146,20 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
       setState(prev => {
         const updatedActions = prev.actions.map(action => {
           if (action.id === actionId) {
-            return completeAction(action, actualMinutesSpent)
+            const completedAction = completeAction(action, actualMinutesSpent)
+            console.log('Action completed:', { id: actionId, status: completedAction.status, actualMinutes: completedAction.actualMinutes })
+            return completedAction
           }
           return action
         })
 
         const completionStats = calculateSessionStats(updatedActions)
         const sessionComplete = isSessionComplete(updatedActions)
+        
+        console.log('Updated completion stats:', completionStats)
+        console.log('Updated actions with completed status:', updatedActions.filter(a => a.status === 'completed').length)
+        console.log('Previous completedActionIds:', Array.from(prev.completedActionIds))
+        console.log('New completedActionIds:', Array.from([...prev.completedActionIds, actionId]))
 
         return {
           ...prev,

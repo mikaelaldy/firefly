@@ -42,11 +42,12 @@ export function ActionSessionResults({ sessionId, className = '' }: ActionSessio
   }
 
   const completedActions = actionSessionState.actions.filter(action => 
-    actionSessionState.completedActionIds.has(action.id)
+    actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
   )
   const completionRate = actionSessionState.actions.length > 0 
     ? (completedActions.length / actionSessionState.actions.length) * 100 
     : 0
+  
 
   const totalEstimatedTime = actionSessionState.totalEstimatedTime
   const actualTimeSpent = actionSessionState.actualTimeSpent
@@ -140,7 +141,7 @@ export function ActionSessionResults({ sessionId, className = '' }: ActionSessio
       <div className="space-y-3">
         <h4 className="font-semibold text-gray-800 mb-3">Action Breakdown</h4>
         {actionSessionState.actions.map((action, index) => {
-          const isCompleted = actionSessionState.completedActionIds.has(action.id)
+          const isCompleted = actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
           return (
             <div 
               key={action.id}

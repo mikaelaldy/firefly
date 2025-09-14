@@ -727,18 +727,18 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                 <span className="text-blue-600 text-sm">
                   {(() => {
                     const totalActions = actionSessionState.actions.length;
-                    // Calculate completed actions by checking both completionStats and direct status
-                    let completedCount = 0;
+                    // Always calculate by checking both status and completedActionIds for reliability
+                    const completedCount = actionSessionState.actions.filter(action =>
+                      action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
+                    ).length;
                     
-                    if (actionSessionState.completionStats && actionSessionState.completionStats.completedActions > 0) {
-                      // Use completionStats if available and has completed actions
-                      completedCount = actionSessionState.completionStats.completedActions;
-                    } else {
-                      // Fallback to direct calculation
-                      completedCount = actionSessionState.actions.filter(action =>
-                        action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
-                      ).length;
-                    }
+                    // Debug logging
+                    console.log('Session progress debug:', {
+                      completedActionIds: Array.from(actionSessionState.completedActionIds),
+                      actionsWithCompletedStatus: actionSessionState.actions.filter(a => a.status === 'completed'),
+                      calculatedCompletedCount: completedCount,
+                      totalActions
+                    });
                     
                     return `${completedCount} / ${totalActions} actions completed`;
                   })()}
@@ -750,18 +750,11 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                   style={{ 
                     width: `${actionSessionState.actions.length > 0 
                       ? (() => {
-                          // Calculate completion rate using the same logic as the counter above
-                          let completedCount = 0;
-                          
-                          if (actionSessionState.completionStats && actionSessionState.completionStats.completedActions > 0) {
-                            return actionSessionState.completionStats.completionRate;
-                          } else {
-                            // Fallback to direct calculation
-                            completedCount = actionSessionState.actions.filter(action =>
-                              action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
-                            ).length;
-                            return (completedCount / actionSessionState.actions.length) * 100;
-                          }
+                          // Use the same calculation as the counter above
+                          const completedCount = actionSessionState.actions.filter(action =>
+                            action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
+                          ).length;
+                          return (completedCount / actionSessionState.actions.length) * 100;
                         })()
                       : 0}%` 
                   }}
