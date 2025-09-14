@@ -634,7 +634,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     setShowExtensionModal(false)
     setCurrentActionExtensions([])
     handleNextAction()
-  }, [currentAction, markActionAsCompleted, currentActionExtensions, handleNextAction])
+  }, [currentAction, markActionAsCompleted, handleNextAction])
 
 
   return (

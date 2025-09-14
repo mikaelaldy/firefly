@@ -92,7 +92,7 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
       const result = await createActionSession(goal, initializedActions)
       
       if (result.error) {
-        setState(prev => ({ ...prev, error: result.error, isLoading: false }))
+        setState(prev => ({ ...prev, error: result.error || null, isLoading: false }))
         return null
       }
 
@@ -444,7 +444,7 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
       const { session, actions, error } = await getActionSession(sessionId)
       
       if (error || !session) {
-        setState(prev => ({ ...prev, error: error || 'Session not found', isLoading: false }))
+        setState(prev => ({ ...prev, error: error ?? 'Session not found', isLoading: false }))
         return
       }
 
