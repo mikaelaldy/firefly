@@ -89,21 +89,35 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
         status: action.status || 'pending' as const
       }))
 
-      const { sessionId, error } = await createActionSession(goal, initializedActions)
+      const result = await createActionSession(goal, initializedActions)
       
-      if (error) {
-        setState(prev => ({ ...prev, error, isLoading: false }))
+      if (result.error) {
+        setState(prev => ({ ...prev, error: result.error, isLoading: false }))
         return null
       }
 
-      const totalEstimatedTime = initializedActions.reduce((sum, action) => sum + (action.estimatedMinutes || 0), 0)
-      const completionStats = calculateSessionStats(initializedActions)
+      // If we got actions back from the database (online), use them with correct IDs
+      let finalActions = initializedActions
+      if (result.actions && result.actions.length > 0) {
+        finalActions = result.actions.map(action => ({
+          id: action.id!,
+          text: action.text,
+          estimatedMinutes: action.estimated_minutes,
+          confidence: action.confidence,
+          isCustom: action.is_custom || false,
+          originalText: action.original_text,
+          status: 'pending' as const
+        }))
+      }
+
+      const totalEstimatedTime = finalActions.reduce((sum, action) => sum + (action.estimatedMinutes || 0), 0)
+      const completionStats = calculateSessionStats(finalActions)
 
       setState(prev => ({
         ...prev,
-        sessionId,
+        sessionId: result.sessionId,
         goal,
-        actions: initializedActions,
+        actions: finalActions,
         completedActionIds: new Set(),
         currentActionId: null,
         totalEstimatedTime,
@@ -115,7 +129,7 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
         isSessionComplete: false
       }))
 
-      return sessionId
+      return result.sessionId
     } catch (error) {
       console.error('Error starting action session:', error)
       setState(prev => ({ 
@@ -146,20 +160,13 @@ export function ActionSessionProvider({ children }: { children: React.ReactNode 
       setState(prev => {
         const updatedActions = prev.actions.map(action => {
           if (action.id === actionId) {
-            const completedAction = completeAction(action, actualMinutesSpent)
-            console.log('Action completed:', { id: actionId, status: completedAction.status, actualMinutes: completedAction.actualMinutes })
-            return completedAction
+            return completeAction(action, actualMinutesSpent)
           }
           return action
         })
 
         const completionStats = calculateSessionStats(updatedActions)
         const sessionComplete = isSessionComplete(updatedActions)
-        
-        console.log('Updated completion stats:', completionStats)
-        console.log('Updated actions with completed status:', updatedActions.filter(a => a.status === 'completed').length)
-        console.log('Previous completedActionIds:', Array.from(prev.completedActionIds))
-        console.log('New completedActionIds:', Array.from([...prev.completedActionIds, actionId]))
 
         return {
           ...prev,

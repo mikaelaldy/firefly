@@ -731,14 +731,6 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                       action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
                     ).length;
                     
-                    // Debug logging
-                    console.log('Session progress debug:', {
-                      completedActionIds: Array.from(actionSessionState.completedActionIds),
-                      actionsWithCompletedStatus: actionSessionState.actions.filter(a => a.status === 'completed'),
-                      calculatedCompletedCount: completedCount,
-                      totalActions
-                    });
-                    
                     return `${completedCount} / ${totalActions} actions completed`;
                   })()}
                 </span>

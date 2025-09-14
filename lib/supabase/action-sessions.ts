@@ -161,7 +161,7 @@ export async function syncOfflineData(): Promise<{ success: boolean; synced: num
 export async function createActionSession(
   goal: string,
   actions: EditableAction[]
-): Promise<{ sessionId: string; error?: string; isOffline?: boolean }> {
+): Promise<{ sessionId: string; actions?: EditableActionData[]; error?: string; isOffline?: boolean }> {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -274,16 +274,17 @@ export async function createActionSession(
       order_index: index
     }))
 
-    const { error: actionsError } = await supabase
+    const { data: insertedActions, error: actionsError } = await supabase
       .from('editable_actions')
       .insert(actionsData)
+      .select()
 
     if (actionsError) {
       console.error('Error creating editable actions:', actionsError)
       return { sessionId: sessionData.id, error: actionsError.message }
     }
 
-    return { sessionId: sessionData.id }
+    return { sessionId: sessionData.id, actions: insertedActions }
   } catch (error) {
     console.error('Unexpected error creating action session:', error)
     
