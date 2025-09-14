@@ -94,16 +94,6 @@ export function Footer() {
             <p className="text-gray-500 text-sm">
               © {currentYear} Firefly. Built for ADHD brains with ❤️
             </p>
-            <div className="flex items-center space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                <span className="sr-only">Privacy Policy</span>
-                Privacy
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                <span className="sr-only">Terms of Service</span>
-                Terms
-              </a>
-            </div>
           </div>
         </div>
       </div>
