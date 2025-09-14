@@ -50,14 +50,9 @@ function ResultsContent() {
   }, [searchParams, router])
 
   const handleContinue = useCallback(() => {
-    // Continue with the same task - go back to timer with the same session
-    if (actionSessionState.sessionId) {
-      const params = new URLSearchParams({
-        sessionId: actionSessionState.sessionId,
-      })
-      router.push(`/timer?${params.toString()}`)
-    }
-  }, [actionSessionState.sessionId, router])
+    // Go to dashboard to see session analytics and progress
+    router.push('/dashboard')
+  }, [router])
 
   const handleNewTask = useCallback(() => {
     // Start fresh - go back to home page

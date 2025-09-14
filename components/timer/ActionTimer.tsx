@@ -727,11 +727,19 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                 <span className="text-blue-600 text-sm">
                   {(() => {
                     const totalActions = actionSessionState.actions.length;
-                    const completedCount = actionSessionState.completionStats
-                      ? actionSessionState.completionStats.completedActions
-                      : actionSessionState.actions.filter(action =>
-                          actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
-                        ).length;
+                    // Calculate completed actions by checking both completionStats and direct status
+                    let completedCount = 0;
+                    
+                    if (actionSessionState.completionStats && actionSessionState.completionStats.completedActions > 0) {
+                      // Use completionStats if available and has completed actions
+                      completedCount = actionSessionState.completionStats.completedActions;
+                    } else {
+                      // Fallback to direct calculation
+                      completedCount = actionSessionState.actions.filter(action =>
+                        action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
+                      ).length;
+                    }
+                    
                     return `${completedCount} / ${totalActions} actions completed`;
                   })()}
                 </span>
@@ -742,13 +750,18 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                   style={{ 
                     width: `${actionSessionState.actions.length > 0 
                       ? (() => {
-                          if (actionSessionState.completionStats) {
+                          // Calculate completion rate using the same logic as the counter above
+                          let completedCount = 0;
+                          
+                          if (actionSessionState.completionStats && actionSessionState.completionStats.completedActions > 0) {
                             return actionSessionState.completionStats.completionRate;
+                          } else {
+                            // Fallback to direct calculation
+                            completedCount = actionSessionState.actions.filter(action =>
+                              action.status === 'completed' || actionSessionState.completedActionIds.has(action.id)
+                            ).length;
+                            return (completedCount / actionSessionState.actions.length) * 100;
                           }
-                          const completedCount = actionSessionState.actions.filter(action => 
-                            actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
-                          ).length;
-                          return (completedCount / actionSessionState.actions.length) * 100;
                         })()
                       : 0}%` 
                   }}

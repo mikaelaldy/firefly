@@ -178,7 +178,7 @@ export function SessionResults({ session, onContinue, onNewTask }: SessionResult
             onClick={onContinue}
             className={`${displayProps.buttonColor} text-white px-8 py-3 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-4 focus:ring-opacity-50`}
           >
-            Continue with this task
+            Go to dashboard
           </button>
           
           <button
@@ -194,7 +194,7 @@ export function SessionResults({ session, onContinue, onNewTask }: SessionResult
           <div className="flex justify-center items-center space-x-4">
             <div className="flex items-center space-x-1">
               <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Enter</kbd>
-              <span>Continue</span>
+              <span>Dashboard</span>
             </div>
             <div className="flex items-center space-x-1">
               <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">N</kbd>
