@@ -726,10 +726,13 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                 <h3 className="text-blue-800 font-semibold text-sm">Session Progress</h3>
                 <span className="text-blue-600 text-sm">
                   {(() => {
-                    const completedCount = actionSessionState.actions.filter(action => 
-                      actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
-                    ).length;
-                    return `${completedCount} / ${actionSessionState.actions.length} actions completed`;
+                    const totalActions = actionSessionState.actions.length;
+                    const completedCount = actionSessionState.completionStats
+                      ? actionSessionState.completionStats.completedActions
+                      : actionSessionState.actions.filter(action =>
+                          actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
+                        ).length;
+                    return `${completedCount} / ${totalActions} actions completed`;
                   })()}
                 </span>
               </div>
@@ -739,6 +742,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                   style={{ 
                     width: `${actionSessionState.actions.length > 0 
                       ? (() => {
+                          if (actionSessionState.completionStats) {
+                            return actionSessionState.completionStats.completionRate;
+                          }
                           const completedCount = actionSessionState.actions.filter(action => 
                             actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
                           ).length;
