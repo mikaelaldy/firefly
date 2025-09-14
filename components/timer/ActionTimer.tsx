@@ -547,7 +547,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
 
     // Start ticking sound for the extended time
     soundManager.startTicking()
-  }, [timerState.isActive, currentAction, addTimeExtension, currentActionExtensions])
+  }, [timerState.isActive, timerState.duration, timerState.isPaused, currentAction, addTimeExtension, currentActionExtensions])
 
 
 
@@ -668,7 +668,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     setShowExtensionModal(false)
     setCurrentActionExtensions([])
     handleNextAction()
-  }, [currentAction, markActionAsCompleted, handleNextAction])
+  }, [currentAction, currentActionExtensions, markActionAsCompleted, handleNextAction])
 
 
   return (

@@ -56,7 +56,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-gray-900 mb-4">Feedback & Contact</h3>
             <div className="space-y-3">
-              <p className="text-sm text-gray-600">We'd love to hear from you!</p>
+              <p className="text-sm text-gray-600">We&apos;d love to hear from you!</p>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">

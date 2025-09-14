@@ -71,7 +71,7 @@ export default function HistoryPage() {
                 </h3>
                 <div className="mt-1 text-sm text-blue-700">
                   <p>
-                    We're currently storing your most recent sessions to keep the app fast and efficient. 
+                    We&apos;re currently storing your most recent sessions to keep the app fast and efficient. 
                     This helps us maintain optimal performance while you focus on what matters most.
                   </p>
                   <p className="mt-2 font-medium">
@@ -108,7 +108,7 @@ export default function HistoryPage() {
           {!user && (
             <div className="text-center py-12">
               <h3 className="text-sm font-medium text-gray-900">Sign in to view your session history</h3>
-              <p className="mt-1 text-sm text-gray-500">Your session history is saved when you're logged in.</p>
+              <p className="mt-1 text-sm text-gray-500">Your session history is saved when you&apos;re logged in.</p>
             </div>
           )}
         </div>
@@ -117,7 +117,7 @@ export default function HistoryPage() {
         <div className="mt-8 bg-gray-50 rounded-lg p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-3">Have Feedback?</h3>
           <p className="text-sm text-gray-600 mb-4">
-            We'd love to hear your thoughts on Firefly and ideas for improvement!
+            We&apos;d love to hear your thoughts on Firefly and ideas for improvement!
           </p>
           <div className="space-y-2 text-sm">
             <div className="flex items-center space-x-2">
