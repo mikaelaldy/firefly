@@ -245,16 +245,22 @@ class SoundManager {
   public playSound(type: SoundType): void {
     if (typeof window === 'undefined') return
     this.initialize()
-    console.log(`Attempting to play sound: ${type}`, {
-      enabled: this.config.enabled,
-      tickingEnabled: this.config.tickingEnabled,
-      alarmEnabled: this.config.alarmEnabled,
-      breakNotificationsEnabled: this.config.breakNotificationsEnabled,
-      volume: this.config.volume
-    })
+    
+    // Only log for non-tick sounds or when debug logging is enabled
+    if (type !== 'tick' || this.config.debugLogging) {
+      console.log(`Attempting to play sound: ${type}`, {
+        enabled: this.config.enabled,
+        tickingEnabled: this.config.tickingEnabled,
+        alarmEnabled: this.config.alarmEnabled,
+        breakNotificationsEnabled: this.config.breakNotificationsEnabled,
+        volume: this.config.volume
+      })
+    }
     
     if (!this.config.enabled) {
-      console.log('Sound disabled globally')
+      if (type !== 'tick' || this.config.debugLogging) {
+        console.log('Sound disabled globally')
+      }
       return
     }
     
@@ -264,24 +270,33 @@ class SoundManager {
       ((type === 'break-start' || type === 'break-end') && this.config.breakNotificationsEnabled)
     
     if (!shouldPlay) {
-      console.log(`Sound type ${type} is disabled`)
+      if (type !== 'tick' || this.config.debugLogging) {
+        console.log(`Sound type ${type} is disabled`)
+      }
       return
     }
     
     const audio = this.audioElements.get(type)
     if (audio) {
-      console.log(`Playing ${type} sound, volume: ${this.config.volume}`)
+      if (type !== 'tick' || this.config.debugLogging) {
+        console.log(`Playing ${type} sound, volume: ${this.config.volume}`)
+      }
+      
       audio.currentTime = 0
       audio.volume = this.config.volume
       const playPromise = audio.play()
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.then(() => {
-          console.log(`Successfully played ${type} sound`)
+          if (type !== 'tick' || this.config.debugLogging) {
+            console.log(`Successfully played ${type} sound`)
+          }
         }).catch(error => {
+          // Always log errors, even for tick sounds
           console.warn(`Failed to play ${type} sound:`, error)
         })
       }
     } else {
+      // Always log missing audio elements
       console.warn(`No audio element found for ${type}`)
     }
   }

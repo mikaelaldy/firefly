@@ -563,6 +563,9 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
         // Stop ticking sound
         soundManager.stopTicking()
         
+        // Play completion alarm sound
+        soundManager.playSound('alarm')
+        
         // Pause the timer and show extension options
         setTimerState(prev => ({ ...prev, isPaused: true }))
         setShowExtensionModal(true)

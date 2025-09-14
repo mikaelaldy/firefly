@@ -250,6 +250,9 @@ function RegularTimer({
         // Stop ticking sound
         soundManager.stopTicking()
         
+        // Play completion alarm sound
+        soundManager.playSound('alarm')
+        
         // Timer completed naturally
         const session: TimerSession = {
           id: crypto.randomUUID(),
