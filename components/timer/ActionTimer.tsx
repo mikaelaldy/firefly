@@ -43,7 +43,8 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     updateTimeSpent, 
     startActionSession,
     completeSession,
-    getSessionSummary
+    getSessionSummary,
+    addTimeExtension
   } = useActionSession()
   
   const [timerState, setTimerState] = useState<TimerState>({
@@ -510,7 +511,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
 
   // Handle time extension
   const handleExtendTime = useCallback(async (extensionMinutes: number) => {
-    if (!timerState.isActive) return
+    if (!timerState.isActive || !currentAction) return
 
     const extensionSeconds = extensionMinutes * 60
     
@@ -521,8 +522,11 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       duration: prev.duration + extensionSeconds
     }))
 
-    // Track the extension
+    // Track the extension locally
     setCurrentActionExtensions(prev => [...prev, extensionMinutes])
+
+    // IMPORTANT: Save the extension to the correct action in the session context
+    addTimeExtension(currentAction.id, extensionMinutes)
 
     // Resume timer if it was paused
     if (timerState.isPaused) {
@@ -531,7 +535,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       // Restart ticking sound if needed
       soundManager.startTicking()
     }
-  }, [timerState.isActive, timerState.isPaused, resumeTimer])
+  }, [timerState.isActive, timerState.isPaused, resumeTimer, currentAction, addTimeExtension])
 
 
 
@@ -624,12 +628,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       // Mark action as completed with extensions tracked
       await markActionAsCompleted(currentAction.id, actionTimeSpent)
       
-      // Update the action with extension data
-      if (currentActionExtensions.length > 0) {
-        // Store extensions in the action (this would typically go to the database)
-        // In a real implementation, you'd save extension data to the database
-        // For now, extensions are tracked in currentActionExtensions state
-      }
+      // Note: Extensions are already saved to the action via handleExtendTime -> addTimeExtension
     }
 
     setShowExtensionModal(false)
