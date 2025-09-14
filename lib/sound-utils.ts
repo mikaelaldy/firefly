@@ -11,6 +11,7 @@ interface SoundConfig {
   tickingEnabled: boolean
   alarmEnabled: boolean
   breakNotificationsEnabled: boolean
+  debugLogging: boolean // Added for debug logging control
 }
 
 class SoundManager {
@@ -20,7 +21,8 @@ class SoundManager {
     volume: 0.5,
     tickingEnabled: true,
     alarmEnabled: true,
-    breakNotificationsEnabled: true
+    breakNotificationsEnabled: true,
+    debugLogging: false // Added for debug logging control
   }
   
   private tickingInterval: NodeJS.Timeout | null = null
@@ -415,6 +417,17 @@ class SoundManager {
       return false
     }
   }
+
+  // Debug logging methods
+  public getDebugLogging(): boolean {
+    return this.config.debugLogging
+  }
+
+  public setDebugLogging(enabled: boolean): void {
+    this.config.debugLogging = enabled
+    this.saveConfig()
+    console.log(`Sound debug logging ${enabled ? 'enabled' : 'disabled'}`)
+  }
 }
 
 // Singleton instance
@@ -548,5 +561,33 @@ export function getBreakSuggestions(type: 'short' | 'long'): string[] {
       '🚶‍♀️ Walk around the room',
       '☀️ Look out the window'
     ]
+  }
+}
+
+// Global debug helper for development
+declare global {
+  interface Window {
+    toggleSoundDebug?: () => void
+    enableSoundDebug?: () => void  
+    disableSoundDebug?: () => void
+  }
+}
+
+// Add debug helpers to window object for easy console access
+if (typeof window !== 'undefined') {
+  window.toggleSoundDebug = () => {
+    const currentState = soundManager.getDebugLogging()
+    soundManager.setDebugLogging(!currentState)
+    console.log(`Sound debug logging ${!currentState ? 'enabled' : 'disabled'}`)
+  }
+  
+  window.enableSoundDebug = () => {
+    soundManager.setDebugLogging(true)
+    console.log('Sound debug logging enabled - tick sounds will now log to console')
+  }
+  
+  window.disableSoundDebug = () => {
+    soundManager.setDebugLogging(false)  
+    console.log('Sound debug logging disabled - tick sounds will be silent in console')
   }
 }

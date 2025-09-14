@@ -225,6 +225,30 @@ export function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
             </div>
           </div>
 
+          {/* Debug Logging (for development) */}
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-700">Debug Logging</label>
+                <span className="text-xs text-gray-400">(Development)</span>
+              </div>
+              <p className="text-xs text-gray-500">Show detailed sound logs in console</p>
+            </div>
+            <button
+              onClick={() => updateConfig({ debugLogging: !config.debugLogging })}
+              disabled={!config.enabled}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                config.debugLogging && config.enabled ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                  config.debugLogging && config.enabled ? 'translate-x-5' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
           {/* ADHD-Friendly Note */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
             <div className="flex items-start space-x-2">

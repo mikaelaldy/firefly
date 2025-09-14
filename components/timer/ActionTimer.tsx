@@ -515,6 +515,16 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
 
     const extensionSeconds = extensionMinutes * 60
     
+    // Debug logging for extension
+    console.log('Adding time extension:', {
+      action: currentAction.text,
+      extensionMinutes,
+      currentDuration: timerState.duration,
+      newDuration: timerState.duration + extensionSeconds,
+      currentExtensions: currentActionExtensions,
+      isPaused: timerState.isPaused
+    })
+    
     // Simply add the extension to the current duration
     // The remaining time will be recalculated in the timer effect
     setTimerState(prev => ({
@@ -535,7 +545,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       // Restart ticking sound if needed
       soundManager.startTicking()
     }
-  }, [timerState.isActive, timerState.isPaused, resumeTimer, currentAction, addTimeExtension])
+  }, [timerState.isActive, timerState.isPaused, resumeTimer, currentAction, addTimeExtension, currentActionExtensions, timerState.duration])
 
 
 
@@ -620,12 +630,31 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
   // Handle completing action and moving to next
   const handleCompleteAndContinue = useCallback(async () => {
     if (currentAction && actionStartTimeRef.current) {
-      // Calculate actual time spent including extensions
-      const actionTimeSpent = Math.ceil(
+      // Calculate actual time spent from when the action started until now
+      const totalElapsedTime = Math.ceil(
         calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
       )
       
-      // Mark action as completed with extensions tracked
+      const totalExtensions = currentActionExtensions.reduce((sum, ext) => sum + ext, 0)
+      const originalEstimate = currentAction.estimatedMinutes || 0
+      
+      // Debug logging to help understand the time calculation
+      console.log('Action completion debug:', {
+        actionText: currentAction.text,
+        originalEstimate,
+        extensions: currentActionExtensions,
+        totalExtensions,
+        effectiveEstimate: originalEstimate + totalExtensions,
+        actualTimeWorked: totalElapsedTime,
+        actionStartTime: actionStartTimeRef.current,
+        currentTime: new Date(),
+        pausedTime: pausedTimeRef.current
+      })
+      
+      // Use the actual elapsed time (total time worked)
+      const actionTimeSpent = totalElapsedTime
+      
+      // Mark action as completed with actual time worked
       await markActionAsCompleted(currentAction.id, actionTimeSpent)
       
       // Note: Extensions are already saved to the action via handleExtendTime -> addTimeExtension
@@ -825,7 +854,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
           onClose={() => setShowMarkCompleteModal(false)}
           onConfirm={handleMarkCompleteConfirm}
           actionText={currentAction.text}
-          estimatedMinutes={currentAction.estimatedMinutes || 0}
+          estimatedMinutes={(currentAction.estimatedMinutes || 0) + currentActionExtensions.reduce((sum, ext) => sum + ext, 0)}
           actualMinutes={actionStartTimeRef.current ? Math.ceil(
             calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current) / 60
           ) : 0}
