@@ -60,7 +60,7 @@ export async function saveSession(session: TimerSession, taskId?: string): Promi
  * @param limit - The number of recent sessions to fetch
  * @returns An array of recent sessions
  */
-export async function getRecentSessions(limit: number = 10): Promise<Session[]> {
+export async function getRecentSessions(limit: number = 5): Promise<Session[]> {
   const serverSupabase = createServerClient()
   const { data: { user } } = await serverSupabase.auth.getUser()
 

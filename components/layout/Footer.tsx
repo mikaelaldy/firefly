@@ -52,26 +52,39 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Feedback & Contact */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
-                  ADHD Tips
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
-                  Contact Us
-                </a>
-              </li>
-            </ul>
+            <h3 className="font-semibold text-gray-900 mb-4">Feedback & Contact</h3>
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">We'd love to hear from you!</p>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  <a href="mailto:mikascend@gmail.com" className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                    mikascend@gmail.com
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                  </svg>
+                  <a href="https://x.com/mikascend" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                    @mikascend
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  <a href="https://github.com/mikaelaldy" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                    GitHub
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

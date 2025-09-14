@@ -66,7 +66,7 @@ export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
   // Dummy percentages for actions breakdown
   const dummyPercentages = [10, 45, 30, 0, 0];
 
-  const recent = sessions.slice(0, 2)
+  const recent = sessions.slice(0, 5) // Show up to 5 recent sessions
   const hasAny = recent.length > 0
 
   return (
@@ -76,6 +76,16 @@ export function SessionHistory({ sessions, loading }: SessionHistoryProps) {
         <a href="/history" className="text-sm text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 rounded px-1">
           View All Sessions →
         </a>
+      </div>
+      
+      {/* Limitation Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <div className="flex items-center text-sm text-blue-800">
+          <svg className="h-4 w-4 text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <span>Showing most recent sessions only • <strong>Unlimited history coming soon!</strong></span>
+        </div>
       </div>
       {!hasAny && (
         <div className="p-4 rounded-lg bg-gray-50 border border-gray-200" role="status" aria-live="polite">

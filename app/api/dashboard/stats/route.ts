@@ -427,10 +427,10 @@ export async function GET(request: NextRequest) {
       }))
     ];
 
-    // Sort by start date and take the 10 most recent
+    // Sort by start date and take the 5 most recent (for performance and cost optimization)
     const recentSessions = combinedSessions
       .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
-      .slice(0, 10);
+      .slice(0, 5);
 
     const stats: DashboardStatsResponse & { actionSessions: typeof allActionSessions } = {
       totalFocusTime: Math.round(totalFocusTime),

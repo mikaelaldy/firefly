@@ -517,7 +517,7 @@ export async function getActionSession(sessionId: string): Promise<{
 /**
  * Get user's recent action sessions
  */
-export async function getUserActionSessions(limit: number = 10): Promise<{
+export async function getUserActionSessions(limit: number = 5): Promise<{
   sessions: (ActionSessionData & { actions: EditableActionData[]; isOffline?: boolean })[]
   error?: string
 }> {
