@@ -28,7 +28,7 @@ export function Navbar() {
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {/* <Link 
+            <Link 
               href="/"
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
             >
@@ -49,7 +49,7 @@ export function Navbar() {
                   Timer
                 </Link>
               </>
-            )} */}
+            )}
           </div>
 
           {/* User actions */}
@@ -58,7 +58,7 @@ export function Navbar() {
             <AuthButton />
             
             {/* Mobile menu button */}
-            {/* <button
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               aria-label="Toggle menu"
@@ -70,12 +70,12 @@ export function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
-            </button> */}
+            </button>
           </div>
         </div>
 
         {/* Mobile menu */}
-        {/* {isMenuOpen && (
+        {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="space-y-2">
               <Link 
@@ -105,7 +105,7 @@ export function Navbar() {
               )}
             </div>
           </div>
-        )} */}
+        )}
       </div>
     </nav>
   )
