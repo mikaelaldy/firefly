@@ -377,9 +377,12 @@
 
 
 
-  - Add Previous/Next action buttons to timer interface
-  - Implement action switching with timer pause and confirmation
-  - Handle edge cases (first/last action, no more actions)
+  - ✅ Add Previous/Next action buttons to timer interface
+  - ✅ Implement action switching with timer pause and confirmation
+  - ✅ Handle edge cases (first/last action, no more actions)
+  - ✅ Enhanced handleNextAction with smart session completion detection
+  - ✅ Automatic session completion when all actions are completed or skipped
+  - ✅ Intelligent navigation that skips completed actions and finds next available action
   - _Requirements: 13.7, 13.8, 13.9_
 
 - [ ] 25. Action status management

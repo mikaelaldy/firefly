@@ -191,12 +191,25 @@ The dashboard now features a sophisticated three-column layout optimized for ADH
 #### Right Sidebar Components
 
 **Personal Records Grid**
-- **2x2 Achievement Layout**: Four key accomplishments in colorful cards
+- **2x2 Achievement Layout**: Four key accomplishments in colorful cards with improved visual hierarchy
+- **Enhanced Card Design**: 
+  - Consistent minimum height (120px) for uniform appearance
+  - Improved spacing with flex layout for better content alignment
+  - Visual borders added to all cards for better definition
+  - Optimized icon and text positioning for better readability
 - **Achievement Types**:
   - 🏆 Longest Session (Yellow theme) - Personal best duration
-  - 📅 Best Week (Green theme) - Most productive week
-  - 🔥 Current Streak (Orange theme) - Ongoing daily consistency
-  - ⚡ Longest Streak (Purple theme) - Historical achievement
+  - 📅 Best Week (Blue theme) - Most productive week
+  - 🔥 Current Streak (Red theme) - Ongoing daily consistency
+  - ⚡ Longest Streak (Green theme) - Historical achievement
+- **Typography Improvements**:
+  - Reduced icon size (text-2xl) for better proportion
+  - Improved text hierarchy with leading-tight for value display
+  - Better spacing between title, value, and subtitle elements
+- **Layout Enhancements**:
+  - Flex-shrink-0 on icons prevents distortion
+  - Min-w-0 on text container prevents overflow issues
+  - Improved responsive behavior across different screen sizes
 - **Empty State Handling**: Encouraging message for users without records
 - **Detailed Formatting**: Hours/minutes display with descriptive subtitles
 
@@ -305,6 +318,11 @@ The dashboard now features a sophisticated three-column layout optimized for ADH
 - ✅ **Quick Actions Enhancement**: Added pre-configured session options (Quick Focus, Deep Work, Custom Goal)
 - ✅ **Achievement Showcase**: Dedicated right sidebar for personal records with visual cards
 - ✅ **Improved Information Architecture**: Better organization of stats, actions, and achievements
+- ✅ **Personal Records UI Enhancement**: Improved card layout, typography, and visual consistency
+  - Enhanced card spacing and alignment for better visual hierarchy
+  - Added consistent borders and minimum heights for uniform appearance
+  - Optimized icon sizing and text positioning for improved readability
+  - Better responsive behavior and overflow handling
 
 ### Design Evolution
 **Previous Design**: Single-column layout with stacked cards
