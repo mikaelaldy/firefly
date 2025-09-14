@@ -232,6 +232,7 @@ The ActionTimer component manages additional state for enhanced controls:
 - **Custom Extensions**: User-defined extension amounts (1-60 minutes)
 - **Extension Tracking**: Visual history of all extensions added to current action
 - **Seamless Integration**: Extensions update timer duration without losing progress
+- **Simplified Logic**: Streamlined extension calculation for improved reliability
 
 **Implementation**:
 ```typescript
@@ -245,6 +246,13 @@ The ActionTimer component manages additional state for enhanced controls:
   currentExtensions={currentActionExtensions}
 />
 ```
+
+**Technical Details**:
+The timer extension system uses a simplified approach for maximum reliability:
+- Extensions are added directly to the timer duration
+- Remaining time is automatically recalculated by the timer effect
+- No complex elapsed time calculations during extension
+- Ensures consistent behavior across all timer states
 
 ### Action Navigation System
 
