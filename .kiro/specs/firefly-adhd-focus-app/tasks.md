@@ -385,7 +385,9 @@
   - ✅ Intelligent navigation that skips completed actions and finds next available action
   - _Requirements: 13.7, 13.8, 13.9_
 
-- [ ] 25. Action status management
+- [x] 25. Action status management
+
+
 
 
 
@@ -401,6 +403,7 @@
   - _Requirements: 13.2, 13.9, 13.10_
 
 - [x] 25.2 Build session completion logic
+
 
 
   - Detect when all actions are completed or skipped

@@ -450,14 +450,17 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       const action = actionSessionState.actions.find(a => a.id === actionId)
       if (action) {
         let timeSpent = action.estimatedMinutes || 0
-        if (action.id === currentAction?.id && timerState.isActive) {
-          const adjustedElapsed = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
+        
+        // If this is the current active action and timer is running, use actual elapsed time
+        if (action.id === currentAction?.id && timerState.isActive && actionStartTimeRef.current) {
+          const adjustedElapsed = calculateAdjustedElapsed(actionStartTimeRef.current, pausedTimeRef.current)
           timeSpent = Math.ceil(adjustedElapsed / 60)
         }
+        
         await markActionAsCompleted(actionId, timeSpent)
       }
     }
-  }, [actionSessionState.completedActionIds, actionSessionState.actions, currentAction, timerState, markActionAsCompleted, unmarkActionAsCompleted]);
+  }, [actionSessionState.completedActionIds, actionSessionState.actions, currentAction, timerState.isActive, markActionAsCompleted, unmarkActionAsCompleted]);
 
   // Handle mark complete button click
   const handleMarkCompleteClick = useCallback(() => {
@@ -510,15 +513,12 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
     if (!timerState.isActive) return
 
     const extensionSeconds = extensionMinutes * 60
-    const currentElapsed = calculateAdjustedElapsed(timerState.startTime, pausedTimeRef.current)
-    const newDuration = timerState.duration + extensionSeconds
-    const newRemaining = Math.max(0, newDuration - currentElapsed)
-
-    // Update timer state with new duration
+    
+    // Simply add the extension to the current duration
+    // The remaining time will be recalculated in the timer effect
     setTimerState(prev => ({
       ...prev,
-      duration: newDuration,
-      remaining: newRemaining
+      duration: prev.duration + extensionSeconds
     }))
 
     // Track the extension
@@ -531,7 +531,7 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
       // Restart ticking sound if needed
       soundManager.startTicking()
     }
-  }, [timerState, resumeTimer])
+  }, [timerState.isActive, timerState.isPaused, resumeTimer])
 
 
 
@@ -691,23 +691,31 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-2">Actions</h3>
             <ul className="space-y-2">
-              {actionSessionState.actions.map((action, index) => (
-                <li key={action.id} className={`flex items-center p-2 rounded-lg ${currentActionIndex === index ? 'bg-blue-100' : ''}`}>
-                  <Checkbox
-                    id={`action-${action.id}`}
-                    checked={actionSessionState.completedActionIds.has(action.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked !== actionSessionState.completedActionIds.has(action.id)) {
-                        handleToggleActionCompletion(action.id)
-                      }
-                    }}
-                    className="mr-3"
-                  />
-                  <label htmlFor={`action-${action.id}`} className="flex-grow text-sm text-gray-800">
-                    {action.text} ({action.estimatedMinutes}m)
-                  </label>
-                </li>
-              ))}
+              {actionSessionState.actions.map((action, index) => {
+                const isCompleted = actionSessionState.completedActionIds.has(action.id) || action.status === 'completed';
+                return (
+                  <li key={action.id} className={`flex items-center p-2 rounded-lg ${currentActionIndex === index ? 'bg-blue-100' : ''}`}>
+                    <Checkbox
+                      id={`action-${action.id}`}
+                      checked={isCompleted}
+                      onCheckedChange={(checked) => {
+                        if (checked !== isCompleted) {
+                          handleToggleActionCompletion(action.id)
+                        }
+                      }}
+                      className="mr-3"
+                    />
+                    <label htmlFor={`action-${action.id}`} className={`flex-grow text-sm ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                      {action.text} ({action.estimatedMinutes}m)
+                      {isCompleted && action.actualMinutes && (
+                        <span className="text-green-600 ml-2">
+                          (✓ {action.actualMinutes}m)
+                        </span>
+                      )}
+                    </label>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 
@@ -717,7 +725,12 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-blue-800 font-semibold text-sm">Session Progress</h3>
                 <span className="text-blue-600 text-sm">
-                  {actionSessionState.completedActionIds.size} / {actionSessionState.actions.length} actions completed
+                  {(() => {
+                    const completedCount = actionSessionState.actions.filter(action => 
+                      actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
+                    ).length;
+                    return `${completedCount} / ${actionSessionState.actions.length} actions completed`;
+                  })()}
                 </span>
               </div>
               <div className="w-full bg-blue-200 rounded-full h-2">
@@ -725,7 +738,12 @@ export function ActionTimer({ goal = 'Focus Session', taskId, actions = [], onSe
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ 
                     width: `${actionSessionState.actions.length > 0 
-                      ? (actionSessionState.completedActionIds.size / actionSessionState.actions.length) * 100 
+                      ? (() => {
+                          const completedCount = actionSessionState.actions.filter(action => 
+                            actionSessionState.completedActionIds.has(action.id) || action.status === 'completed'
+                          ).length;
+                          return (completedCount / actionSessionState.actions.length) * 100;
+                        })()
                       : 0}%` 
                   }}
                 ></div>
