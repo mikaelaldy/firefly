@@ -19,13 +19,13 @@ interface SessionData {
 }
 
 export default function HistoryPage() {
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchSessions() {
-      if (!user) {
+      if (!user || !session) {
         setLoading(false)
         return
       }
@@ -33,7 +33,7 @@ export default function HistoryPage() {
       try {
         const response = await fetch('/api/dashboard/stats', {
           headers: {
-            'Authorization': `Bearer ${(await user.getSession())?.access_token}`
+            'Authorization': `Bearer ${session.access_token}`
           }
         })
         
@@ -49,7 +49,7 @@ export default function HistoryPage() {
     }
 
     fetchSessions()
-  }, [user])
+  }, [user, session])
 
   return (
     <DashboardLayout sidebar={<DashboardSidebar />}>
