@@ -7,7 +7,6 @@ import { ActionSessionProvider } from '@/lib/action-sessions/context'
 
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { Analytics } from '@vercel/analytics/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -42,7 +41,6 @@ export default function RootLayout({
             </ActionSessionProvider>
           </AuthProvider>
         </PreferencesProvider>
-        <Analytics />
       </body>
     </html>
   )
